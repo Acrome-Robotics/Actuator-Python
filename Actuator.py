@@ -117,9 +117,6 @@ class Actuator():
 			[(self.CRC), 4, c_uint32]
 		]
 
-		for i in range(len(self.Indexes)):
-			self.Indexes[i].append(i)
-
 	def __populate_header(self):
 		return self.header.data.to_bytes(1,'little') +\
 			self.Configuration.data.devID.data.to_bytes(1,'little') +\
