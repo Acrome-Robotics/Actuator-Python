@@ -333,11 +333,18 @@ class Master():
 			self.addActuator(i)
 			self.Timestamps[i] = 0
 			self.send(self.Actuators[i].Ping())
-			for b in self.receive(9):
+			time.sleep(0.003)
+			recv = self.receive()
+			for b in recv:
 				self.cb.write(b)
-			self.findPackage()
+
+		self.findPackage()
+
+		for i in range(len(self.Timestamps)):
 			if self.Timestamps[i] != 0:
 				alive.append(i)
+
+		self.ActList = alive
 		return alive
 
 class Server():
@@ -418,7 +425,7 @@ ser = None
 s = Server(8000)
 m = Master(4096, ser)
 
-m.addActuator(18)
+m.AutoScan()
 executor = cf.ThreadPoolExecutor(max_workers=2)
 executor.submit(loop_udp, s, m)
 executor.submit(loop_master, m)
