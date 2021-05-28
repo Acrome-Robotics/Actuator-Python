@@ -320,14 +320,12 @@ class Master():
 
 	def send(self, data):
 		if self._serial is not None:
-			with self._serial:
-				self._serial.write(data)
+			self._serial.write(data)
 
 	def receive(self, expected_bytes=0):
 		if self._serial is not None:
-			with self._serial:
-				if self._serial.inWaiting() > expected_bytes:
-					return self._serial.read(self._serial.inWaiting())
+			data = self._serial.read(256)
+			return list(data)
 
 	def AutoScan(self):
 		alive = []
