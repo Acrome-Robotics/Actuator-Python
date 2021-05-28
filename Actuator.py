@@ -240,12 +240,12 @@ class Actuator():
 
 				#Floats
 				if self.Indexes[package[i]][2] == c_float:
-					self.Indexes[package[i]][0].data = float.from_bytes(package[i+1:i+1+self.Indexes[package[i]][1]], 'little')
-					i = i+self.Indexes[package[i]][1]
+					self.Indexes[package[i]][0].data = struct.unpack('<f', bytes(package[i+1:i+1+self.Indexes[package[i]][1]]))[0]
+					i += self.Indexes[package[i]][1]
 				#Integers
 				else:
 					self.Indexes[package[i]][0].data = int.from_bytes(package[i+1:i+1+self.Indexes[package[i]][1]], 'little')
-					i = i+self.Indexes[package[i]][1]
+					i += self.Indexes[package[i]][1]
 
 				i+=1
 
