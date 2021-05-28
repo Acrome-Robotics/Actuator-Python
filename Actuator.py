@@ -377,15 +377,15 @@ def loop_master(master):
 		try:
 			pass
 			data = q.get_nowait()
-			print(data)
 		except Exception:
 			pass
+
 		if data is not None:
 			master.send(data)
 		data = master.receive()
-		if data is not None:
-			for i in data:
-				master.cb.write(i)
+		if len(data) > 0:
+			for i in list(data):
+				master.cb.write(i&0xFF)
 		master.findPackage()
 
 def loop_udp(server, master):
