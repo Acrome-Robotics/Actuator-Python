@@ -169,13 +169,13 @@ class Actuator():
 			if Act.Indexes[param][2] == c_float:
 				updating.extend(struct.pack("!f", Act.Indexes[param][0].data))
 			elif Act.Indexes[param][2] in [c_uint8, c_ubyte, c_char]:
-				updating.extend(struct.pack("!B", Act.Indexes[param][0].data))
+				updating.extend(struct.pack("!B", Act.Indexes[param][0].data & 0xFF))
 			elif Act.Indexes[param][2] == c_uint16:
-				updating.extend(struct.pack("!H", Act.Indexes[param][0].data))
+				updating.extend(struct.pack("!H", Act.Indexes[param][0].data & 0xFFFF))
 			elif Act.Indexes[param][2] == c_uint32:
-				updating.extend(struct.pack("!I", Act.Indexes[param][0].data))
+				updating.extend(struct.pack("!I", Act.Indexes[param][0].data & 0xFFFFFFFF))
 			elif Act.Indexes[param][2] == c_int32:
-				updating.extend(struct.pack("!i", Act.Indexes[param][0].data))
+				updating.extend(struct.pack("!i", Act.Indexes[param][0].data & 0xFFFFFFFF))
 
 		self.packageSize.data = 9 + len(updating)
 		self.command.data = self._commandLUT['Write']
