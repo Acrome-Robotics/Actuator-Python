@@ -420,8 +420,8 @@ def loop_udp(server, master):
 			elif data[1] == 0x77: #DUMP REQ
 				server.send(master.Actuators[data[2]].DumpObjects())
 
-ser = None
-#ser = serial.Serial(port='/ttyACM0', baudrate = 115200, timeout=0.25)
+
+ser = serial.Serial('/dev/ttyACM0', 115200, timeout=0.01)
 s = Server(8000)
 m = Master(4096, ser)
 
