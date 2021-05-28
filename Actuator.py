@@ -299,7 +299,7 @@ class Master():
 								if not self.cb.jump(size):
 									self.cb.read()
 								self.Actuators[package[1]].parse(package)
-								self.Timestamps[package[1]] = int(time.time())
+								self.Timestamps[package[1]] = time.time()
 							else:
 								#Dummy read
 								self.cb.read()
@@ -411,7 +411,7 @@ def loop_udp(server, master):
 			elif data[1] == Actuator._commandLUT['FactoryReset']:
 				q.put(master.Actuators[data[2]].FactoryReset())
 			elif data[1] == 0x44: #TIMESTAMP REQ
-				struct.pack("!B!I", data[2], m.Timestamps[data[2]])
+				struct.pack("!B!f", data[2], m.Timestamps[data[2]])
 			elif data[1] == 0x77: #DUMP REQ
 				server.send(master.Actuators[data[2]].DumpObjects())
 
