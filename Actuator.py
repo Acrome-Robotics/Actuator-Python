@@ -1,3 +1,4 @@
+import sys
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import time
 from ActuatorTypes import *
@@ -422,7 +423,16 @@ def loop_udp(server, master):
 				server.send(master.Actuators[data[2]].DumpObjects())
 
 
-ser = serial.Serial('/dev/ttyACM0', 115200, timeout=0.01)
+try:
+	serial_name = sys.argv[1]
+	serial_baud = sys.argv[2]
+except IndexError:
+	print('Please provide serial port and baudrate in commandline arguments')
+	exit()
+except Exception as exp:
+	raise exp
+
+ser = serial.Serial(serial_name, serial_baud, timeout=0.01)
 s = Server(8000)
 m = Master(4096, ser)
 
