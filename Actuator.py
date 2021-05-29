@@ -324,7 +324,8 @@ class Master():
 
 	def receive(self, expected_bytes=0):
 		if self._serial is not None:
-			data = self._serial.read(256)
+			len = self._serial.inWaiting()
+			data = self._serial.read(len)
 			return list(data)
 
 	def AutoScan(self):
