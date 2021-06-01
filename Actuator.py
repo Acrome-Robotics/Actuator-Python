@@ -210,21 +210,11 @@ class Actuator():
 
 	def DumpObjects(self):
 		obj = bytearray()
-		obj.extend(struct.pack("!B", self.Configuration.data.devID.data))
+		obj.extend(struct.pack("!f", float(self.Configuration.data.devID.data)))
 		st = str()
 		for param in self.Indexes[5:34]:
 			#Add actual value to array
-			if param[2] == c_float:
-				obj.extend(struct.pack("!f", param[0].data))
-			elif param[2] in [c_uint8, c_ubyte, c_char]:
-				obj.extend(struct.pack("!B", param[0].data))
-			elif param[2] == c_uint16:
-				obj.extend(struct.pack("!H", param[0].data))
-			elif param[2] == c_uint32:
-				obj.extend(struct.pack("!I", param[0].data))
-			elif param[2] == c_int32:
-				obj.extend(struct.pack("!i", param[0].data))
-
+			obj.extend(struct.pack("!f", float(param[0].data)))
 		return obj
 
 	def LoadObject(self, data_list):
