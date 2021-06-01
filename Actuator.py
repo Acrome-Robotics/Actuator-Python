@@ -234,7 +234,7 @@ class Actuator():
 	#Parse package which is already checked against CRC and package integrity
 	def parse(self, package):
 		cmds = self.__class__._commandLUT
-
+		self.Telemetry.data.error.data = package[4]
 		if package[3] == cmds['Read']:
 			i = 5
 			while i < (len(package) - 4):
