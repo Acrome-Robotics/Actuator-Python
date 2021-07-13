@@ -218,8 +218,10 @@ class Actuator():
 		return obj
 
 	def LoadObject(self, data_list):
-		for i in len(self.Indexes):
-			self.Indexes[i][0].data = data_list[i]
+		i = 5
+		for var in data_list:
+			self.Indexes[i][0].data = var
+			i+=1
 
 	#Parse package which is already checked against CRC and package integrity
 	def parse(self, package):
@@ -399,7 +401,7 @@ def loop_udp(server, master):
 			elif data[1] == Actuator._commandLUT['Read']:
 				q.put(master.Actuators[data[2]].Read(data[3:]))
 			elif data[1] == Actuator._commandLUT['Write']:
-				data_list = struct.unpack('!B!I!B!B!B!B!B!H!H!H!H!f!f!f!f!f!f!f!f!f!f!f!f!i!I!I!I!f!f!f', data[3:])
+				data_list = struct.unpack('IBBBBBHHHHffffffffffffiIIIfff', bytes(data[3:]))
 				master.Actuators[data[2]].LoadObject(data_list)
 			elif data[1] == Actuator._commandLUT['ROMWrite']:
 				q.put(master.Actuators[data[2]].ROMWrite())
