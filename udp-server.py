@@ -4,6 +4,7 @@ import struct
 import socket
 import concurrent.futures as cf
 import queue
+from actuator_types import *
 
 q = queue.Queue()
 
