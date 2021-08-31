@@ -49,3 +49,45 @@ class Control():
 		self.derivativeGain = var(0)
 		self.setpoint = var(0)
 		self.feedForward = var(0)
+
+class CircularBuffer():
+	def __init__(self, size):
+		self.buffer = [0] * size
+		self.writePos = 0
+		self.readPos = 0
+		self.size = size
+
+	def write(self, data):
+		if not self._buffer_length() == self.size - 1:
+			self.buffer[self.writePos] = int(data)
+			self.writePos += 1
+			if self.writePos > self.size-1:
+				self.writePos = 0
+			return True
+		else:
+			return False
+
+	def read(self):
+		if self._buffer_length() != 0:
+			readPos = self.readPos
+			self.readPos = ((self.readPos + 1) & ( self.size - 1 ))
+			return self.buffer[readPos]
+		else:
+			return None
+
+	def peek(self, index_offset=0):
+		return self.buffer[(self.readPos + index_offset) & (self.size - 1)]
+
+	def jump(self, offset):
+		if offset <= self.availableData():
+			self.readPos = (self.readPos + offset) & (self.size - 1)
+			return True
+		else:
+			return False
+
+
+	def _buffer_length(self):
+		return (self.writePos - self.readPos) & (self.size - 1)
+
+	def availableData(self):
+		return self._buffer_length()
