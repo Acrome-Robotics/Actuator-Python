@@ -198,12 +198,12 @@ class Master():
 		self.Timestamps = [0] * 255
 		self._serial = ser = serial.Serial(portname, baudrate, timeout=master_timeout)
 
-	def addActuator(self, ID):
+	def addActuator(self, ID) -> None:
 		if ID not in self.ActList:
 			self.ActList.append(ID)
 			self.Actuators[ID] = Actuator(ID)
 
-	def findPackage(self):
+	def findPackage(self) -> None:
 
 		#Start parsing only if there is enough data available to contain a valid package
 		while self.cb.availableData() >= 9:
@@ -248,21 +248,22 @@ class Master():
 				#Dummy read
 				self.cb.read()
 
-	def removeActuator(self, ID):
+	def removeActuator(self, ID) -> None:
 		self.ActList.remove(ID)
 		self.Actuators[ID] = Actuator(255)
 
-	def send(self, data):
+	def send(self, data) -> None:
 		if self._serial is not None:
 			self._serial.write(data)
 
-	def receive(self, expected_bytes=0):
+	def receive(self) -> list:
 		if self._serial is not None:
 			len = self._serial.inWaiting()
 			data = self._serial.read(len)
 			return list(data)
 
 	def AutoScan(self):
+	def AutoScan(self) -> None:
 		alive = []
 		for i in range(255):
 			self.addActuator(i)
