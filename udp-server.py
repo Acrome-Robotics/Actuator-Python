@@ -12,7 +12,7 @@ class Actuator(actuator.Actuator):
 		obj = bytearray()
 		obj.extend(struct.pack("!f", float(self.Configuration.data.devID.data)))
 		st = str()
-		for param in self.Indexes[5:34]:
+		for param in self.Indexes[5:-1]:
 			#Add actual value to array
 			obj.extend(struct.pack("!f", float(param[0].data)))
 		return obj
