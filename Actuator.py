@@ -191,12 +191,12 @@ class Actuator():
 class Master():
 	_min_size = 9
 	_max_size = 243
-	def __init__(self, size, serial):
+	def __init__(self, size, portname, baudrate=115200, master_timeout=0.01) -> None:
 		self.cb = CircularBuffer(size)
 		self.ActList = []
 		self.Actuators = [Actuator(255)] * 255
 		self.Timestamps = [0] * 255
-		self._serial = serial
+		self._serial = ser = serial.Serial(portname, baudrate, timeout=master_timeout)
 
 	def addActuator(self, ID):
 		if ID not in self.ActList:
