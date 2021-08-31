@@ -50,6 +50,46 @@ class Control():
 		self.setpoint = var(0)
 		self.feedForward = var(0)
 
+class Parameters():
+	deviceId = 1
+	error = 4
+	baudrate = 5
+	operationMode = 6
+	tempLimit = 7
+	PIOMode = 8
+	torqueEnable = 9
+	RGB = 10
+	minVoltage = 11
+	maxVoltage = 12
+	torqueLimit = 13
+	velocityLimit = 14
+	posFeedForward = 15
+	velFeedForward = 16
+	torqueFeedForward = 17
+	posPGain = 18
+	posIGain = 19
+	posDGain = 20
+	velPGain = 21
+	velIGain = 22
+	velDGain = 23
+	torquePGain = 24
+	torqueIGain = 25
+	torqueDGain = 26
+	homeOffset = 27
+	minPosition = 28
+	maxPosition = 29
+	posSetpoint = 30
+	torqueSetpoint = 31
+	velSetpoint = 32
+	presentPos = 33
+	presentVel = 34
+	presentVoltage = 35
+	presentTemp = 36
+	presentCurrent = 37
+	ModelNum = 38
+	FirmwareVersion = 39
+	errorCount = 40
+
 class CircularBuffer():
 	def __init__(self, size):
 		self.buffer = [0] * size
