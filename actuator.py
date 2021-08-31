@@ -33,7 +33,7 @@ class Actuator():
 			[(self.Configuration.data.baudRate), 4, c_uint32],
 			[(self.Configuration.data.operationMode), 1, c_uint8],
 			[(self.Limits.data.temperatureLimit),1, c_uint8],
-			[(self.ExternalPort.data.portMode), 1, c_uint8],
+			[(self.ExternalPort.data.portMode), 5, c_uint8],
 			[(self.Configuration.data.torqueEnable), 1, c_uint8],
 			[(self.Indicators.data.RGB), 1, c_uint8],
 			[(self.Limits.data.minVoltage), 2, c_uint16],
@@ -55,7 +55,7 @@ class Actuator():
 			[(self.Limits.data.homeOffset), 4, c_int32],
 			[(self.Limits.data.minPosition), 4, c_uint32],
 			[(self.Limits.data.maxPosition), 4, c_uint32],
-			[(self.ExternalPort.data.portData), 4, c_uint32],
+			[(self.ExternalPort.data.portData), 10, c_uint32],
 			[(self.PositionControl.data.setpoint), 4, c_float],
 			[(self.TorqueControl.data.setpoint), 4, c_float],
 			[(self.VelocityControl.data.setpoint), 4, c_float],
@@ -126,9 +126,17 @@ class Actuator():
 			if Act.Indexes[param][2] == c_float:
 				updating.extend(struct.pack("<f", Act.Indexes[param][0].data))
 			elif Act.Indexes[param][2] in [c_uint8, c_ubyte, c_char]:
-				updating.extend(struct.pack("<B", Act.Indexes[param][0].data & 0xFF))
+				if isinstance(Act.Indexes[param][0].data, list):
+					for data in Act.Indexes[param][0].data:
+						updating.extend(struct.pack("<B", data & 0xFF))
+				else:
+					updating.extend(struct.pack("<B", Act.Indexes[param][0].data & 0xFF))
 			elif Act.Indexes[param][2] == c_uint16:
-				updating.extend(struct.pack("<H", Act.Indexes[param][0].data & 0xFFFF))
+				if isinstance(Act.Indexes[param][0].data, list):
+					for data in list(Act.Indexes[param][0].data):
+						updating.extend(struct.pack("<H", data & 0xFFFF))
+				else:
+					updating.extend(struct.pack("<H", Act.Indexes[param][0].data & 0xFFFF))
 			elif Act.Indexes[param][2] == c_uint32:
 				updating.extend(struct.pack("<I", Act.Indexes[param][0].data & 0xFFFFFFFF))
 			elif Act.Indexes[param][2] == c_int32:
