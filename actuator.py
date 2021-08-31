@@ -1,6 +1,6 @@
-from crccheck.crc import Crc32Mpeg2 as CRC32
 import time
-from ActuatorTypes import *
+from crccheck.crc import Crc32Mpeg2 as CRC32
+from actuator_types import *
 from ctypes import *
 import struct
 import serial
