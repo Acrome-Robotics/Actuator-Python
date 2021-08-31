@@ -32,10 +32,23 @@ class Limits():
 		self.maxPosition = var(0)
 		self.homeOffset = var(0)
 
-class ExternalPort():
+class PIOs():
+	_pio_count = 5
+	Input = 0
+	Output = 1
+	PWM = 2
+	Servo = 3
+	DAC = 4
+	Task = 5
+	TaskN = 6
+
+	class Tasks:
+		NegativeLS = 1
+		PositiveLS = 1
+
 	def __init__(self):
-		self.portMode = var(0)
-		self.portData = var(0)
+		self.portMode = [var(0) for _ in range(PIOs._pio_count)]
+		self.portData = [var(0) for _ in range(PIOs._pio_count)]
 
 class Indicators():
 	def __init__(self):
@@ -78,17 +91,18 @@ class Parameters():
 	homeOffset = 27
 	minPosition = 28
 	maxPosition = 29
-	posSetpoint = 30
-	torqueSetpoint = 31
-	velSetpoint = 32
-	presentPos = 33
-	presentVel = 34
-	presentVoltage = 35
-	presentTemp = 36
-	presentCurrent = 37
-	ModelNum = 38
-	FirmwareVersion = 39
-	errorCount = 40
+	PIOData = 30
+	posSetpoint = 31
+	torqueSetpoint = 32
+	velSetpoint = 33
+	presentPos = 34
+	presentVel = 35
+	presentVoltage = 36
+	presentTemp = 37
+	presentCurrent = 38
+	ModelNum = 39
+	FirmwareVersion = 40
+	errorCount = 41
 
 class CircularBuffer():
 	def __init__(self, size):

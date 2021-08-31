@@ -19,8 +19,15 @@ class Actuator(actuator.Actuator):
 
 	def LoadObject(self, data_list):
 		i = 5
-		for var in data_list:
-			self.Indexes[i][0].data = var
+		j = 0
+		while j < len(data_list):
+			if i == Parameters.PIOMode or i == Parameters.PIOData:
+				for k in range(PIOs._pio_count):
+					self.Indexes[i][0][k].data = data_list[j]
+					j += 1
+			else:
+				self.Indexes[i][0].data = data_list[j]
+
 			i+=1
 
 class Server():
@@ -83,7 +90,7 @@ def loop_udp(server, master):
 			elif data[1] == Actuator._commandLUT['Read']:
 				q.put(master.Actuators[data[2]].Read(data[3:]))
 			elif data[1] == Actuator._commandLUT['Write']:
-				data_list = struct.unpack('!IBBBBBHHHHffffffffffffiIIIfff', bytes(data[3:]))
+				data_list = struct.unpack('!IBBBBBBBBBHHHHffffffffffffiIIHHHHHfff', bytes(data[3:]))
 				master.Actuators[data[2]].LoadObject(data_list)
 			elif data[1] == Actuator._commandLUT['ROMWrite']:
 				q.put(master.Actuators[data[2]].ROMWrite())

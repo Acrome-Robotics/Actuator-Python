@@ -18,7 +18,7 @@ class Actuator():
 		self.PositionControl = var(Control())
 		self.VelocityControl = var(Control())
 		self.TorqueControl = var(Control())
-		self.ExternalPort = var(ExternalPort())
+		self.PIOs = var(PIOs())
 		self.Indicators = var(Indicators())
 		self.CRC = var(0)
 
@@ -33,7 +33,7 @@ class Actuator():
 			[(self.Configuration.data.baudRate), 4, c_uint32],
 			[(self.Configuration.data.operationMode), 1, c_uint8],
 			[(self.Limits.data.temperatureLimit),1, c_uint8],
-			[(self.ExternalPort.data.portMode), 5, c_uint8],
+			[(self.PIOs.data.portMode), 5, c_uint8],
 			[(self.Configuration.data.torqueEnable), 1, c_uint8],
 			[(self.Indicators.data.RGB), 1, c_uint8],
 			[(self.Limits.data.minVoltage), 2, c_uint16],
@@ -55,7 +55,7 @@ class Actuator():
 			[(self.Limits.data.homeOffset), 4, c_int32],
 			[(self.Limits.data.minPosition), 4, c_uint32],
 			[(self.Limits.data.maxPosition), 4, c_uint32],
-			[(self.ExternalPort.data.portData), 10, c_uint32],
+			[(self.PIOs.data.portData), 10, c_uint32],
 			[(self.PositionControl.data.setpoint), 4, c_float],
 			[(self.TorqueControl.data.setpoint), 4, c_float],
 			[(self.VelocityControl.data.setpoint), 4, c_float],
