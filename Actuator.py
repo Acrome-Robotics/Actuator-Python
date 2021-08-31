@@ -262,7 +262,10 @@ class Master():
 			data = self._serial.read(len)
 			return list(data)
 
-	def AutoScan(self):
+	def pass2buffer(self, data):
+		for b in data:
+			self.cb.write(b)
+
 	def AutoScan(self) -> None:
 		alive = []
 		for i in range(255):
@@ -271,8 +274,8 @@ class Master():
 			self.send(self.Actuators[i].Ping())
 			time.sleep(0.003)
 			recv = self.receive()
-			for b in recv:
-				self.cb.write(b)
+			self.pass2buffer(recv)
+
 
 		self.findPackage()
 
