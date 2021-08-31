@@ -2,7 +2,7 @@
 Actuator Python SDK allows you to manage multiple Actuator boards with Python3. This SDK handles protocol implementation of the Actuator Boards alongside a Master interface that holds multiple Actuators and controls serial port for best performance. SDK developed to enable async communication with Actuators.
 
 # Classes and Methods
-The SDK contains multiple classes not only for end-user but for internal use too. Classes and methods of these classes will not be covered in this documentation.
+The SDK contains multiple classes not only for end-user but for internal use too. This type of classes and methods will not be covered in this documentation.
 ## Actuator Class
 
 ### `Variables`
