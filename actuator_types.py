@@ -43,7 +43,7 @@ class PIOs():
 	TaskN = 6
 
 	class Tasks:
-		NegativeLS = 1
+		NegativeLS = 0
 		PositiveLS = 1
 
 	def __init__(self):
