@@ -126,7 +126,7 @@ user_defined_serial_write_function(reboot_data)
 **Parameters:** None
 
 **Returns:**
-list that contains reboot command package.
+list that contains factory reset command package.
 
 This method generates a factory reset command package to take the Actuator back to the factory defaults.
 
@@ -140,9 +140,9 @@ user_defined_serial_write_function(fr_data)
 **Parameters:** None
 
 **Returns:**
-list that contains reboot command package.
+list that contains ROM write command package.
 
-This method generates a ROM Write command package to save parameters to the non-volatile memory.
+This method generates a ROM write command package to save parameters to the non-volatile memory.
 
 ```
 romwrite_data = myActuator.ROMWrite()
