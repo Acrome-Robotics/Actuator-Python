@@ -106,15 +106,19 @@ class Actuator():
 
 		return data
 
-	def Write(self, Act, param_list=[]):
+	def Write(self, Act, param_list=None):
 		params = []
-		#Writeable range
-		for i in range(5, 34):
-			if self.Indexes[i][0].data != Act.Indexes[i][0].data:
-				if not isinstance(param_list, None):
-					if i in param_list:
-						params.append(i)
-				else:
+
+		if not isinstance(param_list, None):
+			if not isinstance(param_list, list):
+				param_list = [param_list]
+			for param in param_list:
+				if self.Indexes[param][0].data != Act.Indexes[param][0].data:
+					params.append(param)
+		else:
+			#Writeable range
+			for i in range(5, 34):
+				if self.Indexes[i][0].data != Act.Indexes[i][0].data:
 					params.append(i)
 
 		updating = bytearray()
