@@ -6,7 +6,7 @@ import struct
 import serial
 
 class Actuator():
-
+	BATCH_ID = 0xFF
 	_commandLUT = {'Ping':0, 'Write':1, 'Read':2, 'ROMWrite':3, 'Reboot':5, 'FactoryReset':0x17, 'ErrorClear':0x18, 'RQ':1<<7}
 	def __init__(self, ID):
 		self.header = var(0x55)

@@ -104,6 +104,20 @@ class Parameters():
 	FirmwareVersion = 40
 	errorCount = 41
 
+class OperationModes:
+	PositionControl = 0
+	VelocityControl = 1
+	TorqueControl = 2
+	AnalogInput = 1 << 7
+
+class Errors:
+	NoError = 0
+	InputVoltageError = 1
+	OverheatError = 1 << 1
+	OverloadError = 1 << 2
+	EncoderError = 1 << 3
+	CommunicationError = 1 << 4
+	FlashError = 1 << 5
 class CircularBuffer():
 	def __init__(self, size):
 		self.buffer = [0] * size
