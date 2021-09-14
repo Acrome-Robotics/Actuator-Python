@@ -91,8 +91,10 @@ def loop_udp(server, master):
 			elif data[1] == Actuator._commandLUT['Read']:
 				q.put(master.Actuators[data[2]].Read(data[3:]))
 			elif data[1] == Actuator._commandLUT['Write']:
+				dummy_act = Actuator(data[2])
 				data_list = struct.unpack('!IBBBBBBBBBHHHHffffffffffffiIIHHHHHfff', bytes(data[3:]))
-				master.Actuators[data[2]].LoadObject(data_list)
+				dummy_act.LoadObject(data_list)
+				q.put(master.Actuators[data[2]].Write(dummy_act))
 			elif data[1] == Actuator._commandLUT['ROMWrite']:
 				q.put(master.Actuators[data[2]].ROMWrite())
 			elif data[1] == Actuator._commandLUT['Reboot']:
