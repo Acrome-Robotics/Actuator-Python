@@ -5,6 +5,7 @@ import socket
 import concurrent.futures as cf
 import queue
 from actuator_types import *
+import traceback
 
 q = queue.Queue()
 
@@ -118,6 +119,17 @@ s = Server(8000)
 m = actuator.Master(4096, serial_name, serial_baud)
 
 m.AutoScan()
-executor = cf.ThreadPoolExecutor(max_workers=2)
-executor.submit(loop_udp, s, m)
-executor.submit(loop_master, m)
+
+with cf.ThreadPoolExecutor(max_workers=2) as executor:
+	s_exec = executor.submit(loop_udp, s, m)
+	m_exec = executor.submit(loop_master, m)
+
+	try:
+		data = s_exec.result()
+	except Exception:
+		print('UDP server generated an exception: %s' % (traceback.format_exc()))
+
+	try:
+		data = m_exec.result()
+	except Exception:
+		print('Master daemon generated an exception: %s' % (traceback.format_exc()))
