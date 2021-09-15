@@ -9,28 +9,31 @@ import traceback
 
 q = queue.Queue()
 
-class Actuator(actuator.Actuator):
-	def DumpObjects(self):
-		obj = bytearray()
-		obj.extend(struct.pack("!f", float(self.Configuration.data.devID.data)))
-		st = str()
-		for param in self.Indexes[5:-1]:
-			#Add actual value to array
+
+def DumpObjects(Actuator):
+	obj = bytearray()
+	obj.extend(struct.pack("!f", float(Actuator.Configuration.data.devID.data)))
+	st = str()
+	for param in Actuator.Indexes[5:-1]:
+		#Add actual value to array
+		if isinstance(param[0].data, list):
+			for data in param[0].data:
+				obj.extend(struct.pack("!f", float(data.data)))
+		else:
 			obj.extend(struct.pack("!f", float(param[0].data)))
-		return obj
+	return obj
 
-	def LoadObject(self, data_list):
-		i = 5
-		j = 0
-		while j < len(data_list):
-			if i == Parameters.PIOMode or i == Parameters.PIOData:
-				for k in range(PIOs._pio_count):
-					self.Indexes[i][0][k].data = data_list[j]
-					j += 1
-			else:
-				self.Indexes[i][0].data = data_list[j]
-
-			i+=1
+def LoadObject(Actuator, data_list):
+	i = 5
+	j = 0
+	while j < len(data_list):
+		if i == Parameters.PIOMode or i == Parameters.PIOData:
+			for k in range(PIOs._pio_count):
+				Actuator.Indexes[i][0][k].data = data_list[j]
+				j += 1
+		else:
+			Actuator.Indexes[i][0].data = data_list[j]
+		i+=1
 
 class Server():
 	IP = '127.0.0.1'
@@ -87,25 +90,25 @@ def loop_udp(server, master):
 		elif data[0] == 0x66: #LIST
 			server.send(server.ReturnList(master))
 		elif data[0] == 0x77: #UPDATE
-			if data[1] == Actuator._commandLUT['Ping']:
+			if data[1] == actuator.Actuator._commandLUT['Ping']:
 				q.put(master.Actuators[data[2]].Ping())
-			elif data[1] == Actuator._commandLUT['Read']:
-				q.put(master.Actuators[data[2]].Read(data[3:]))
-			elif data[1] == Actuator._commandLUT['Write']:
-				dummy_act = Actuator(data[2])
+			elif data[1] == actuator.Actuator._commandLUT['Read']:
+				q.put(master.Actuators[data[2]].Read(data[3:], full=True))
+			elif data[1] == actuator.Actuator._commandLUT['Write']:
+				dummy_act = actuator.Actuator(data[2])
 				data_list = struct.unpack('!IBBBBBBBBBHHHHffffffffffffiIIHHHHHfff', bytes(data[3:]))
-				dummy_act.LoadObject(data_list)
+				LoadObject(dummy_act, data_list)
 				q.put(master.Actuators[data[2]].Write(dummy_act))
-			elif data[1] == Actuator._commandLUT['ROMWrite']:
+			elif data[1] == actuator.Actuator._commandLUT['ROMWrite']:
 				q.put(master.Actuators[data[2]].ROMWrite())
-			elif data[1] == Actuator._commandLUT['Reboot']:
+			elif data[1] == actuator.Actuator._commandLUT['Reboot']:
 				q.put(master.Actuators[data[2]].Reboot())
-			elif data[1] == Actuator._commandLUT['FactoryReset']:
+			elif data[1] == actuator.Actuator._commandLUT['FactoryReset']:
 				q.put(master.Actuators[data[2]].FactoryReset())
 			elif data[1] == 0x44: #TIMESTAMP REQ
 				struct.pack("!f!f", float(data[2]), m.Timestamps[data[2]])
 			elif data[1] == 0x77: #DUMP REQ
-				server.send(master.Actuators[data[2]].DumpObjects())
+				server.send(DumpObjects(master.Actuators[data[2]]))
 
 try:
 	serial_name = sys.argv[1]
