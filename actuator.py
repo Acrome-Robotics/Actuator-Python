@@ -55,7 +55,7 @@ class Actuator():
 			[(self.Limits.data.homeOffset), 4, c_int32],
 			[(self.Limits.data.minPosition), 4, c_uint32],
 			[(self.Limits.data.maxPosition), 4, c_uint32],
-			[(self.PIOs.data.portData), 10, c_uint32],
+			[(self.PIOs.data.portData), 10, c_uint16],
 			[(self.PositionControl.data.setpoint), 4, c_float],
 			[(self.TorqueControl.data.setpoint), 4, c_float],
 			[(self.VelocityControl.data.setpoint), 4, c_float],
@@ -190,7 +190,12 @@ class Actuator():
 					i += self.Indexes[package[i]][1]
 				#Integers
 				else:
-					self.Indexes[package[i]][0].data = int.from_bytes(package[i+1:i+1+self.Indexes[package[i]][1]], 'little')
+					if i == Parameters.PIOData:
+						for var, index in zip(self.Indexes[package[i]][0].data, range(len(self.Indexes[package[i]][0].data))):
+							var.data = int.from_bytes(package[i+1+index:i+1+sizeof(self.Indexes[package[i]][2])+index], 'little')
+					else:
+						self.Indexes[package[i]][0].data = int.from_bytes(package[i+1:i+1+self.Indexes[package[i]][1]], 'little')
+
 					i += self.Indexes[package[i]][1]
 
 				i+=1
