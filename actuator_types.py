@@ -47,8 +47,8 @@ class PIOs():
 		PositiveLS = 1
 
 	def __init__(self):
-		self.portMode = [var(0) for _ in range(PIOs._pio_count)]
-		self.portData = [var(0) for _ in range(PIOs._pio_count)]
+		self.portMode = var([var(0) for _ in range(PIOs._pio_count)])
+		self.portData = var([var(0) for _ in range(PIOs._pio_count)])
 
 class Indicators():
 	def __init__(self):
