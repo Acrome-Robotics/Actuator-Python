@@ -29,7 +29,7 @@ def LoadObject(Actuator, data_list):
 	while j < len(data_list):
 		if i == Parameters.PIOMode or i == Parameters.PIOData:
 			for k in range(PIOs._pio_count):
-				Actuator.Indexes[i][0][k].data = data_list[j]
+				Actuator.Indexes[i][0].data[k].data = data_list[j]
 				j += 1
 		else:
 			Actuator.Indexes[i][0].data = data_list[j]
