@@ -109,7 +109,7 @@ class Actuator():
 	def Write(self, Act, param_list=None):
 		params = []
 
-		if not isinstance(param_list, None):
+		if param_list is not None:
 			if not isinstance(param_list, list):
 				param_list = [param_list]
 			for param in param_list:
@@ -132,13 +132,13 @@ class Actuator():
 			elif Act.Indexes[param][2] in [c_uint8, c_ubyte, c_char]:
 				if isinstance(Act.Indexes[param][0].data, list):
 					for data in Act.Indexes[param][0].data:
-						updating.extend(struct.pack("<B", data & 0xFF))
+						updating.extend(struct.pack("<B", data.data & 0xFF))
 				else:
 					updating.extend(struct.pack("<B", Act.Indexes[param][0].data & 0xFF))
 			elif Act.Indexes[param][2] == c_uint16:
 				if isinstance(Act.Indexes[param][0].data, list):
 					for data in list(Act.Indexes[param][0].data):
-						updating.extend(struct.pack("<H", data & 0xFFFF))
+						updating.extend(struct.pack("<H", data.data & 0xFFFF))
 				else:
 					updating.extend(struct.pack("<H", Act.Indexes[param][0].data & 0xFFFF))
 			elif Act.Indexes[param][2] == c_uint32:
@@ -190,8 +190,8 @@ class Actuator():
 					i += self.Indexes[package[i]][1]
 				#Integers
 				else:
-					if i == Parameters.PIOData:
-						for var, index in zip(self.Indexes[package[i]][0].data, range(len(self.Indexes[package[i]][0].data))):
+					if i == Parameters.PIOData or i == Parameters.PIOMode:
+						for var, index in zip(self.Indexes[package[i]].data, range(PIOs._pio_count)):
 							var.data = int.from_bytes(package[i+1+index:i+1+sizeof(self.Indexes[package[i]][2])+index], 'little')
 					else:
 						self.Indexes[package[i]][0].data = int.from_bytes(package[i+1:i+1+self.Indexes[package[i]][1]], 'little')
