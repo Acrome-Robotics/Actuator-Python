@@ -29,7 +29,7 @@ def LoadObject(Actuator, data_list):
 	while i <= Parameters.velSetpoint: #Iterate until last writable parameters
 		if i == Parameters.PIOMode or i == Parameters.PIOData:
 			for k in range(PIOs._pio_count):
-				Actuator.Indexes[i].data[k].data = data_list[j]
+				Actuator.Indexes[i][0].data[k].data = data_list[j]
 				j += 1
 			i += 1
 		else:

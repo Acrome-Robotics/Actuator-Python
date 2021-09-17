@@ -109,7 +109,7 @@ class Actuator():
 	def Write(self, Act, param_list=None):
 		params = []
 
-		if not isinstance(param_list, None):
+		if param_list is not None:
 			if not isinstance(param_list, list):
 				param_list = [param_list]
 			for param in param_list:
@@ -132,13 +132,13 @@ class Actuator():
 			elif Act.Indexes[param][2] in [c_uint8, c_ubyte, c_char]:
 				if isinstance(Act.Indexes[param][0].data, list):
 					for data in Act.Indexes[param][0].data:
-						updating.extend(struct.pack("<B", data & 0xFF))
+						updating.extend(struct.pack("<B", data.data & 0xFF))
 				else:
 					updating.extend(struct.pack("<B", Act.Indexes[param][0].data & 0xFF))
 			elif Act.Indexes[param][2] == c_uint16:
 				if isinstance(Act.Indexes[param][0].data, list):
 					for data in list(Act.Indexes[param][0].data):
-						updating.extend(struct.pack("<H", data & 0xFFFF))
+						updating.extend(struct.pack("<H", data.data & 0xFFFF))
 				else:
 					updating.extend(struct.pack("<H", Act.Indexes[param][0].data & 0xFFFF))
 			elif Act.Indexes[param][2] == c_uint32:
