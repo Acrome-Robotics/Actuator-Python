@@ -278,6 +278,7 @@ class Master():
 			len = self._serial.inWaiting()
 			data = self._serial.read(len)
 			return list(data)
+		return []
 
 	def pass2buffer(self, data):
 		for b in data:
