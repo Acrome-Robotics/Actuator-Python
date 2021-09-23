@@ -190,8 +190,8 @@ class Actuator():
 					i += self.Indexes[package[i]][1]
 				#Integers
 				else:
-					if i == Parameters.PIOData or i == Parameters.PIOMode:
-						for var, index in zip(self.Indexes[package[i]].data, range(PIOs._pio_count)):
+					if package[i] == Parameters.PIOData or package[i] == Parameters.PIOMode:
+						for var, index in zip(self.Indexes[package[i]][0].data, range(PIOs._pio_count)):
 							var.data = int.from_bytes(package[i+1+index:i+1+sizeof(self.Indexes[package[i]][2])+index], 'little')
 					else:
 						self.Indexes[package[i]][0].data = int.from_bytes(package[i+1:i+1+self.Indexes[package[i]][1]], 'little')
@@ -278,6 +278,7 @@ class Master():
 			len = self._serial.inWaiting()
 			data = self._serial.read(len)
 			return list(data)
+		return []
 
 	def pass2buffer(self, data):
 		for b in data:

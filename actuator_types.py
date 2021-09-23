@@ -128,15 +128,13 @@ class CircularBuffer():
 	def write(self, data):
 		if not self._buffer_length() == self.size - 1:
 			self.buffer[self.writePos] = int(data)
-			self.writePos += 1
-			if self.writePos > self.size-1:
-				self.writePos = 0
+			self.writePos = ((self.writePos + 1) & (self.size - 1))
 			return True
 		else:
 			return False
 
 	def read(self):
-		if self._buffer_length() != 0:
+		if self._buffer_length() > 0:
 			readPos = self.readPos
 			self.readPos = ((self.readPos + 1) & ( self.size - 1 ))
 			return self.buffer[readPos]
