@@ -180,10 +180,15 @@ class Actuator():
 	def parse(self, package):
 		cmds = self.__class__._commandLUT
 		self.Telemetry.data.error.data = package[4]
+		
 		if package[3] == cmds['Read']:
 			i = 5
 			while i < (len(package) - 4):
 
+				#Check if index is in parameters range
+				if package[i] > Parameters.errorCount:
+					return
+				
 				#Floats
 				if self.Indexes[package[i]][2] == c_float:
 					self.Indexes[package[i]][0].data = struct.unpack('<f', bytes(package[i+1:i+1+self.Indexes[package[i]][1]]))[0]
@@ -303,3 +308,14 @@ class Master():
 
 		self.ActList = alive
 		return alive
+
+#import random 
+#m = Master(4096, '/dev/ttyACM2')
+#print(m.AutoScan())
+#for i in m.ActList:
+#	new_id = random.randint(0,254)
+#	dummy = Actuator(new_id)
+#	m.send(m.Actuators[i].Write(dummy, [Parameters.deviceId]))
+#	m.send(m.Actuators[new_id].ROMWrite())
+#	m.send(m.Actuators[new_id].Reboot())
+#print(m.AutoScan())
