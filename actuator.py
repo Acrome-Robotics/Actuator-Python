@@ -7,6 +7,7 @@ import serial
 
 class Actuator():
 	BATCH_ID = 0xFF
+	HEADER = 0x55
 	_commandLUT = {'Ping':0, 'Write':1, 'Read':2, 'ROMWrite':3, 'Reboot':5, 'FactoryReset':0x17, 'ErrorClear':0x18, 'RQ':1<<7}
 	def __init__(self, ID):
 		self.header = var(0x55)
@@ -71,7 +72,7 @@ class Actuator():
 		]
 
 	def __populate_header(self):
-		return self.header.data.to_bytes(1,'little') +\
+		return self.__class__.HEADER.to_bytes(1,'little') +\
 			self.Configuration.data.devID.data.to_bytes(1,'little') +\
 			self.packageSize.data.to_bytes(1,'little') +\
 			self.command.data.to_bytes(1,'little') +\
