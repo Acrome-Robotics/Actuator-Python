@@ -108,7 +108,7 @@ def loop_udp(server, master):
 			elif data[1] == actuator.Actuator._commandLUT['FactoryReset']:
 				q.put(master.Actuators[data[2]].FactoryReset())
 			elif data[1] == 0x44: #TIMESTAMP REQ
-				struct.pack("!ff", float(data[2]), m.Timestamps[data[2]])
+				server.send(struct.pack("!ff", float(data[2]), m.Timestamps[data[2]]))
 			elif data[1] == 0x77: #DUMP REQ
 				server.send(DumpObjects(master.Actuators[data[2]]))
 
