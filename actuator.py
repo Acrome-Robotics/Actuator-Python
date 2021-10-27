@@ -279,6 +279,9 @@ class Master():
 
 	def send(self, data) -> None:
 		if self._serial is not None:
+			global i
+			print(i, list(data))
+			i += 1
 			self._serial.write(data)
 
 	def receive(self) -> list:
