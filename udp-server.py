@@ -59,7 +59,7 @@ class Server():
 			self.socket.sendto(data, self.client)
 
 	def ReturnActuator(self, Actuator):
-		data = b'\x88' + Actuator.DumpObjects() #DUMP ACTUATOR
+		data = b'\x88' + DumpObjects(Actuator) #DUMP ACTUATOR
 		return data
 
 	def ReturnList(self, master):
