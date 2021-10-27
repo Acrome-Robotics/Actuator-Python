@@ -10,7 +10,7 @@ import traceback
 q = queue.Queue()
 
 
-def DumpObjects(Actuator):
+def DumpObjects(Actuator: actuator.Actuator):
 	obj = bytearray()
 	obj.extend(struct.pack("!f", float(Actuator.Configuration.data.devID.data)))
 	st = str()
@@ -23,7 +23,7 @@ def DumpObjects(Actuator):
 			obj.extend(struct.pack("!f", float(param[0].data)))
 	return obj
 
-def LoadObject(Actuator, data_list):
+def LoadObject(Actuator: actuator.Actuator, data_list):
 	i = 5
 	j = 0
 	while i <= Parameters.velSetpoint: #Iterate until last writable parameters
@@ -58,15 +58,15 @@ class Server():
 		if self.client is not None:
 			self.socket.sendto(data, self.client)
 
-	def ReturnActuator(self, Actuator):
+	def ReturnActuator(self, Actuator: actuator.Actuator):
 		data = b'\x88' + DumpObjects(Actuator) #DUMP ACTUATOR
 		return data
 
-	def ReturnList(self, master):
+	def ReturnList(self, master: actuator.Master):
 		data = b'\x99' + bytearray(master.ActList) #LIST ACTUATORS
 		return data
 
-def loop_master(master):
+def loop_master(master: actuator.Master):
 	while True:
 		data = None
 		try:
@@ -83,7 +83,7 @@ def loop_master(master):
 				master.cb.write(i&0xFF)
 		master.findPackage()
 
-def loop_udp(server, master):
+def loop_udp(server:Server, master: actuator.Master):
 	while True:
 		data, client = server.receive()
 		data = list(data)
