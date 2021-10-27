@@ -292,7 +292,7 @@ class Master():
 		for b in data:
 			self.cb.write(b)
 
-	def AutoScan(self) -> None:
+	def AutoScan(self) -> list:
 		alive = []
 		for i in range(255):
 			self.addActuator(i)
