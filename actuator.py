@@ -315,13 +315,4 @@ class Master():
 		self.ActList = alive
 		return alive
 
-#import random 
-#m = Master(4096, '/dev/ttyACM2')
-#print(m.AutoScan())
-#for i in m.ActList:
-#	new_id = random.randint(0,254)
-#	dummy = Actuator(new_id)
-#	m.send(m.Actuators[i].Write(dummy, [Parameters.deviceId]))
-#	m.send(m.Actuators[new_id].ROMWrite())
-#	m.send(m.Actuators[new_id].Reboot())
-#print(m.AutoScan())
+
