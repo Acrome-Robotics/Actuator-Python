@@ -21,7 +21,6 @@ class Actuator():
 		self.PositionControl = var(Control())
 		self.VelocityControl = var(Control())
 		self.TorqueControl = var(Control())
-		self.PIOs = var(PIOs())
 		self.Indicators = var(Indicators())
 		self.CRC = var(0)
 
@@ -36,7 +35,6 @@ class Actuator():
 			[(self.Configuration.data.baudRate), 4, c_uint32],
 			[(self.Configuration.data.operationMode), 1, c_uint8],
 			[(self.Limits.data.temperatureLimit),1, c_uint8],
-			[(self.PIOs.data.portMode), 5, c_uint8],
 			[(self.Configuration.data.torqueEnable), 1, c_uint8],
 			[(self.Indicators.data.RGB), 1, c_uint8],
 			[(self.Limits.data.minVoltage), 2, c_uint16],
@@ -58,7 +56,6 @@ class Actuator():
 			[(self.Limits.data.homeOffset), 4, c_int32],
 			[(self.Limits.data.minPosition), 4, c_uint32],
 			[(self.Limits.data.maxPosition), 4, c_uint32],
-			[(self.PIOs.data.portData), 10, c_uint16],
 			[(self.PositionControl.data.setpoint), 4, c_float],
 			[(self.TorqueControl.data.setpoint), 4, c_float],
 			[(self.VelocityControl.data.setpoint), 4, c_float],
@@ -198,12 +195,7 @@ class Actuator():
 					i += self.Indexes[package[i]][1]
 				#Integers
 				else:
-					if package[i] == Parameters.PIOData or package[i] == Parameters.PIOMode:
-						for var, index in zip(self.Indexes[package[i]][0].data, range(PIOs._pio_count)):
-							var.data = int.from_bytes(package[i+1+index:i+1+sizeof(self.Indexes[package[i]][2])+index], 'little')
-					else:
-						self.Indexes[package[i]][0].data = int.from_bytes(package[i+1:i+1+self.Indexes[package[i]][1]], 'little')
-
+					self.Indexes[package[i]][0].data = int.from_bytes(package[i+1:i+1+self.Indexes[package[i]][1]], 'little')
 					i += self.Indexes[package[i]][1]
 
 				i+=1

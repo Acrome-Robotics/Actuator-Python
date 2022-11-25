@@ -32,24 +32,6 @@ class Limits():
 		self.maxPosition = var(0)
 		self.homeOffset = var(0)
 
-class PIOs():
-	_pio_count = 5
-	Input = 0
-	Output = 1
-	PWM = 2
-	Servo = 3
-	DAC = 4
-	Task = 5
-	TaskN = 6
-
-	class Tasks:
-		NegativeLS = 0
-		PositiveLS = 1
-
-	def __init__(self):
-		self.portMode = var([var(0) for _ in range(PIOs._pio_count)])
-		self.portData = var([var(0) for _ in range(PIOs._pio_count)])
-
 class Indicators():
 	def __init__(self):
 		self.RGB = var(0)
