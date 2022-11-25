@@ -1,6 +1,10 @@
+from enum import IntEnum
+
+
 class var():
 	def __init__(self, data):
 		self.data = data
+
 
 class Configuration():
 	def __init__(self):
@@ -11,6 +15,7 @@ class Configuration():
 		self.firmwareVersion = var(0)
 		self.baudRate = var(0)
 
+
 class Telemetry():
 	def __init__(self):
 		self.error = var(0)
@@ -20,6 +25,7 @@ class Telemetry():
 		self.current = var(0)
 		self.position = var(0)
 		self.velocity = var(0)
+
 
 class Limits():
 	def __init__(self):
@@ -32,10 +38,12 @@ class Limits():
 		self.maxPosition = var(0)
 		self.homeOffset = var(0)
 
+
 class Indicators():
 	def __init__(self):
 		self.RGB = var(0)
 		self.LEDs = var(0)
+
 
 class Control():
 	def __init__(self):
@@ -45,13 +53,13 @@ class Control():
 		self.setpoint = var(0)
 		self.feedForward = var(0)
 
-class Parameters():
+
+class Parameters(IntEnum):
 	deviceId = 1
 	error = 4
 	baudrate = 5
 	operationMode = 6
 	tempLimit = 7
-	PIOMode = 8
 	torqueEnable = 9
 	RGB = 10
 	minVoltage = 11
@@ -73,7 +81,6 @@ class Parameters():
 	homeOffset = 27
 	minPosition = 28
 	maxPosition = 29
-	PIOData = 30
 	posSetpoint = 31
 	torqueSetpoint = 32
 	velSetpoint = 33
@@ -86,11 +93,13 @@ class Parameters():
 	FirmwareVersion = 40
 	errorCount = 41
 
+
 class OperationModes:
 	PositionControl = 0
 	VelocityControl = 1
 	TorqueControl = 2
 	AnalogInput = 1 << 7
+
 
 class Errors:
 	NoError = 0
@@ -100,6 +109,8 @@ class Errors:
 	EncoderError = 1 << 3
 	CommunicationError = 1 << 4
 	FlashError = 1 << 5
+
+
 class CircularBuffer():
 	def __init__(self, size):
 		self.buffer = [0] * size
@@ -115,6 +126,7 @@ class CircularBuffer():
 		else:
 			return False
 
+
 	def read(self):
 		if self._buffer_length() > 0:
 			readPos = self.readPos
@@ -123,8 +135,10 @@ class CircularBuffer():
 		else:
 			return None
 
+
 	def peek(self, index_offset=0):
 		return self.buffer[(self.readPos + index_offset) & (self.size - 1)]
+
 
 	def jump(self, offset):
 		if offset <= self.availableData():
@@ -136,6 +150,7 @@ class CircularBuffer():
 
 	def _buffer_length(self):
 		return (self.writePos - self.readPos) & (self.size - 1)
+
 
 	def availableData(self):
 		return self._buffer_length()
