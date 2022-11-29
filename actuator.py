@@ -117,7 +117,7 @@ class Actuator():
 					params.append(param)
 		else:
 			#Writeable range
-			for i in range(5, 34):
+			for i in range(Parameters.WRITEABLE_INDEX, Parameters.READ_ONLY_INDEX):
 				if self.Indexes[i][0].data != Act.Indexes[i][0].data:
 					params.append(i)
 

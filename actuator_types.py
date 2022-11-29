@@ -58,6 +58,7 @@ class Parameters(IntEnum):
 	deviceId = 1
 	error = 4
 	baudrate = 5
+	WRITEABLE_INDEX = baudrate
 	operationMode = 6
 	tempLimit = 7
 	torqueEnable = 8
@@ -85,6 +86,7 @@ class Parameters(IntEnum):
 	torqueSetpoint = 30
 	velSetpoint = 31
 	presentPos = 32
+	READ_ONLY_INDEX = presentPos
 	presentVel = 33
 	presentVoltage = 34
 	presentTemp = 35
