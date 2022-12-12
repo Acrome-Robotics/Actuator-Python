@@ -53,6 +53,16 @@ class Control():
 		self.setpoint = var(0)
 		self.feedForward = var(0)
 
+class Sensors():
+	def __init__(self):
+		self.distance = var(0)
+		self.lightLevel = var(0)
+		self.button = var(0)
+		self.buzzer = var(0)
+		self.joystick = var(0)
+		self.qtr = var(0)
+		self.imu_roll = var(0)
+		self.imu_pitch = var(0)
 
 class Parameters(IntEnum):
 	deviceId = 1

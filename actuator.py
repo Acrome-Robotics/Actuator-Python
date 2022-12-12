@@ -22,6 +22,7 @@ class Actuator():
 		self.VelocityControl = var(Control())
 		self.TorqueControl = var(Control())
 		self.Indicators = var(Indicators())
+		self.Sensors = var(Sensors())
 		self.CRC = var(0)
 
 		self.Configuration.data.devID.data = ID
