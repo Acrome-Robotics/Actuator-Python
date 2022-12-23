@@ -55,14 +55,16 @@ class Control():
 
 class Sensors():
 	def __init__(self):
+		self.buzzerEnable = var(0)
+		self.presentRoll = var(0)
+		self.presentPitch = var(0)
+		self.lightIntensity = var(0)
 		self.distance = var(0)
-		self.lightLevel = var(0)
-		self.button = var(0)
-		self.buzzer = var(0)
-		self.joystick = var(0)
+		self.buttonPressed = var(0)
+		self.joystickX = var(0)
+		self.joystickY = var(0)
 		self.qtr = var(0)
-		self.imu_roll = var(0)
-		self.imu_pitch = var(0)
+		
 
 class Parameters(IntEnum):
 	deviceId = 1
@@ -95,15 +97,24 @@ class Parameters(IntEnum):
 	posSetpoint = 29
 	torqueSetpoint = 30
 	velSetpoint = 31
-	presentPos = 32
+	buzzerEnable = 32,
+	presentPos = 33
 	READ_ONLY_INDEX = presentPos
-	presentVel = 33
-	presentVoltage = 34
-	presentTemp = 35
-	presentCurrent = 36
-	ModelNum = 37
-	FirmwareVersion = 38
-	errorCount = 39
+	presentVel = 34
+	presentVoltage = 35
+	presentTemp = 36
+	presentCurrent = 37
+	presentRoll = 38
+	presentPitch = 39
+	lightIntensity = 40
+	buttonPressed = 41
+	usDistance = 42
+	joystickX = 43
+	joystickY = 44
+	qtr = 45
+	ModelNum = 46
+	FirmwareVersion = 47
+	errorCount = 48
 
 
 class OperationModes:
