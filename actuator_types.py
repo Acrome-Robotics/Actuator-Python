@@ -115,6 +115,7 @@ class Parameters(IntEnum):
 	ModelNum = 46
 	FirmwareVersion = 47
 	errorCount = 48
+	LAST_INDEX = errorCount
 
 
 class OperationModes:

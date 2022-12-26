@@ -10,6 +10,7 @@ i=0
 class Actuator():
 	BATCH_ID = 0xFF
 	HEADER = 0x55
+	_CONSTANT_REG_SIZE = 9
 	_commandLUT = {'Ping':0, 'Write':1, 'Read':2, 'ROMWrite':3, 'Reboot':5, 'FactoryReset':0x17, 'ErrorClear':0x18, 'RQ':1<<7}
 	def __init__(self, ID):
 		self.header = var(0x55)
@@ -93,7 +94,7 @@ class Actuator():
 
 	def Ping(self):
 		self.command.data = self.__class__._commandLUT['Ping']
-		self.packageSize.data = 9
+		self.packageSize.data = self.__class__._CONSTANT_REG_SIZE
 
 		data = self.__populate_header()
 		data += self.__calculate_crc(data)
@@ -103,12 +104,11 @@ class Actuator():
 		self.command.data = self._commandLUT['Read']
 
 		if full:
-			self.packageSize.data = 10
 			params = [0xFF]
 
 		else:
-			params = [param for param in params if param < len(self.Indexes)] #Safety Check
-			self.packageSize.data = 9 + len(params)
+			params = [param for param in params if param < len(self.Indexes)] #Safety Check	
+		self.packageSize.data = self.__class__._CONSTANT_REG_SIZE + len(params)
 
 		data = self.__populate_header()
 		data += bytes(params)
@@ -156,7 +156,7 @@ class Actuator():
 			elif Act.Indexes[param][2] == c_int32:
 				updating.extend(struct.pack("<i", Act.Indexes[param][0].data & 0xFFFFFFFF))
 
-		self.packageSize.data = 9 + len(updating)
+		self.packageSize.data = self.__class__._CONSTANT_REG_SIZE + len(updating)
 		self.command.data = self._commandLUT['Write']
 
 		data = self.__populate_header()
@@ -166,7 +166,7 @@ class Actuator():
 
 	def Reboot(self):
 		self.command.data = self.__class__._commandLUT['Reboot']
-		self.packageSize.data = 9
+		self.packageSize.data = self.__class__._CONSTANT_REG_SIZE
 
 		data = self.__populate_header()
 		data += self.__calculate_crc(data)
@@ -174,14 +174,14 @@ class Actuator():
 
 	def FactoryReset(self):
 		self.command.data = self.__class__._commandLUT['FactoryReset']
-		self.packageSize.data = 9
+		self.packageSize.data = self.__class__._CONSTANT_REG_SIZE
 		data = self.__populate_header()
 		data += self.__calculate_crc(data)
 		return data
 
 	def ROMWrite(self):
 		self.command.data = self.__class__._commandLUT['ROMWrite']
-		self.packageSize.data = 9
+		self.packageSize.data = self.__class__._CONSTANT_REG_SIZE
 		data = self.__populate_header()
 		data += self.__calculate_crc(data)
 		return data
@@ -196,7 +196,7 @@ class Actuator():
 			while i < (len(package) - 4):
 
 				#Check if index is in parameters range
-				if package[i] > Parameters.errorCount:
+				if package[i] > Parameters.LAST_INDEX:
 					return
 				
 				#Floats
@@ -233,7 +233,7 @@ class Master():
 	def findPackage(self) -> None:
 
 		#Start parsing only if there is enough data available to contain a valid package
-		while self.cb.availableData() >= 9:
+		while self.cb.availableData() >= self.__class__._min_size:
 			if self.cb.peek(0) == 0x55:
 				if self.cb.peek(1) in self.ActList:
 					size = self.cb.peek(2)
