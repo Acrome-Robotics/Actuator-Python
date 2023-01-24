@@ -69,6 +69,7 @@ class Sensors():
 		self.buttonPressed = var(0)
 		self.joystickX = var(0)
 		self.joystickY = var(0)
+		self.joystickButton = var(0)
 		self.qtrR = var(0)
 		self.qtrM = var(0)
 		self.qtrL = var(0)
@@ -124,12 +125,13 @@ class Parameters(IntEnum):
 	usDistance = 47
 	joystickX = 48
 	joystickY = 49
-	qtrR = 50
-	qtrM = 51
-	qtrL = 52
-	ModelNum = 53
-	FirmwareVersion = 54
-	errorCount = 55
+	joystickButton = 50
+	qtrR = 51
+	qtrM = 52
+	qtrL = 53
+	ModelNum = 54
+	FirmwareVersion = 55
+	errorCount = 56
 	LAST_INDEX = errorCount
 
 

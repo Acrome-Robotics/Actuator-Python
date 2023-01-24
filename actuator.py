@@ -80,6 +80,7 @@ class Actuator():
 			[(self.Sensors.data.distance), 2, c_uint16],
 			[(self.Sensors.data.joystickX), 2, c_uint16],
 			[(self.Sensors.data.joystickY), 2, c_uint16],
+			[(self.Sensors.data.joystickButton), 1, c_uint8],
 			[(self.Sensors.data.qtrR), 1, c_uint8],
 			[(self.Sensors.data.qtrM), 1, c_uint8],
 			[(self.Sensors.data.qtrL), 1, c_uint8],
