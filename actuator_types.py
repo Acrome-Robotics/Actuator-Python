@@ -11,6 +11,7 @@ class Configuration():
 		self.devID = var(0)
 		self.operationMode = var(0)
 		self.torqueEnable = var(0)
+		self.autotunerEnable = var(0)
 		self.modelNum = var(0)
 		self.firmwareVersion = var(0)
 		self.baudRate = var(0)
@@ -47,11 +48,16 @@ class Indicators():
 
 class Control():
 	def __init__(self):
+		self.scalerGain = var(0)
 		self.proportionalGain = var(0)
 		self.integralGain = var(0)
 		self.derivativeGain = var(0)
 		self.setpoint = var(0)
 		self.feedForward = var(0)
+	
+class Autotuner():
+	def __init__(self):
+		self.method = var(0)
 
 class Sensors():
 	def __init__(self):
@@ -63,7 +69,10 @@ class Sensors():
 		self.buttonPressed = var(0)
 		self.joystickX = var(0)
 		self.joystickY = var(0)
-		self.qtr = var(0)
+		self.joystickButton = var(0)
+		self.qtrR = var(0)
+		self.qtrM = var(0)
+		self.qtrL = var(0)
 		
 
 class Parameters(IntEnum):
@@ -74,47 +83,55 @@ class Parameters(IntEnum):
 	operationMode = 6
 	tempLimit = 7
 	torqueEnable = 8
-	RGB = 9
-	minVoltage = 10
-	maxVoltage = 11
-	torqueLimit = 12
-	velocityLimit = 13
-	posFeedForward = 14
-	velFeedForward = 15
-	torqueFeedForward = 16
-	posPGain = 17
-	posIGain = 18
-	posDGain = 19
-	velPGain = 20
-	velIGain = 21
-	velDGain = 22
-	torquePGain = 23
-	torqueIGain = 24
-	torqueDGain = 25
-	homeOffset = 26
-	minPosition = 27
-	maxPosition = 28
-	posSetpoint = 29
-	torqueSetpoint = 30
-	velSetpoint = 31
-	buzzerEnable = 32,
-	presentPos = 33
+	autotunerEnable = 9
+	RGB = 10
+	minVoltage = 11
+	maxVoltage = 12
+	torqueLimit = 13
+	velocityLimit = 14
+	autotunerMethod = 15
+	posFeedForward = 16
+	velFeedForward = 17
+	torqueFeedForward = 18
+	posScalerGain = 19
+	posPGain = 20
+	posIGain = 21
+	posDGain = 22
+	velScalerGain = 23
+	velPGain = 24
+	velIGain = 25
+	velDGain = 26
+	torqueScalerGain = 27
+	torquePGain = 28
+	torqueIGain = 29
+	torqueDGain = 30
+	homeOffset = 31
+	minPosition = 32
+	maxPosition = 33
+	posSetpoint = 34
+	torqueSetpoint = 35
+	velSetpoint = 36
+	buzzerEnable = 37
+	presentPos = 38
 	READ_ONLY_INDEX = presentPos
-	presentVel = 34
-	presentVoltage = 35
-	presentTemp = 36
-	presentCurrent = 37
-	presentRoll = 38
-	presentPitch = 39
-	lightIntensity = 40
-	buttonPressed = 41
-	usDistance = 42
-	joystickX = 43
-	joystickY = 44
-	qtr = 45
-	ModelNum = 46
-	FirmwareVersion = 47
-	errorCount = 48
+	presentVel = 39
+	presentVoltage = 40
+	presentTemp = 41
+	presentCurrent = 42
+	presentRoll = 43
+	presentPitch = 44
+	lightIntensity = 45
+	buttonPressed = 46
+	usDistance = 47
+	joystickX = 48
+	joystickY = 49
+	joystickButton = 50
+	qtrR = 51
+	qtrM = 52
+	qtrL = 53
+	ModelNum = 54
+	FirmwareVersion = 55
+	errorCount = 56
 	LAST_INDEX = errorCount
 
 
@@ -123,6 +140,12 @@ class OperationModes:
 	VelocityControl = 1
 	TorqueControl = 2
 	AnalogInput = 1 << 7
+
+class AutotuneMethods: 
+	NoneMethod = 0 
+	BasicMeasurement = 1,
+	ZieglerNichols = 2,
+	CohenCoon = 3,
 
 
 class Errors:

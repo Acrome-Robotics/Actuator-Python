@@ -22,6 +22,7 @@ class Actuator():
 		self.PositionControl = var(Control())
 		self.VelocityControl = var(Control())
 		self.TorqueControl = var(Control())
+		self.Autotuner = var(Autotuner())
 		self.Indicators = var(Indicators())
 		self.Sensors = var(Sensors())
 		self.CRC = var(0)
@@ -38,20 +39,25 @@ class Actuator():
 			[(self.Configuration.data.operationMode), 1, c_uint8],
 			[(self.Limits.data.temperatureLimit),1, c_uint8],
 			[(self.Configuration.data.torqueEnable), 1, c_uint8],
+			[(self.Configuration.data.autotunerEnable), 1, c_uint8],
 			[(self.Indicators.data.RGB), 1, c_uint8],
 			[(self.Limits.data.minVoltage), 2, c_uint16],
 			[(self.Limits.data.maxVoltage), 2, c_uint16],
 			[(self.Limits.data.torqueLimit), 2, c_uint16],
 			[(self.Limits.data.velocityLimit), 2, c_uint16],
+			[(self.Autotuner.data.method), 1, c_uint8],
 			[(self.PositionControl.data.feedForward), 4, c_float],
 			[(self.VelocityControl.data.feedForward), 4, c_float],
 			[(self.TorqueControl.data.feedForward), 4, c_float],
+			[(self.PositionControl.data.scalerGain), 4, c_float],
 			[(self.PositionControl.data.proportionalGain), 4, c_float],
 			[(self.PositionControl.data.integralGain), 4, c_float],
 			[(self.PositionControl.data.derivativeGain), 4, c_float],
+			[(self.VelocityControl.data.scalerGain), 4, c_float],
 			[(self.VelocityControl.data.proportionalGain), 4, c_float],
 			[(self.VelocityControl.data.integralGain), 4, c_float],
 			[(self.VelocityControl.data.derivativeGain), 4, c_float],
+			[(self.TorqueControl.data.scalerGain), 4, c_float],
 			[(self.TorqueControl.data.proportionalGain), 4, c_float],
 			[(self.TorqueControl.data.integralGain), 4, c_float],
 			[(self.TorqueControl.data.derivativeGain), 4, c_float],
@@ -74,7 +80,10 @@ class Actuator():
 			[(self.Sensors.data.distance), 2, c_uint16],
 			[(self.Sensors.data.joystickX), 2, c_uint16],
 			[(self.Sensors.data.joystickY), 2, c_uint16],
-			[(self.Sensors.data.qtr), 1, c_uint8],
+			[(self.Sensors.data.joystickButton), 1, c_uint8],
+			[(self.Sensors.data.qtrR), 1, c_uint8],
+			[(self.Sensors.data.qtrM), 1, c_uint8],
+			[(self.Sensors.data.qtrL), 1, c_uint8],
 			[(self.Configuration.data.modelNum), 4, c_uint32],
 			[(self.Configuration.data.firmwareVersion), 4, c_uint32],
 			[(self.Telemetry.data.errorCount), 4, c_uint32],
