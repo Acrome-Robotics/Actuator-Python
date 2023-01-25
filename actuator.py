@@ -39,13 +39,13 @@ class Actuator():
 			[(self.Configuration.data.operationMode), 1, c_uint8],
 			[(self.Limits.data.temperatureLimit),1, c_uint8],
 			[(self.Configuration.data.torqueEnable), 1, c_uint8],
-			[(self.Configuration.data.autotunerEnable), 1, c_uint8]
+			[(self.Configuration.data.autotunerEnable), 1, c_uint8],
 			[(self.Indicators.data.RGB), 1, c_uint8],
 			[(self.Limits.data.minVoltage), 2, c_uint16],
 			[(self.Limits.data.maxVoltage), 2, c_uint16],
 			[(self.Limits.data.torqueLimit), 2, c_uint16],
 			[(self.Limits.data.velocityLimit), 2, c_uint16],
-			[(self.Autotuner.data.method), 1, c_uint8]
+			[(self.Autotuner.data.method), 1, c_uint8],
 			[(self.PositionControl.data.feedForward), 4, c_float],
 			[(self.VelocityControl.data.feedForward), 4, c_float],
 			[(self.TorqueControl.data.feedForward), 4, c_float],
