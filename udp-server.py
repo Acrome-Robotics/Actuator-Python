@@ -8,6 +8,7 @@ from actuator_types import *
 import traceback
 
 q = queue.Queue()
+bdq = queue.Queue() # baudrate signaling queue
 
 
 def DumpObjects(Actuator: actuator.Actuator):
@@ -82,7 +83,13 @@ def loop_master(master: actuator.Master):
 			pass
 
 		if data is not None:
-			master.send(data)
+			master.send(data) 	# send the data
+			try:
+				new_baud = bdq.get_nowait() # if baudrate is changed apply new port settings
+				if new_baud is not None:
+					SerialBaudUpdate(master, new_baud)
+			except Exception:
+				pass
 		data = master.receive()
 		if len(data) > 0:
 			for i in list(data):
@@ -106,10 +113,10 @@ def loop_udp(server:Server, master: actuator.Master):
 				dummy_act = actuator.Actuator(data[2])
 				data_list = struct.unpack('!IBBBBBHHHHBfffffffffffffffiIIfffB',bytes(data[3:]))
 				print(data_list)
-				prev_baud = dummy_act.Configuration.data.baudRate.data	
+				baud = dummy_act.Configuration.data.baudRate.data	
 				LoadObject(dummy_act, data_list)
-				if(data[0] != prev_baud):
-					SerialBaudUpdate(master, data[0])
+				if(data[0] != baud and baud != 0):
+					bdq.put(data[0])
 				q.put(master.Actuators[data[2]].Write(dummy_act))
 			elif data[1] == actuator.Actuator._commandLUT['ROMWrite']:
 				q.put(master.Actuators[data[2]].ROMWrite())
