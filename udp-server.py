@@ -6,6 +6,7 @@ import concurrent.futures as cf
 import queue
 from actuator_types import *
 import traceback
+from time import sleep
 
 q = queue.Queue()
 bdq = queue.Queue() # baudrate signaling queue
@@ -37,12 +38,16 @@ def SerialBaudUpdate(Master: actuator.Master, baud: int):
 
 	if(baud < 1527 and baud > 6250000):
 		raise ValueError("Wrong baud rate value")
+
+	sleep(0.002)
 	Master._serial.close()
 	Master._serial.baudrate = baud
 	settings = Master._serial.get_settings()
 	Master._serial.open()
 	Master._serial.apply_settings(settings)
 
+	print(f"Appyling serial port change with baud {baud}...")
+	sleep(0.002)
 
 class Server():
 	IP = '127.0.0.1'
@@ -84,12 +89,15 @@ def loop_master(master: actuator.Master):
 
 		if data is not None:
 			master.send(data) 	# send the data
+			
 			try:
 				new_baud = bdq.get_nowait() # if baudrate is changed apply new port settings
-				if new_baud is not None:
+				
+				if new_baud is not None and new_baud != master._serial.baudrate:
 					SerialBaudUpdate(master, new_baud)
 			except Exception:
 				pass
+
 		data = master.receive()
 		if len(data) > 0:
 			for i in list(data):
@@ -113,10 +121,10 @@ def loop_udp(server:Server, master: actuator.Master):
 				dummy_act = actuator.Actuator(data[2])
 				data_list = struct.unpack('!IBBBBBHHHHBfffffffffffffffiIIfffB',bytes(data[3:]))
 				print(data_list)
-				baud = dummy_act.Configuration.data.baudRate.data	
+				new_baud = data_list[0]
 				LoadObject(dummy_act, data_list)
-				if(data[0] != baud and baud != 0):
-					bdq.put(data[0])
+				if (new_baud >= 1527 and new_baud <= 6250000):
+					bdq.put(new_baud)
 				q.put(master.Actuators[data[2]].Write(dummy_act))
 			elif data[1] == actuator.Actuator._commandLUT['ROMWrite']:
 				q.put(master.Actuators[data[2]].ROMWrite())
