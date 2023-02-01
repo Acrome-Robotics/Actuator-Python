@@ -105,6 +105,7 @@ def loop_master(master: actuator.Master):
 		master.findPackage()
 
 def loop_udp(server:Server, master: actuator.Master):
+	writable_idx_list = [int(Parameters.deviceId)] + [idx for idx in range(Parameters.WRITEABLE_INDEX, Parameters.READ_ONLY_INDEX)]
 	while True:
 		data, client = server.receive()
 		data = list(data)
@@ -119,13 +120,15 @@ def loop_udp(server:Server, master: actuator.Master):
 				q.put(master.Actuators[data[2]].Read(data[3:], full=True))
 			elif data[1] == actuator.Actuator._commandLUT['Write']:
 				dummy_act = actuator.Actuator(data[2])
-				data_list = struct.unpack('!IBBBBBHHHHBfffffffffffffffiIIfffB',bytes(data[3:]))
+				data_list = struct.unpack('!BIBBBBBHHHHBfffffffffffffffiIIfffB',bytes(data[3:]))
 				print(data_list)
-				new_baud = data_list[0]
+				dummy_act.Configuration.data.devID.data = data_list[0]
+				new_baud = data_list[1]
+				data_list = data_list[1::]
 				LoadObject(dummy_act, data_list)
 				if (new_baud >= 1527 and new_baud <= 6250000):
 					bdq.put(new_baud)
-				q.put(master.Actuators[data[2]].Write(dummy_act))
+				q.put(master.Actuators[data[2]].Write(dummy_act, writable_idx_list))
 			elif data[1] == actuator.Actuator._commandLUT['ROMWrite']:
 				q.put(master.Actuators[data[2]].ROMWrite())
 			elif data[1] == actuator.Actuator._commandLUT['Reboot']:
