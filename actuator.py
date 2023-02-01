@@ -71,7 +71,7 @@ class Actuator():
 			[(self.Telemetry.data.position), 4, c_float],
 			[(self.Telemetry.data.velocity), 4, c_float],
 			[(self.Telemetry.data.voltage), 2, c_uint16],
-			[(self.Telemetry.data.temperature), 1, c_uint],
+			[(self.Telemetry.data.temperature), 1, c_uint8],
 			[(self.Telemetry.data.current), 4, c_float],
 			[(self.Sensors.data.presentRoll), 4, c_float],
 			[(self.Sensors.data.presentPitch), 4, c_float],
