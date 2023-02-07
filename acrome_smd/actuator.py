@@ -45,7 +45,7 @@ class Actuator():
             [(self.Telemetry.data.error), 1, c_uint8],
             [(self.Configuration.data.baudRate), 4, c_uint32],
             [(self.Configuration.data.operationMode), 1, c_uint8],
-            [(self.Limits.data.temperatureLimit),1, c_uint8],
+            [(self.Limits.data.temperatureLimit), 1, c_uint8],
             [(self.Configuration.data.torqueEnable), 1, c_uint8],
             [(self.Configuration.data.autotunerEnable), 1, c_uint8],
             [(self.Indicators.data.RGB), 1, c_uint8],

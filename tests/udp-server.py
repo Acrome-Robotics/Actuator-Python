@@ -1,10 +1,10 @@
 import sys
-import actuator
+from acrome_smd import actuator
 import struct
 import socket
 import concurrent.futures as cf
 import queue
-from actuator_types import (Parameters)
+from acrome_smd.actuator_types import (Parameters)
 import traceback
 from time import sleep
 
