@@ -78,6 +78,7 @@ class Actuator():
             [(self.Telemetry.data.position), len(c_float), c_float],
             [(self.Telemetry.data.velocity), len(c_float), c_float],
             [(self.Telemetry.data.voltage), len(c_uint16), c_uint16],
+            [(self.Telemetry.data.coreTemperature), len(c_uint8), c_uint8],
             [(self.Telemetry.data.motorTemperature), len(c_uint8), c_uint8],
             [(self.Telemetry.data.motorCurrent), len(c_float), c_float],
             [(self.Telemetry.data.presentIntRoll), len(c_float), c_float],
