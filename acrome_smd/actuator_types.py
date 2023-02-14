@@ -12,6 +12,7 @@ class Configuration():
         self.operationMode = var(0)
         self.torqueEnable = var(0)
         self.autotunerEnable = var(0)
+        self.motPwmFreq = var(0)
         self.modelNum = var(0)
         self.firmwareVersion = var(0)
         self.baudRate = var(0)
@@ -88,6 +89,7 @@ class Parameters(IntEnum):
     baudrate = auto()
     WRITEABLE_INDEX = baudrate
     operationMode = auto()
+    motorPwmFreq = auto()
     tempLimit = auto()
     torqueEnable = auto()
     autotunerEnable = auto()
