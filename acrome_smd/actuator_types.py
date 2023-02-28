@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, auto
 
 
 class var():
@@ -12,6 +12,7 @@ class Configuration():
         self.operationMode = var(0)
         self.torqueEnable = var(0)
         self.autotunerEnable = var(0)
+        self.motPwmFreq = var(0)
         self.modelNum = var(0)
         self.firmwareVersion = var(0)
         self.baudRate = var(0)
@@ -22,8 +23,11 @@ class Telemetry():
         self.error = var(0)
         self.errorCount = var(0)
         self.voltage = var(0)
-        self.temperature = var(0)
-        self.current = var(0)
+        self.coreTemperature = var(0)
+        self.motorTemperature = var(0)
+        self.motorCurrent = var(0)
+        self.presentIntRoll = var(0)
+        self.presentIntPitch = var(0)
         self.position = var(0)
         self.velocity = var(0)
 
@@ -64,8 +68,8 @@ class Autotuner():
 class Sensors():
     def __init__(self):
         self.buzzerEnable = var(0)
-        self.presentRoll = var(0)
-        self.presentPitch = var(0)
+        self.presentExtRoll = var(0)
+        self.presentExtPitch = var(0)
         self.lightIntensity = var(0)
         self.distance = var(0)
         self.buttonPressed = var(0)
@@ -78,62 +82,67 @@ class Sensors():
 
 
 class Parameters(IntEnum):
-    deviceId = 1
-    error = 4
-    baudrate = 5
+    deviceId = auto()
+    __RESERVED1 = auto()
+    __RESERVED2 = auto()
+    error = auto()
+    baudrate = auto()
     WRITEABLE_INDEX = baudrate
-    operationMode = 6
-    tempLimit = 7
-    torqueEnable = 8
-    autotunerEnable = 9
-    RGB = 10
-    minVoltage = 11
-    maxVoltage = 12
-    torqueLimit = 13
-    velocityLimit = 14
-    autotunerMethod = 15
-    posFeedForward = 16
-    velFeedForward = 17
-    torqueFeedForward = 18
-    posScalerGain = 19
-    posPGain = 20
-    posIGain = 21
-    posDGain = 22
-    velScalerGain = 23
-    velPGain = 24
-    velIGain = 25
-    velDGain = 26
-    torqueScalerGain = 27
-    torquePGain = 28
-    torqueIGain = 29
-    torqueDGain = 30
-    homeOffset = 31
-    minPosition = 32
-    maxPosition = 33
-    posSetpoint = 34
-    torqueSetpoint = 35
-    velSetpoint = 36
-    buzzerEnable = 37
-    presentPos = 38
+    operationMode = auto()
+    motorPwmFreq = auto()
+    tempLimit = auto()
+    torqueEnable = auto()
+    autotunerEnable = auto()
+    minVoltage = auto()
+    maxVoltage = auto()
+    torqueLimit = auto()
+    velocityLimit = auto()
+    autotunerMethod = auto()
+    posFeedForward = auto()
+    velFeedForward = auto()
+    torqueFeedForward = auto()
+    posScalerGain = auto()
+    posPGain = auto()
+    posIGain = auto()
+    posDGain = auto()
+    velScalerGain = auto()
+    velPGain = auto()
+    velIGain = auto()
+    velDGain = auto()
+    torqueScalerGain = auto()
+    torquePGain = auto()
+    torqueIGain = auto()
+    torqueDGain = auto()
+    homeOffset = auto()
+    minPosition = auto()
+    maxPosition = auto()
+    posSetpoint = auto()
+    torqueSetpoint = auto()
+    velSetpoint = auto()
+    buzzerEnable = auto()
+    presentPos = auto()
     READ_ONLY_INDEX = presentPos
-    presentVel = 39
-    presentVoltage = 40
-    presentTemp = 41
-    presentCurrent = 42
-    presentRoll = 43
-    presentPitch = 44
-    lightIntensity = 45
-    buttonPressed = 46
-    usDistance = 47
-    joystickX = 48
-    joystickY = 49
-    joystickButton = 50
-    qtrR = 51
-    qtrM = 52
-    qtrL = 53
-    ModelNum = 54
-    FirmwareVersion = 55
-    errorCount = 56
+    presentVel = auto()
+    presentVoltage = auto()
+    presentCoreTemp = auto()
+    presentMotorTemp = auto()
+    presentMotorCurrent = auto()
+    presentIntRoll = auto()
+    presentIntPitch = auto()
+    presentExtRoll = auto()
+    presentExtPitch = auto()
+    lightIntensity = auto()
+    buttonPressed = auto()
+    usDistance = auto()
+    joystickX = auto()
+    joystickY = auto()
+    joystickButton = auto()
+    qtrR = auto()
+    qtrM = auto()
+    qtrL = auto()
+    ModelNum = auto()
+    FirmwareVersion = auto()
+    errorCount = auto()
     LAST_INDEX = errorCount
 
 
