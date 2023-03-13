@@ -122,7 +122,7 @@ class Actuator():
         self.command.data = self._commandLUT['Read']
 
         if full:
-            params = [0xFF]
+            params = [param for param in range(int(Parameters.LAST_INDEX) + 1)]
 
         else:
             params = [param for param in params if param < len(self.Indexes)]  # Safety Check
@@ -319,6 +319,7 @@ class Master():
             self.send(self.Actuators[i].Ping())
             time.sleep(0.003)
             recv = self.receive()
+            print(list(recv))
             self.pass2buffer(recv)
 
         self.findPackage()
