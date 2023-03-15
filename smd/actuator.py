@@ -197,6 +197,13 @@ class Actuator():
         data += self.__calculate_crc(data)
         return data
 
+    def ErrorClear(self):
+        self.command.data = self.__class__._commandLUT['ErrorClear']
+        self.packageSize.data = self.__class__._CONSTANT_REG_SIZE
+        data = self.__populate_header()
+        data += self.__calculate_crc(data)
+        return data
+
     def ROMWrite(self):
         self.command.data = self.__class__._commandLUT['ROMWrite']
         self.packageSize.data = self.__class__._CONSTANT_REG_SIZE
