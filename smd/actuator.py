@@ -1,6 +1,7 @@
 import time
 from crccheck.crc import Crc32Mpeg2 as CRC32
-from smd.types import *
+from smd.types import (Telemetry, Configuration, Control, Autotuner, Sensors,
+                       Limits, Parameters, var)
 from ctypes import (c_uint8, c_uint16, c_uint32, c_int32, c_float,
                     c_ubyte, c_char, sizeof)
 import struct
@@ -29,7 +30,6 @@ class Actuator():
         self.VelocityControl = var(Control())
         self.TorqueControl = var(Control())
         self.Autotuner = var(Autotuner())
-        self.Indicators = var(Indicators())
         self.Sensors = var(Sensors())
         self.CRC = var(0)
 
