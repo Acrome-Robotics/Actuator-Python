@@ -18,7 +18,7 @@ class TestActuator(unittest.TestCase):
         self.assertEqual(ret, pkg_ping)
 
     def test_reboot(self):
-        pkg_reboot = bytes([0x55, 0x00, 0x09, 0x05, 0x00, 0xA0, 0x7A, 0xD1, 0x33])
+        pkg_reboot = bytes([0x55, 0x00, 0x09, 0x05, 0x00, 0x0A, 0x7A, 0xD1, 0x33])
 
         ret = self.dev.Reboot()
         self.assertEqual(ret, pkg_reboot)
@@ -36,7 +36,7 @@ class TestActuator(unittest.TestCase):
         self.assertEqual(ret, pkg_err_clr)
 
     def test_eeprom_write(self):
-        pkg_eeprom_wr = bytes([0x55, 0x00, 0x09, 0x03, 0x00, 0xAC, 0xC5, 0x70, 0xD6])
+        pkg_eeprom_wr = bytes([0x55, 0x00, 0x09, 0x03, 0x00, 0xAC, 0xC5, 0x07, 0xD6])
 
         ret = self.dev.ROMWrite()
         self.assertEqual(ret, pkg_eeprom_wr)
