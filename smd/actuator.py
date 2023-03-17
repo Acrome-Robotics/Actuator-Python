@@ -252,12 +252,15 @@ class Master():
         self.Timestamps = [0] * 255
         self._serial = serial.Serial(portname, baudrate, timeout=master_timeout)
 
-    def addActuator(self, ID) -> None:
+    def addActuator(self, ID: int):
+        if ID < 0 or ID > 255:
+            raise ValueError('{} is not in valid ID range'.format(ID))
+
         if ID not in self.ActList:
             self.ActList.append(ID)
             self.Actuators[ID] = Actuator(ID)
 
-    def findPackage(self) -> None:
+    def findPackage(self):
 
         # Start parsing only if there is enough data available to contain a valid package
         while self.cb.availableData() >= self.__class__._min_size:
@@ -296,11 +299,13 @@ class Master():
             else:
                 self.cb.read()  # Dummy read
 
-    def removeActuator(self, ID) -> None:
+    def removeActuator(self, ID: int):
+        if ID < 0 or ID > 255:
+            raise ValueError('{} is not in valid ID range'.format(ID))
         self.ActList.remove(ID)
         self.Actuators[ID] = Actuator(255)
 
-    def send(self, data) -> None:
+    def send(self, data):
         if self._serial is not None:
             global i
             print(i, list(data))
