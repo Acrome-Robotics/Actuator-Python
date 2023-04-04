@@ -1,7 +1,7 @@
 import time
 from crccheck.crc import Crc32Mpeg2 as CRC32
 from smd.types import (Telemetry, Configuration, Control, Autotuner, Sensors,
-                       Limits, Parameters, var)
+                       Limits, Parameters, var, CircularBuffer)
 from ctypes import (c_uint8, c_uint16, c_uint32, c_int32, c_float,
                     c_ubyte, c_char, sizeof)
 import struct
