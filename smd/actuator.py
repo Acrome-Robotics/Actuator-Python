@@ -308,7 +308,6 @@ class Master():
     def send(self, data):
         if self._serial is not None:
             global i
-            print(i, list(data))
             i += 1
             self._serial.write(data)
 
@@ -331,7 +330,6 @@ class Master():
             self.send(self.Actuators[i].Ping())
             time.sleep(0.003)
             recv = self.receive()
-            print(list(recv))
             self.pass2buffer(recv)
 
         self.findPackage()
