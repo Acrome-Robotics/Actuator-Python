@@ -6,7 +6,6 @@ __all__ = ["var",
            "Limits",
            "Control",
            "Autotuner",
-           "Indicators",
            "Sensors",
            "CircularBuffer",
            "Parameters"
@@ -25,18 +24,16 @@ class Configuration():
         self.torqueEnable = var(0)
         self.autotunerEnable = var(0)
         self.motPwmFreq = var(0)
-        self.modelNum = var(0)
-        self.firmwareVersion = var(0)
+        self.hardwareVersion = var(0)
+        self.softwareVersion = var(0)
         self.baudRate = var(0)
 
 
 class Telemetry():
     def __init__(self):
         self.error = var(0)
-        self.errorCount = var(0)
         self.voltage = var(0)
         self.coreTemperature = var(0)
-        self.motorTemperature = var(0)
         self.motorCurrent = var(0)
         self.presentIntRoll = var(0)
         self.presentIntPitch = var(0)
@@ -46,7 +43,6 @@ class Telemetry():
 
 class Limits():
     def __init__(self):
-        self.temperatureLimit = var(0)
         self.minVoltage = var(0)
         self.maxVoltage = var(0)
         self.torqueLimit = var(0)
@@ -54,12 +50,6 @@ class Limits():
         self.minPosition = var(0)
         self.maxPosition = var(0)
         self.homeOffset = var(0)
-
-
-class Indicators():
-    def __init__(self):
-        self.RGB = var(0)
-        self.LEDs = var(0)
 
 
 class Control():
@@ -98,34 +88,34 @@ class Parameters(IntEnum):
     __RESERVED1 = 2
     __RESERVED2 = 3
     error = 4
-    baudrate = 5
+    hardwareVersion = 5
+    softwareVersion = 6
+    baudrate = 7
     WRITEABLE_INDEX = baudrate
-    operationMode = 6
-    motorPwmFreq = 7
-    tempLimit = 8
-    torqueEnable = 9
-    autotunerEnable = 10
-    minVoltage = 11
-    maxVoltage = 12
-    torqueLimit = 13
-    velocityLimit = 14
-    autotunerMethod = 15
-    posFeedForward = 16
-    velFeedForward = 17
-    torqueFeedForward = 18
-    posScalerGain = 19
-    posPGain = 20
-    posIGain = 21
-    posDGain = 22
-    velScalerGain = 23
-    velPGain = 24
-    velIGain = 25
-    velDGain = 26
-    torqueScalerGain = 27
-    torquePGain = 28
-    torqueIGain = 29
-    torqueDGain = 30
-    homeOffset = 31
+    operationMode = 8
+    motorPwmFreq = 9
+    torqueEnable = 10
+    autotunerEnable = 11
+    minVoltage = 12
+    maxVoltage = 13
+    torqueLimit = 14
+    velocityLimit = 15
+    autotunerMethod = 16
+    posFeedForward = 17
+    velFeedForward = 18
+    torqueFeedForward = 19
+    posScalerGain = 20
+    posPGain = 21
+    posIGain = 22
+    posDGain = 23
+    velScalerGain = 24
+    velPGain = 25
+    velIGain = 26
+    velDGain = 27
+    torqueScalerGain = 28
+    torquePGain = 29
+    torqueIGain = 30
+    torqueDGain = 31
     minPosition = 32
     maxPosition = 33
     posSetpoint = 34
@@ -137,25 +127,21 @@ class Parameters(IntEnum):
     presentVel = 39
     presentVoltage = 40
     presentCoreTemp = 41
-    presentMotorTemp = 42
-    presentMotorCurrent = 43
-    presentIntRoll = 44
-    presentIntPitch = 45
-    presentExtRoll = 46
-    presentExtPitch = 47
-    lightIntensity = 48
-    buttonPressed = 49
-    usDistance = 50
-    joystickX = 51
-    joystickY = 52
-    joystickButton = 53
-    qtrR = 54
-    qtrM = 55
-    qtrL = 56
-    ModelNum = 57
-    FirmwareVersion = 58
-    errorCount = 59
-    LAST_INDEX = errorCount
+    presentMotorCurrent = 42
+    presentIntRoll = 43
+    presentIntPitch = 44
+    presentExtRoll = 45
+    presentExtPitch = 46
+    lightIntensity = 47
+    buttonPressed = 48
+    usDistance = 49
+    joystickX = 50
+    joystickY = 51
+    joystickButton = 52
+    qtrR = 53
+    qtrM = 54
+    qtrL = 55
+    LAST_INDEX = qtrL
 
 
 class OperationModes:

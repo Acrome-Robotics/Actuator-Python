@@ -41,10 +41,11 @@ class Actuator():
             [(self.packageSize), sizeof(c_uint8), c_uint8],
             [(self.command), sizeof(c_uint8), c_uint8],
             [(self.Telemetry.data.error), sizeof(c_uint8), c_uint8],
+            [(self.Configuration.data.hardwareVersion), sizeof(c_uint32), c_uint32],
+            [(self.Configuration.data.softwareVersion), sizeof(c_uint32), c_uint32],
             [(self.Configuration.data.baudRate), sizeof(c_uint32), c_uint32],
             [(self.Configuration.data.operationMode), sizeof(c_uint8), c_uint8],
             [(self.Configuration.data.motPwmFreq), sizeof(c_uint32), c_uint32],
-            [(self.Limits.data.temperatureLimit), sizeof(c_uint8), c_uint8],
             [(self.Configuration.data.torqueEnable), sizeof(c_uint8), c_uint8],
             [(self.Configuration.data.autotunerEnable), sizeof(c_uint8), c_uint8],
             [(self.Limits.data.minVoltage), sizeof(c_uint16), c_uint16],
@@ -67,7 +68,6 @@ class Actuator():
             [(self.TorqueControl.data.proportionalGain), sizeof(c_float), c_float],
             [(self.TorqueControl.data.integralGain), sizeof(c_float), c_float],
             [(self.TorqueControl.data.derivativeGain), sizeof(c_float), c_float],
-            [(self.Limits.data.homeOffset), sizeof(c_int32), c_int32],
             [(self.Limits.data.minPosition), sizeof(c_uint32), c_uint32],
             [(self.Limits.data.maxPosition), sizeof(c_uint32), c_uint32],
             [(self.PositionControl.data.setpoint), sizeof(c_float), c_float],
@@ -78,7 +78,6 @@ class Actuator():
             [(self.Telemetry.data.velocity), sizeof(c_float), c_float],
             [(self.Telemetry.data.voltage), sizeof(c_uint16), c_uint16],
             [(self.Telemetry.data.coreTemperature), sizeof(c_uint8), c_uint8],
-            [(self.Telemetry.data.motorTemperature), sizeof(c_uint8), c_uint8],
             [(self.Telemetry.data.motorCurrent), sizeof(c_float), c_float],
             [(self.Telemetry.data.presentIntRoll), sizeof(c_float), c_float],
             [(self.Telemetry.data.presentIntPitch), sizeof(c_float), c_float],
@@ -93,9 +92,6 @@ class Actuator():
             [(self.Sensors.data.qtrR), sizeof(c_uint8), c_uint8],
             [(self.Sensors.data.qtrM), sizeof(c_uint8), c_uint8],
             [(self.Sensors.data.qtrL), sizeof(c_uint8), c_uint8],
-            [(self.Configuration.data.modelNum), sizeof(c_uint32), c_uint32],
-            [(self.Configuration.data.firmwareVersion), sizeof(c_uint32), c_uint32],
-            [(self.Telemetry.data.errorCount), sizeof(c_uint32), c_uint32],
             [(self.CRC), sizeof(c_uint32), c_uint32]
         ]
 
@@ -153,26 +149,8 @@ class Actuator():
         for param in params:
             # Add index to array
             updating.extend(param.to_bytes(1, 'little'))
-
             # Add actual value to array
-            if Act.Indexes[param][2] == c_float:
-                updating.extend(struct.pack("<f", Act.Indexes[param][0].data))
-            elif Act.Indexes[param][2] in [c_uint8, c_ubyte, c_char]:
-                if isinstance(Act.Indexes[param][0].data, list):
-                    for data in Act.Indexes[param][0].data:
-                        updating.extend(struct.pack("<B", data.data & 0xFF))
-                else:
-                    updating.extend(struct.pack("<B", Act.Indexes[param][0].data & 0xFF))
-            elif Act.Indexes[param][2] == c_uint16:
-                if isinstance(Act.Indexes[param][0].data, list):
-                    for data in list(Act.Indexes[param][0].data):
-                        updating.extend(struct.pack("<H", data.data & 0xFFFF))
-                else:
-                    updating.extend(struct.pack("<H", Act.Indexes[param][0].data & 0xFFFF))
-            elif Act.Indexes[param][2] == c_uint32:
-                updating.extend(struct.pack("<I", Act.Indexes[param][0].data & 0xFFFFFFFF))
-            elif Act.Indexes[param][2] == c_int32:
-                updating.extend(struct.pack("<i", Act.Indexes[param][0].data & 0xFFFFFFFF))
+            updating.extend(struct.pack("<" + Act.Indexes[param][2]._type_, Act.Indexes[param][0].data))
 
         self.packageSize.data = self.__class__._CONSTANT_REG_SIZE + len(updating)
         self.command.data = self._commandLUT['Write']
@@ -211,7 +189,7 @@ class Actuator():
         data += self.__calculate_crc(data)
         return data
 
-    # Parse package which is already checked against CRC and package integrity
+    #  Parse package which is already checked against CRC and package integrity
     def parse(self, package):
         cmds = self.__class__._commandLUT
         self.Telemetry.data.error.data = package[4]
@@ -260,6 +238,12 @@ class Master():
             self.ActList.append(ID)
             self.Actuators[ID] = Actuator(ID)
 
+    def removeActuator(self, ID: int):
+        if ID < 0 or ID > 255:
+            raise ValueError('{} is not in valid ID range'.format(ID))
+        self.ActList.remove(ID)
+        self.Actuators[ID] = Actuator(255)
+
     def findPackage(self):
 
         # Start parsing only if there is enough data available to contain a valid package
@@ -298,12 +282,6 @@ class Master():
                     self.cb.read()  # Dummy read
             else:
                 self.cb.read()  # Dummy read
-
-    def removeActuator(self, ID: int):
-        if ID < 0 or ID > 255:
-            raise ValueError('{} is not in valid ID range'.format(ID))
-        self.ActList.remove(ID)
-        self.Actuators[ID] = Actuator(255)
 
     def send(self, data):
         if self._serial is not None:
