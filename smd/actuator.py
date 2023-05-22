@@ -1,9 +1,8 @@
 import time
 from crccheck.crc import Crc32Mpeg2 as CRC32
-from smd.types import (Telemetry, Configuration, Control, Autotuner, Sensors,
-                       Limits, Parameters, var, CircularBuffer)
-from ctypes import (c_uint8, c_uint16, c_uint32, c_int32, c_float,
-                    c_ubyte, c_char, sizeof)
+from smd.smd_types import (Telemetry, Configuration, Control, Autotuner,
+                           Sensors, Limits, Parameters, var, CircularBuffer)
+from ctypes import (c_uint8, c_uint16, c_uint32, c_float, sizeof)
 import struct
 import serial
 
@@ -17,7 +16,7 @@ class Actuator():
     _commandLUT = {'Ping': 0, 'Write': 1,
                    'Read': 2, 'ROMWrite': 3,
                    'Reboot': 5, 'FactoryReset': 0x17,
-                   'ErrorClear': 0x18, 'RQ': 1 << 7}
+                   'RQ': 1 << 7}
 
     def __init__(self, ID):
         self.header = var(0x55)
@@ -45,11 +44,11 @@ class Actuator():
             [(self.Configuration.data.softwareVersion), sizeof(c_uint32), c_uint32],
             [(self.Configuration.data.baudRate), sizeof(c_uint32), c_uint32],
             [(self.Configuration.data.operationMode), sizeof(c_uint8), c_uint8],
-            [(self.Configuration.data.motPwmFreq), sizeof(c_uint32), c_uint32],
             [(self.Configuration.data.torqueEnable), sizeof(c_uint8), c_uint8],
             [(self.Configuration.data.autotunerEnable), sizeof(c_uint8), c_uint8],
-            [(self.Limits.data.minVoltage), sizeof(c_uint16), c_uint16],
-            [(self.Limits.data.maxVoltage), sizeof(c_uint16), c_uint16],
+            [(self.Configuration.data.motor_cpr), sizeof(c_uint16), c_uint16],
+            [(self.Configuration.data.motor_rpm), sizeof(c_uint16), c_uint16],
+            [(self.Configuration.data.pwm_frequency), sizeof(c_uint32), c_uint32],
             [(self.Limits.data.torqueLimit), sizeof(c_uint16), c_uint16],
             [(self.Limits.data.velocityLimit), sizeof(c_uint16), c_uint16],
             [(self.Autotuner.data.method), sizeof(c_uint8), c_uint8],
@@ -73,11 +72,10 @@ class Actuator():
             [(self.PositionControl.data.setpoint), sizeof(c_float), c_float],
             [(self.TorqueControl.data.setpoint), sizeof(c_float), c_float],
             [(self.VelocityControl.data.setpoint), sizeof(c_float), c_float],
+            [(self.Configuration.data.pwm_duty), sizeof(c_uint16), c_uint16],
             [(self.Sensors.data.buzzerEnable), sizeof(c_uint8), c_uint8],
             [(self.Telemetry.data.position), sizeof(c_float), c_float],
             [(self.Telemetry.data.velocity), sizeof(c_float), c_float],
-            [(self.Telemetry.data.voltage), sizeof(c_uint16), c_uint16],
-            [(self.Telemetry.data.coreTemperature), sizeof(c_uint8), c_uint8],
             [(self.Telemetry.data.motorCurrent), sizeof(c_float), c_float],
             [(self.Telemetry.data.presentIntRoll), sizeof(c_float), c_float],
             [(self.Telemetry.data.presentIntPitch), sizeof(c_float), c_float],
@@ -121,7 +119,7 @@ class Actuator():
             params = [param for param in range(int(Parameters.LAST_INDEX) + 1)]
 
         else:
-            params = [param for param in params if param < len(self.Indexes)]  # Safety Check
+            params = [param for param in params if param < len(self.Indexes)]
         self.packageSize.data = self.__class__._CONSTANT_REG_SIZE + len(params)
 
         data = self.__populate_header()
@@ -170,13 +168,6 @@ class Actuator():
 
     def FactoryReset(self):
         self.command.data = self.__class__._commandLUT['FactoryReset']
-        self.packageSize.data = self.__class__._CONSTANT_REG_SIZE
-        data = self.__populate_header()
-        data += self.__calculate_crc(data)
-        return data
-
-    def ErrorClear(self):
-        self.command.data = self.__class__._commandLUT['ErrorClear']
         self.packageSize.data = self.__class__._CONSTANT_REG_SIZE
         data = self.__populate_header()
         data += self.__calculate_crc(data)
