@@ -48,7 +48,7 @@ class Actuator():
             [(self.Configuration.data.autotunerEnable), sizeof(c_uint8), c_uint8],
             [(self.Configuration.data.motor_cpr), sizeof(c_uint16), c_uint16],
             [(self.Configuration.data.motor_rpm), sizeof(c_uint16), c_uint16],
-            [(self.Configuration.data.pwm_frequency), sizeof(c_uint32), c_uint32],
+            [(self.Configuration.data.pwm_freq), sizeof(c_uint32), c_uint32],
             [(self.Limits.data.torqueLimit), sizeof(c_uint16), c_uint16],
             [(self.Limits.data.velocityLimit), sizeof(c_uint16), c_uint16],
             [(self.Autotuner.data.method), sizeof(c_uint8), c_uint8],
