@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="acrome-smd",
-    version="0.0.3a0",
+    version="0.0.4a0",
     author="Furkan Kırlangıç",
     author_email="furkankirlangic@acrome.net",
     description="Python library for interfacing with Acrome Smart Motor Drivers (SMD) products.",

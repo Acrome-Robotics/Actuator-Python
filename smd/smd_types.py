@@ -1,14 +1,11 @@
-from enum import IntEnum
-
 __all__ = ["var",
            "Configuration",
            "Telemetry",
            "Limits",
            "Control",
-           "Autotuner",
            "Sensors",
            "CircularBuffer",
-           "Parameters"
+           "Index"
            ]
 
 
@@ -26,10 +23,11 @@ class Configuration():
         self.operationMode = var(0)
         self.torqueEnable = var(0)
         self.autotunerEnable = var(0)
-        self.motor_cpr = var(0)
-        self.motor_rpm = var(0)
-        self.pwm_freq = var(0)
-        self.pwm_duty = var(0)
+        self.autotunerMethod = var(0)
+        self.motorCPR = var(0)
+        self.motorRPM = var(0)
+        self.pwmFreq = var(0)
+        self.pwmDuty = var(0)
 
 
 class Telemetry():
@@ -60,11 +58,6 @@ class Control():
         self.feedForward = var(0)
 
 
-class Autotuner():
-    def __init__(self):
-        self.method = var(0)
-
-
 class Sensors():
     def __init__(self):
         self.buzzerEnable = var(0)
@@ -81,67 +74,67 @@ class Sensors():
         self.qtrL = var(0)
 
 
-class Parameters(IntEnum):
-    deviceId = 1
-    __RESERVED1 = 2
-    __RESERVED2 = 3
-    error = 4
-    hardwareVersion = 5
-    softwareVersion = 6
-    baudrate = 7
-    WRITEABLE_INDEX = baudrate
-    operationMode = 8
-    torqueEnable = 9
-    autotunerEnable = 10
-    motorCPR = 11
-    motorRPM = 12
-    pwmFreq = 13
-    torqueLimit = 14
-    velocityLimit = 15
-    autotunerMethod = 16
-    posFeedForward = 17
-    velFeedForward = 18
-    torqueFeedForward = 19
-    posScalerGain = 20
-    posPGain = 21
-    posIGain = 22
-    posDGain = 23
-    velScalerGain = 24
-    velPGain = 25
-    velIGain = 26
-    velDGain = 27
-    torqueScalerGain = 28
-    torquePGain = 29
-    torqueIGain = 30
-    torqueDGain = 31
-    minPosition = 32
-    maxPosition = 33
-    posSetpoint = 34
-    torqueSetpoint = 35
-    velSetpoint = 36
-    pwmDutySetpoint = 37
-    buzzerEnable = 38
-    presentPos = 39
-    READ_ONLY_INDEX = presentPos
-    presentVel = 40
-    presentMotorCurrent = 41
-    presentIntRoll = 42
-    presentIntPitch = 43
-    presentExtRoll = 44
-    presentExtPitch = 45
-    lightIntensity = 46
-    buttonPressed = 47
-    usDistance = 48
-    joystickX = 49
-    joystickY = 50
-    joystickButton = 51
-    qtrR = 52
-    qtrM = 53
-    qtrL = 54
-    LAST_INDEX = qtrL
+class Index():
+    DeviceID = 1
+    PackageSize = 2
+    Command = 3
+    Error = 4
+    HardwareVersion = 5
+    SoftwareVersion = 6
+    Baudrate = 7
+    WRITEABLE_INDEX = Baudrate
+    OperationMode = 8
+    TorqueEnable = 9
+    AutotunerEnable = 10
+    AutotunerMethod = 11
+    MotorCPR = 12
+    MotorRPM = 13
+    PWMFrequency = 14
+    PWMDutyCycle = 15
+    MinimumPosition = 16
+    MaximumPosition = 17
+    TorqueLimit = 18
+    VelocityLimit = 19
+    PositionFF = 20
+    VelocityFF = 21
+    TorqueFF = 22
+    PosScalerGain = 23
+    PosPGain = 24
+    PosIGain = 25
+    PosDGain = 26
+    VelScalerGain = 27
+    VelPGain = 28
+    VelIGain = 29
+    VelDGain = 30
+    TorqueScalerGain = 31
+    TorquePGain = 32
+    TorqueIGain = 33
+    TorqueDGain = 34
+    SetPosition = 35
+    SetTorque = 36
+    SetVelocity = 37
+    BuzzerEnable = 38
+    PresentPosition = 39
+    READ_ONLY_INDEX = PresentPosition
+    PresentVelocity = 40
+    MotorCurrent = 41
+    InternalRoll = 42
+    InternalPitch = 43
+    ExternalRoll = 44
+    ExternalPitch = 45
+    LightIntensity = 46
+    ButtonPressed = 47
+    Distance = 48
+    JoystickX = 49
+    JoystickY = 50
+    JoystickButton = 51
+    QtrR = 52
+    QtrM = 53
+    QtrL = 54
+    LAST_INDEX = QtrL
 
 
-class OperationModes(IntEnum):
+class OperationModes():
     POSITION_CONTROL = 0
     VELOCITY_CONTROL = 1
     TORQUE_CONTROL = 2
@@ -149,11 +142,9 @@ class OperationModes(IntEnum):
     ANALOG_INPUT = 1 << 7
 
 
-class AutotuneMethods(IntEnum):
-    NO_METHOD_SELECTED = 0
-    __RESERVED = 1,
-    ZIEGLER_NICHOLS = 2,
-    COHEN_COON = 3,
+class AutotuneMethods():
+    COHEN_COON = 0,
+    ZIEGLER_NICHOLS = 1,
 
 
 class Errors:

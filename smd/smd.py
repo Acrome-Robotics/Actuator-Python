@@ -1,22 +1,26 @@
 import time
 from crccheck.crc import Crc32Mpeg2 as CRC32
 from smd.smd_types import (Telemetry, Configuration, Control, Autotuner,
-                           Sensors, Limits, Parameters, var, CircularBuffer)
-from ctypes import (c_uint8, c_uint16, c_uint32, c_float, sizeof)
+                           Sensors, Limits, Index, var, CircularBuffer)
+from ctypes import *
 import struct
 import serial
 
 i = 0
 
 
-class Actuator():
+class SMDRed():
     BATCH_ID = 0xFF
     HEADER = 0x55
     _CONSTANT_REG_SIZE = 9
-    _commandLUT = {'Ping': 0, 'Write': 1,
-                   'Read': 2, 'ROMWrite': 3,
-                   'Reboot': 5, 'FactoryReset': 0x17,
-                   'RQ': 1 << 7}
+    _commandLUT = {'Ping': 0,
+                   'Write': 1,
+                   'Read': 2,
+                   'ROMWrite': 3,
+                   'Reboot': 5,
+                   'FactoryReset': 0x17,
+                   'RQ': 1 << 7
+                   }
 
     def __init__(self, ID):
         self.header = var(0x55)
@@ -46,12 +50,15 @@ class Actuator():
             [(self.Configuration.data.operationMode), sizeof(c_uint8), c_uint8],
             [(self.Configuration.data.torqueEnable), sizeof(c_uint8), c_uint8],
             [(self.Configuration.data.autotunerEnable), sizeof(c_uint8), c_uint8],
-            [(self.Configuration.data.motor_cpr), sizeof(c_uint16), c_uint16],
-            [(self.Configuration.data.motor_rpm), sizeof(c_uint16), c_uint16],
-            [(self.Configuration.data.pwm_freq), sizeof(c_uint32), c_uint32],
+            [(self.Configuration.data.autotunerMethod), sizeof(c_uint8), c_uint8],
+            [(self.Configuration.data.motorCPR), sizeof(c_float), c_float],
+            [(self.Configuration.data.motorRPM), sizeof(c_float), c_float],
+            [(self.Configuration.data.pwmFreq), sizeof(c_uint32), c_uint32],
+            [(self.Configuration.data.pwmDuty), sizeof(c_float), c_float],
+            [(self.Limits.data.minPosition), sizeof(c_int32), c_int32],
+            [(self.Limits.data.maxPosition), sizeof(c_int32), c_int32],
             [(self.Limits.data.torqueLimit), sizeof(c_uint16), c_uint16],
             [(self.Limits.data.velocityLimit), sizeof(c_uint16), c_uint16],
-            [(self.Autotuner.data.method), sizeof(c_uint8), c_uint8],
             [(self.PositionControl.data.feedForward), sizeof(c_float), c_float],
             [(self.VelocityControl.data.feedForward), sizeof(c_float), c_float],
             [(self.TorqueControl.data.feedForward), sizeof(c_float), c_float],
@@ -67,12 +74,9 @@ class Actuator():
             [(self.TorqueControl.data.proportionalGain), sizeof(c_float), c_float],
             [(self.TorqueControl.data.integralGain), sizeof(c_float), c_float],
             [(self.TorqueControl.data.derivativeGain), sizeof(c_float), c_float],
-            [(self.Limits.data.minPosition), sizeof(c_uint32), c_uint32],
-            [(self.Limits.data.maxPosition), sizeof(c_uint32), c_uint32],
             [(self.PositionControl.data.setpoint), sizeof(c_float), c_float],
             [(self.TorqueControl.data.setpoint), sizeof(c_float), c_float],
             [(self.VelocityControl.data.setpoint), sizeof(c_float), c_float],
-            [(self.Configuration.data.pwm_duty), sizeof(c_uint16), c_uint16],
             [(self.Sensors.data.buzzerEnable), sizeof(c_uint8), c_uint8],
             [(self.Telemetry.data.position), sizeof(c_float), c_float],
             [(self.Telemetry.data.velocity), sizeof(c_float), c_float],
@@ -116,7 +120,7 @@ class Actuator():
         self.command.data = self._commandLUT['Read']
 
         if full:
-            params = [param for param in range(int(Parameters.LAST_INDEX) + 1)]
+            params = [param for param in range(Index.LAST_INDEX + 1)]
 
         else:
             params = [param for param in params if param < len(self.Indexes)]
@@ -139,7 +143,7 @@ class Actuator():
                     params.append(param)
         else:
             # Writeable range
-            for i in range(Parameters.WRITEABLE_INDEX, Parameters.READ_ONLY_INDEX):
+            for i in range(Index.WRITEABLE_INDEX, Index.READ_ONLY_INDEX):
                 if self.Indexes[i][0].data != Act.Indexes[i][0].data:
                     params.append(i)
 
@@ -190,7 +194,7 @@ class Actuator():
             while i < (len(package) - 4):
 
                 # Check if index is in parameters range
-                if package[i] > Parameters.LAST_INDEX:
+                if package[i] > Index.LAST_INDEX:
                     return
 
                 # Floats
@@ -217,7 +221,7 @@ class Master():
     def __init__(self, size, portname, baudrate=115200, master_timeout=0.01) -> None:
         self.cb = CircularBuffer(size)
         self.ActList = []
-        self.Actuators = [Actuator(255)] * 255
+        self.Actuators = [SMDRed(255)] * 255
         self.Timestamps = [0] * 255
         self._serial = serial.Serial(portname, baudrate, timeout=master_timeout)
 
@@ -227,13 +231,13 @@ class Master():
 
         if ID not in self.ActList:
             self.ActList.append(ID)
-            self.Actuators[ID] = Actuator(ID)
+            self.Actuators[ID] = SMDRed(ID)
 
     def removeActuator(self, ID: int):
         if ID < 0 or ID > 255:
             raise ValueError('{} is not in valid ID range'.format(ID))
         self.ActList.remove(ID)
-        self.Actuators[ID] = Actuator(255)
+        self.Actuators[ID] = SMDRed(255)
 
     def findPackage(self):
 

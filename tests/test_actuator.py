@@ -1,12 +1,12 @@
 import unittest
 import unittest.mock
 from unittest.mock import patch
-from smd import actuator
+from smd import smd
 
 
 class TestActuator(unittest.TestCase):
     def setUp(self):
-        self.dev = actuator.Actuator(0)
+        self.dev = smd.SMDRed(0)
 
     def tearDown(self):
         pass

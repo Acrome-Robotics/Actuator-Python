@@ -47,7 +47,7 @@ class TestMaster(unittest.TestCase):
         self.assertEqual([], self.mst.receive())
 
     def test_find_package(self):
-        with patch.object(actuator.Actuator, 'parse') as parse:
+        with patch.object(actuator.SMDRed, 'parse') as parse:
             self.mst.pass2buffer([0x55, 0x00, 0x09, 0x00, 0x00, 0x7F, 0x9A, 0xEC, 0xA4])
             self.mst.findPackage()
             parse.assert_called_once()
