@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from smd import actuator
+from smd import smd
 from smd.types import CircularBuffer
 
 
@@ -10,7 +10,7 @@ class TestMaster(unittest.TestCase):
         patcher = patch("smd.actuator.serial.Serial", autospec=True)
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
-        self.mst = actuator.Master(size=4096, portname='/dev/ttyUSB0', baudrate=115200)
+        self.mst = smd.Master(size=4096, portname='/dev/ttyUSB0', baudrate=115200)
         self.mock.reset_mock()
 
     def tearDown(self) -> None:
@@ -35,7 +35,7 @@ class TestMaster(unittest.TestCase):
         self.assertTrue(ID not in self.mst.ActList)
 
     def test_send(self):
-        with patch.object(actuator.Master, 'send') as wr:
+        with patch.object(smd.Master, 'send') as wr:
             self.mst.send(bytes([0x55, 0x00, 0x09, 0x00, 0x00, 0x7F, 0x9A, 0xEC, 0xA4]))
             wr.assert_called_with(bytes([0x55, 0x00, 0x09, 0x00, 0x00, 0x7F, 0x9A, 0xEC, 0xA4]))
 
@@ -47,7 +47,7 @@ class TestMaster(unittest.TestCase):
         self.assertEqual([], self.mst.receive())
 
     def test_find_package(self):
-        with patch.object(actuator.SMDRed, 'parse') as parse:
+        with patch.object(smd.SMDRed, 'parse') as parse:
             self.mst.pass2buffer([0x55, 0x00, 0x09, 0x00, 0x00, 0x7F, 0x9A, 0xEC, 0xA4])
             self.mst.findPackage()
             parse.assert_called_once()

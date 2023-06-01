@@ -1,6 +1,6 @@
 import time
 from crccheck.crc import Crc32Mpeg2 as CRC32
-from smd.smd_types import (Telemetry, Configuration, Control, Autotuner,
+from smd.smd_types import (Telemetry, Configuration, Control,
                            Sensors, Limits, Index, var, CircularBuffer)
 from ctypes import *
 import struct
@@ -32,7 +32,6 @@ class SMDRed():
         self.PositionControl = var(Control())
         self.VelocityControl = var(Control())
         self.TorqueControl = var(Control())
-        self.Autotuner = var(Autotuner())
         self.Sensors = var(Sensors())
         self.CRC = var(0)
 
