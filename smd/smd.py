@@ -314,17 +314,16 @@ class Master():
         self.ActList = alive
         return alive
 
-    def SyncWrite(self, index=int, id_list=[], value_list=[]):
-        if len(value_list) == 0:
+    def SyncWrite(self, index=int, id_val_pairs=[]):
+        if len(id_val_pairs) == 0:
             raise ValueError('Empty argument to the function')
 
 
         data = bytearray()
         data.extend(index.to_bytes(1, 'little'))
-        for idx, value in zip(id_list, value_list):
-            data.extend(idx.to_bytes(1, 'little'))
-            data.extend(struct.pack("<" + self.Actuators[254].Indexes[index][2]._type_, value))
-
+        for pair in id_val_pairs:
+            data.extend(pair[0].to_bytes(1, 'little'))
+            data.extend(struct.pack("<" + self.Actuators[254].Indexes[index][2]._type_, pair[1]))
 
         header = bytearray()
         header += SMDRed.HEADER.to_bytes(1, 'little')
