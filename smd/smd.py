@@ -19,9 +19,10 @@ class SMDRed():
                    'ROMWrite': 3,
                    'Reboot': 5,
                    'FactoryReset': 0x17,
-                   'RQ': 1 << 7
+                   'RQ': 1 << 7,
+                   'SyncWrite': 1 << 6,
                    }
-
+                   
     def __init__(self, ID):
         self.header = var(0x55)
         self.packageSize = var(0)
@@ -312,3 +313,27 @@ class Master():
 
         self.ActList = alive
         return alive
+
+    def SyncWrite(self, index=int, id_list=[], value_list=[]):
+        if len(value_list) == 0:
+            raise ValueError('Empty argument to the function')
+
+
+        data = bytearray()
+        data.extend(index.to_bytes(1, 'little'))
+        for idx, value in zip(id_list, value_list):
+            data.extend(idx.to_bytes(1, 'little'))
+            data.extend(struct.pack("<" + self.Actuators[254].Indexes[index][2]._type_, value))
+
+
+        header = bytearray()
+        header += SMDRed.HEADER.to_bytes(1, 'little')
+        header += SMDRed.BATCH_ID.to_bytes(1, 'little')
+        header += (9 + len(data)).to_bytes(1, 'little')
+        header += SMDRed._commandLUT['SyncWrite'].to_bytes(1, 'little')
+        header += (0).to_bytes(1, 'little')
+
+        data = header + data
+        crc = CRC32.calc(data).to_bytes(4, byteorder='little')
+        data = data + crc
+        return data
