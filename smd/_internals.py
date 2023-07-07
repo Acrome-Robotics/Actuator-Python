@@ -2,6 +2,10 @@ import struct
 import enum
 
 
+class FamilyType():  # Specify Red, Blue and Green types
+    pass
+
+
 class Commands(enum.IntEnum):
     PING = 0x00,
     READ = 0x01,
@@ -22,7 +26,7 @@ Index = enum.IntEnum('Index', [
     'DeviceID',
     'PackageSize',
     'Command',
-    'Error',
+    'Status',
     'Baudrate',
     'OperationMode',
     'CRCValue',

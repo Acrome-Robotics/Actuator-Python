@@ -1,18 +1,22 @@
-from smd._internals import _Data, Index
+from smd._internals import _Data, Index, Commands
+import struct
+from crccheck.crc import Crc32Mpeg2 as CRC32
 
 
 class SMDRed():
-    def __init__(self, ID: int) -> None:
-        _BROADCAST_ID = 0xFF
-        _PRODUCT_TYPE = None
-        _PACKAGE_ESSENTIAL_SIZE = 5
+    _BROADCAST_ID = 0xFF
+    _PRODUCT_TYPE = None
+    _PACKAGE_ESSENTIAL_SIZE = 5
 
+    def __init__(self, ID: int) -> None:
+
+        self.__ack_size = 0
         self.vars = [
             _Data(Index.Header, 'B', False, 0x55),
             _Data(Index.DeviceID, 'B'),
             _Data(Index.PackageSize, 'B'),
             _Data(Index.Command, 'B'),
-            _Data(Index.Error, 'B'),
+            _Data(Index.Status, 'B'),
             _Data(Index.Baudrate, 'I'),
             _Data(Index.OperationMode, 'B'),
             _Data(Index.CRCValue, 'I'),
@@ -23,11 +27,43 @@ class SMDRed():
         else:
             self.vars[Index.DeviceID].value(ID)
 
-    def set_variables(self):
-        pass
+    def get_ack_size(self):
+        return self.__ack_size
 
-    def get_variables(self):
-        pass
+    def set_variables(self, index_list=[], value_list=[], ack=False):
+        self.vars[Index.Command].value(Commands.__WRITE_ACK if ack else Commands.WRITE)
+
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:4]])
+        for index, value in zip(index_list, value_list):
+            self.vars[int(index)].value(value)
+            fmt_str += 'B' + self.vars[int(index)].type()
+
+        self.__ack_size = struct.calcsize(fmt_str)
+
+        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:4]], *[val for pair in zip(index_list, [self.vars[int(index)].value() for index in index_list]) for val in pair]]))
+
+        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[int(Index.CRCValue)].size()
+
+        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+
+        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
+
+    def get_variables(self, index_list=[]):
+        self.vars[Index.Command].value(Commands.READ)
+
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:4]])
+        fmt_str += 'B' * len(index_list)
+
+        self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue()].type()) \
+            + struct.calcsize(''.join(self.vars[idx].type() for idx in index_list))
+
+        struct_out = list(*[var.value() for var in self.vars[:4]], *[int(idx) for idx in index_list])
+
+        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
+
+        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+
+        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
     def reboot(self):
         pass
