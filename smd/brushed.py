@@ -5,7 +5,7 @@ import serial
 import time
 
 
-class SMDRed():
+class Brushed():
     _BROADCAST_ID = 0xFF
     _PRODUCT_TYPE = 0xBA
     _PACKAGE_ESSENTIAL_SIZE = 6
@@ -105,7 +105,7 @@ class SMDRed():
 
 class Master():
     def __init__(self, portname, baudrate=115200) -> None:
-        self.__driver_list = [SMDRed(255)] * 256
+        self.__driver_list = [Brushed(255)] * 256
         if baudrate > 6250000 or baudrate < 1537:
             raise ValueError('Baudrate must be in range of 1537 to 6.25M')
         else:
@@ -135,11 +135,11 @@ class Master():
         except:
             pass
 
-    def attach(self, driver: SMDRed):
+    def attach(self, driver: Brushed):
         self.__driver_list[driver.vars[Index.DeviceID].value()] = driver
 
     def detach(self, id):
-        self.__driver_list[id] = SMDRed(255)
+        self.__driver_list[id] = Brushed(255)
 
     def parse(self, data):
         id = data[Index.DeviceID]
@@ -212,6 +212,6 @@ class Master():
         for idx in range(255):
             if self.ping(idx):
                 connected.append(idx)
-                self.attach((SMDRed(idx)))
+                self.attach((Brushed(idx)))
 
         return connected
