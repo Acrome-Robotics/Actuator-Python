@@ -16,7 +16,7 @@ class Commands(enum.IntEnum):
     __SYNC_WRITE = -1
     __BULK_WRITE = -1
     __BULK_READ = -1
-    __ACK = -1,
+    ACK = 0x80,
     __WRITE_ACK = 1
     __EEPROM_WRITE_ACK = -1
 
@@ -24,6 +24,7 @@ class Commands(enum.IntEnum):
 Index = enum.IntEnum('Index', [
     'Header',
     'DeviceID',
+    'DeviceFamily',
     'PackageSize',
     'Command',
     'Status',
