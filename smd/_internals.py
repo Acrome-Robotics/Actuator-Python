@@ -17,7 +17,7 @@ class Commands(enum.IntEnum):
     BULK_WRITE = 0x20 | 0x01
     BULK_READ = 0x20 | 0x02
     ACK = 0x80,
-    __WRITE_ACK = 1
+    WRITE_ACK = 0x80 | 0x01
     __EEPROM_WRITE_ACK = -1
 
 
@@ -28,6 +28,8 @@ Index = enum.IntEnum('Index', [
     'PackageSize',
     'Command',
     'Status',
+    'HardwareVersion',
+    'SoftwareVersion',
     'Baudrate',
     'OperationMode',
     'TorqueEnable',

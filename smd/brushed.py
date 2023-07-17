@@ -19,6 +19,8 @@ class Brushed():
             _Data(Index.PackageSize, 'B'),
             _Data(Index.Command, 'B'),
             _Data(Index.Status, 'B'),
+            _Data(Index.HardwareVersion, 'I'),
+            _Data(Index.SoftwareVersion, 'I'),
             _Data(Index.Baudrate, 'I'),
             _Data(Index.OperationMode, 'B'),
             _Data(Index.TorqueEnable, 'B'),
@@ -79,7 +81,7 @@ class Brushed():
         return self.__ack_size
 
     def set_variables(self, index_list=[], value_list=[], ack=False):
-        self.vars[Index.Command].value(Commands.__WRITE_ACK if ack else Commands.WRITE)
+        self.vars[Index.Command].value(Commands.WRITE_ACK if ack else Commands.WRITE)
 
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
         for index, value in zip(index_list, value_list):
@@ -102,10 +104,10 @@ class Brushed():
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
         fmt_str += 'B' * len(index_list)
 
-        self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue()].type()) \
+        self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type()) \
             + struct.calcsize(''.join(self.vars[idx].type() for idx in index_list))
 
-        struct_out = list(*[var.value() for var in self.vars[:4]], *[int(idx) for idx in index_list])
+        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:5]], *[int(idx) for idx in index_list]]))
 
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
 
@@ -196,6 +198,23 @@ class Master():
 
     def detach(self, id):
         self.__driver_list[id] = Brushed(255)
+
+    def set_variables(self, id, idx_val_pairs=[], ack=False):
+        index_list = [pair[0] for pair in idx_val_pairs]
+        value_list = [pair[1] for pair in idx_val_pairs]
+        self.__write_bus(self.__driver_list[id].set_variables(index_list, value_list, ack))
+        if ack:
+            self.__read_ack(id)
+            return [self.__driver_list[id].vars[index].value() for index in index_list]
+        time.sleep(self.__post_sleep)
+        return [None]
+
+    def get_variables(self, id, index_list) -> list:
+        self.__write_bus(self.__driver_list[id].get_variables(index_list))
+        if self.__read_ack(id):
+            return [self.__driver_list[id].vars[index].value() for index in index_list]
+        else:
+            return [None]
 
     def parse(self, data):
         id = data[Index.DeviceID]
