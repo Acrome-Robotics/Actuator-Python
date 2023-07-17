@@ -6,7 +6,6 @@ import time
 
 
 class Brushed():
-    _BROADCAST_ID = 0xFF
     _PRODUCT_TYPE = 0xBA
     _PACKAGE_ESSENTIAL_SIZE = 6
 
@@ -117,7 +116,7 @@ class Brushed():
     def reboot(self):
         self.vars[Index.Command].value(Commands.REBOOT)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = struct.pack(fmt_str, list(*[var.value() for var in self.vars[:5]]))
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         self.__ack_size = 0
@@ -126,7 +125,7 @@ class Brushed():
     def EEPROM_write(self, ack=False):
         self.vars[Index.Command].value(Commands.__EEPROM_WRITE_ACK if ack else Commands.EEPROM_WRITE)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = struct.pack(fmt_str, list(*[var.value() for var in self.vars[:5]]))
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
@@ -135,21 +134,25 @@ class Brushed():
     def ping(self):
         self.vars[Index.Command].value(Commands.PING)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = struct.pack(fmt_str, list(*[var.value() for var in self.vars[:5]]))
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
-    def change_id(self, id):
+    def update_id(self, id):
         self.vars[Index.Command].value(Commands.WRITE)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:5]], [id]]))
+        fmt_str += 'B' + self.vars[int(Index.DeviceID)].type()
+        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:5]], int(Index.DeviceID), id]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[int(Index.CRCValue)].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
+
 class Master():
+    _BROADCAST_ID = 0xFF
+
     def __init__(self, portname, baudrate=115200) -> None:
         self.__driver_list = [Brushed(255)] * 256
         if baudrate > 6250000 or baudrate < 1537:
@@ -161,6 +164,8 @@ class Master():
 
     def __del__(self):
         try:
+            self.__ph.reset_input_buffer()
+            self.__ph.reset_output_buffer()
             self.__ph.close()
         except:
             pass
@@ -170,7 +175,12 @@ class Master():
 
     def __read_bus(self, size) -> bytes:
         self.__ph.reset_input_buffer()
-        return self.read(size=size)
+        return self.__ph.read(size=size)
+
+    def update_id(self, id, id_new):
+        if id_new > 255 or id_new < 0:
+            raise ValueError("Device ID can not be higher than 254 or lower than 0!")
+        self.__write_bus(self.__driver_list[id].change_id(id_new))
 
     def update_baudrate(self, baud: int):
         self.__ph.reset_input_buffer()
@@ -211,7 +221,7 @@ class Master():
                     self.parse(ret)
                     return True
                 else:
-                    return False
+                    return True  # Ping package
             else:
                 return False
         else:
@@ -256,8 +266,9 @@ class Master():
         connected = []
 
         for idx in range(255):
+            self.attach(Brushed(idx))
             if self.ping(idx):
                 connected.append(idx)
-                self.attach((Brushed(idx)))
-
+            else:
+                self.detach(idx)
         return connected
