@@ -142,6 +142,24 @@ class Brushed():
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
+    def reset_enc(self):
+        self.vars[Index.Command].value(Commands.RESET_ENC)
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
+        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
+        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+        self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
+        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
+
+    def scan_sensors(self):
+        self.vars[Index.Command].value(Commands.SCAN_SENSORS)
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
+        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
+        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+        self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
+        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
+
     def update_id(self, id):
         self.vars[Index.Command].value(Commands.WRITE)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
@@ -149,6 +167,15 @@ class Brushed():
         struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:5]], int(Index.DeviceID), id]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[int(Index.CRCValue)].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
+
+    def enter_bootloader(self):
+        self.vars[Index.Command].value(Commands.BL_JUMP)
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
+        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
+        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+        self.__ack_size = 0
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
 
@@ -246,16 +273,34 @@ class Master():
         else:
             return False
 
-    def sync_write(self, id):
+    def sync_write(self, index: Index, id_val_pairs=[]):
+        dev = Brushed(self.__class__._BROADCAST_ID)
+        dev.vars[Index.Command].value(Commands.SYNC_WRITE)
+
+        fmt_str = '<' + ''.join([var.type() for var in dev.vars[:5]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in dev.vars[:5]]))
+
+        fmt_str += 'B'
+        struct_out += list(struct.pack('<B', int(index)))
+
+        for pair in id_val_pairs:
+            fmt_str += 'B'
+            struct_out += list(struct.pack('<B', pair[0]))
+            struct_out += list(struct.pack('<' + dev.vars[index].type, pair[1]))
+
+        struct_out[int(Index.PackageSize)] = len(struct_out) + dev.vars[Index.CRCValue].size()
+        dev.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+
+        self.__write_bus(bytes(struct_out) + struct.pack('<' + dev.vars[Index.CRCValue].type(), dev.vars[Index.CRCValue].value()))
+        time.sleep(self.__post_sleep)
+
+    def __sync_read(self, id):
         raise NotImplementedError()
 
-    def sync_read(self, id):
+    def __bulk_write(self, id):
         raise NotImplementedError()
 
-    def bulk_write(self, id):
-        raise NotImplementedError()
-
-    def bulk_read(self, id):
+    def __bulk_read(self, id):
         raise NotImplementedError()
 
     def reboot(self, id):
@@ -272,7 +317,7 @@ class Master():
             else:
                 return False
 
-    def ping(self, id):
+    def ping(self, id) -> bool:
         self.__write_bus(self.__driver_list[id].ping())
         time.sleep(self.__post_sleep)
 
@@ -280,6 +325,21 @@ class Master():
             return True
         else:
             return False
+
+    def reset_enc(self, id):
+        self.__write_bus(self.__driver_list[id].reset_enc())
+        time.sleep(self.__post_sleep)
+
+    def scan_sensors(self, id) -> list:
+        connected = []
+        self.__write_bus(self.__driver_list[id].scan_sensors())
+        time.sleep(self.__post_sleep)
+
+        return connected
+
+    def enter_bootloader(self, id):
+        self.__write_bus(self.__driver_list[id].enter_bootloader())
+        time.sleep(self.__post_sleep)
 
     def scan(self) -> list:
         connected = []

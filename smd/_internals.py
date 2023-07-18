@@ -10,8 +10,10 @@ class Commands(enum.IntEnum):
     PING = 0x00,
     WRITE = 0x01,
     READ = 0x02,
-    REBOOT = 0x05,
     EEPROM_WRITE = 0x03,
+    SCAN_SENSORS = 0x04
+    REBOOT = 0x05,
+    RESET_ENC = 0x06
     BL_JUMP = 0x30,
     SYNC_WRITE = 0x40 | 0x01
     BULK_WRITE = 0x20 | 0x01
