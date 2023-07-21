@@ -24,51 +24,89 @@ class Brushed():
             _Data(Index.Baudrate, 'I'),
             _Data(Index.OperationMode, 'B'),
             _Data(Index.TorqueEnable, 'B'),
-            _Data(Index.AutotunerEnable, 'B'),
-            _Data(Index.AutotuneMethod, 'B'),
+            _Data(Index.TunerEnable, 'B'),
+            _Data(Index.TunerMethod, 'B'),
             _Data(Index.MotorCPR, 'f'),
             _Data(Index.MotorRPM, 'f'),
-            _Data(Index.PWMFrequency, 'I'),
-            _Data(Index.SetDutyCycle, 'f'),
-            _Data(Index.MinimumPosition, 'i'),
-            _Data(Index.MaximumPosition, 'i'),
+            _Data(Index.MinimumPositionLimit, 'i'),
+            _Data(Index.MaximumPositionLimit, 'i'),
             _Data(Index.TorqueLimit, 'H'),
             _Data(Index.VelocityLimit, 'H'),
             _Data(Index.PositionFF, 'f'),
             _Data(Index.VelocityFF, 'f'),
             _Data(Index.TorqueFF, 'f'),
-            _Data(Index.PosScalerGain, 'f'),
-            _Data(Index.PosPGain, 'f'),
-            _Data(Index.PosIGain, 'f'),
-            _Data(Index.PosDGain, 'f'),
-            _Data(Index.VelScalerGain, 'f'),
-            _Data(Index.VelPGain, 'f'),
-            _Data(Index.VelIGain, 'f'),
-            _Data(Index.VelDGain, 'f'),
+            _Data(Index.PositionScalerGain, 'f'),
+            _Data(Index.PositionPGain, 'f'),
+            _Data(Index.PositionIGain, 'f'),
+            _Data(Index.PositionDGain, 'f'),
+            _Data(Index.VelocityScalerGain, 'f'),
+            _Data(Index.VelocityPGain, 'f'),
+            _Data(Index.VelocityIGain, 'f'),
+            _Data(Index.VelocityDGain, 'f'),
             _Data(Index.TorqueScalerGain, 'f'),
             _Data(Index.TorquePGain, 'f'),
             _Data(Index.TorqueIGain, 'f'),
             _Data(Index.TorqueDGain, 'f'),
             _Data(Index.SetPosition, 'f'),
-            _Data(Index.SetTorque, 'f'),
             _Data(Index.SetVelocity, 'f'),
-            _Data(Index.BuzzerEnable, 'B'),
+            _Data(Index.SetTorque, 'f'),
+            _Data(Index.SetDutyCycle, 'f'),
+            _Data(Index.ID11Buzzer, 'B'),
+            _Data(Index.ID12Buzzer, 'B'),
+            _Data(Index.ID13Buzzer, 'B'),
+            _Data(Index.ID14Buzzer, 'B'),
+            _Data(Index.ID15Buzzer, 'B'),
             _Data(Index.PresentPosition, 'f'),
             _Data(Index.PresentVelocity, 'f'),
             _Data(Index.MotorCurrent, 'f'),
-            _Data(Index.InternalRoll, 'f'),
-            _Data(Index.InternalPitch, 'f'),
-            _Data(Index.ExternalRoll, 'f'),
-            _Data(Index.ExternalPitch, 'f'),
-            _Data(Index.AmbientLight, 'H'),
-            _Data(Index.IsButtonPressed, 'B'),
-            _Data(Index.Distance, 'H'),
-            _Data(Index.JoystickX, 'H'),
-            _Data(Index.JoystickY, 'H'),
-            _Data(Index.JoystickButton, 'B'),
-            _Data(Index.QtrR, 'B'),
-            _Data(Index.QtrM, 'B'),
-            _Data(Index.QtrL, 'B'),
+            _Data(Index.AnalogPort, 'H'),
+            _Data(Index.RollAngle, 'f'),
+            _Data(Index.PitchAngle, 'f'),
+            _Data(Index.ID1Button, 'B'),
+            _Data(Index.ID2Button, 'B'),
+            _Data(Index.ID3Button, 'B'),
+            _Data(Index.ID4Button, 'B'),
+            _Data(Index.ID5Button, 'B'),
+            _Data(Index.ID6Light, 'H'),
+            _Data(Index.ID7Light, 'H'),
+            _Data(Index.ID8Light, 'H'),
+            _Data(Index.ID9Light, 'H'),
+            _Data(Index.ID10Light, 'H'),
+            _Data(Index.ID16JoystickX, 'f'),
+            _Data(Index.ID16JoystickY, 'f'),
+            _Data(Index.ID16JoystickButton, 'B'),
+            _Data(Index.ID17JoystickX, 'f'),
+            _Data(Index.ID17JoystickY, 'f'),
+            _Data(Index.ID17JoystickButton, 'B'),
+            _Data(Index.ID18JoystickX, 'f'),
+            _Data(Index.ID18JoystickY, 'f'),
+            _Data(Index.ID18JoystickButton, 'B'),
+            _Data(Index.ID19JoystickX, 'f'),
+            _Data(Index.ID19JoystickY, 'f'),
+            _Data(Index.ID19JoystickButton, 'B'),
+            _Data(Index.ID20JoystickX, 'f'),
+            _Data(Index.ID20JoystickY, 'f'),
+            _Data(Index.ID20JoystickButton, 'B'),
+            _Data(Index.ID21Distance, 'H'),
+            _Data(Index.ID22Distance, 'H'),
+            _Data(Index.ID23Distance, 'H'),
+            _Data(Index.ID24Distance, 'H'),
+            _Data(Index.ID25Distance, 'H'),
+            _Data(Index.ID26QTR, 'B'),
+            _Data(Index.ID27QTR, 'B'),
+            _Data(Index.ID28QTR, 'B'),
+            _Data(Index.ID29QTR, 'B'),
+            _Data(Index.ID30QTR, 'B'),
+            _Data(Index.ID31Servo, 'B'),
+            _Data(Index.ID32Servo, 'B'),
+            _Data(Index.ID33Servo, 'B'),
+            _Data(Index.ID34Servo, 'B'),
+            _Data(Index.ID35Servo, 'B'),
+            _Data(Index.ID36Pot, 'H'),
+            _Data(Index.ID37Pot, 'H'),
+            _Data(Index.ID38Pot, 'H'),
+            _Data(Index.ID39Pot, 'H'),
+            _Data(Index.ID40Pot, 'H'),
             _Data(Index.CRCValue, 'I'),
         ]
 
@@ -189,7 +227,7 @@ class Master():
         else:
             self.__baudrate = baudrate
             self.__post_sleep = 10 / self.__baudrate
-            self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.1)
+            self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.05)
 
     def __del__(self):
         try:
@@ -214,7 +252,6 @@ class Master():
     def update_baudrate(self, baud: int):
         self.__ph.reset_input_buffer()
         self.__ph.reset_output_buffer()
-
         try:
             self.__ph.baudrate(baud)
         except:
@@ -343,7 +380,6 @@ class Master():
 
     def scan(self) -> list:
         connected = []
-
         for idx in range(255):
             self.attach(Brushed(idx))
             if self.ping(idx):
