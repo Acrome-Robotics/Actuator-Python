@@ -107,7 +107,7 @@ class Brushed():
             _Data(Index.ID38Pot, 'H'),
             _Data(Index.ID39Pot, 'H'),
             _Data(Index.ID40Pot, 'H'),
-            _Data(Index.CRCValue, 'I'),
+            _Data(Index.CRCValue, 'I')
         ]
 
         if ID > 255 or ID < 0:
@@ -121,14 +121,14 @@ class Brushed():
     def set_variables(self, index_list=[], value_list=[], ack=False):
         self.vars[Index.Command].value(Commands.WRITE_ACK if ack else Commands.WRITE)
 
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
         for index, value in zip(index_list, value_list):
             self.vars[int(index)].value(value)
             fmt_str += 'B' + self.vars[int(index)].type()
 
         self.__ack_size = struct.calcsize(fmt_str)
 
-        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:5]], *[val for pair in zip(index_list, [self.vars[int(index)].value() for index in index_list]) for val in pair]]))
+        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:6]], *[val for pair in zip(index_list, [self.vars[int(index)].value() for index in index_list]) for val in pair]]))
 
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[int(Index.CRCValue)].size()
 
@@ -139,13 +139,13 @@ class Brushed():
     def get_variables(self, index_list=[]):
         self.vars[Index.Command].value(Commands.READ)
 
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
         fmt_str += 'B' * len(index_list)
 
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type()) \
-            + struct.calcsize(''.join(self.vars[idx].type() for idx in index_list))
+            + struct.calcsize('<' + ''.join(self.vars[idx].type() for idx in index_list))
 
-        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:5]], *[int(idx) for idx in index_list]]))
+        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:6]], *[int(idx) for idx in index_list]]))
 
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
 
@@ -155,17 +155,28 @@ class Brushed():
 
     def reboot(self):
         self.vars[Index.Command].value(Commands.REBOOT)
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         self.__ack_size = 0
+
+        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
+
+    def hard_reset(self):
+        self.vars[Index.Command].value(Commands.HARD_RESET)
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
+        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
+        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+        self.__ack_size = 0
+
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
     def EEPROM_write(self, ack=False):
         self.vars[Index.Command].value(Commands.__EEPROM_WRITE_ACK if ack else Commands.EEPROM_WRITE)
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
@@ -173,8 +184,8 @@ class Brushed():
 
     def ping(self):
         self.vars[Index.Command].value(Commands.PING)
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
@@ -182,8 +193,8 @@ class Brushed():
 
     def reset_enc(self):
         self.vars[Index.Command].value(Commands.RESET_ENC)
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
@@ -191,8 +202,8 @@ class Brushed():
 
     def scan_sensors(self):
         self.vars[Index.Command].value(Commands.SCAN_SENSORS)
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
@@ -200,17 +211,17 @@ class Brushed():
 
     def update_id(self, id):
         self.vars[Index.Command].value(Commands.WRITE)
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
         fmt_str += 'B' + self.vars[int(Index.DeviceID)].type()
-        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:5]], int(Index.DeviceID), id]))
+        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:6]], int(Index.DeviceID), id]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[int(Index.CRCValue)].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
     def enter_bootloader(self):
         self.vars[Index.Command].value(Commands.BL_JUMP)
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:5]])
-        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:5]]))
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
         self.__ack_size = 0
@@ -227,7 +238,7 @@ class Master():
         else:
             self.__baudrate = baudrate
             self.__post_sleep = 10 / self.__baudrate
-            self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.05)
+            self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.1)
 
     def __del__(self):
         try:
@@ -275,6 +286,7 @@ class Master():
 
     def get_variables(self, id, index_list) -> list:
         self.__write_bus(self.__driver_list[id].get_variables(index_list))
+        time.sleep(self.__post_sleep)
         if self.__read_ack(id):
             return [self.__driver_list[id].vars[index].value() for index in index_list]
         else:
@@ -282,7 +294,7 @@ class Master():
 
     def parse(self, data):
         id = data[Index.DeviceID]
-        data = data[5:-4]
+        data = data[6:-4]
         fmt_str = '<'
 
         i = 0
@@ -300,7 +312,7 @@ class Master():
         ret = self.__read_bus(self.__driver_list[id].get_ack_size())
         if len(ret) == self.__driver_list[id].get_ack_size():
             if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
-                if ret[int(Index.PackageSize)] > 9:
+                if ret[int(Index.PackageSize)] > 10:
                     self.parse(ret)
                     return True
                 else:
@@ -314,8 +326,8 @@ class Master():
         dev = Brushed(self.__class__._BROADCAST_ID)
         dev.vars[Index.Command].value(Commands.SYNC_WRITE)
 
-        fmt_str = '<' + ''.join([var.type() for var in dev.vars[:5]])
-        struct_out = list(struct.pack(fmt_str, *[var.value() for var in dev.vars[:5]]))
+        fmt_str = '<' + ''.join([var.type() for var in dev.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in dev.vars[:6]]))
 
         fmt_str += 'B'
         struct_out += list(struct.pack('<B', int(index)))
@@ -342,6 +354,10 @@ class Master():
 
     def reboot(self, id):
         self.__write_bus(self.__driver_list[id].reboot())
+        time.sleep(self.__post_sleep)
+
+    def hard_reset(self, id):
+        self.__write_bus(self.__driver_list[id].hard_reset())
         time.sleep(self.__post_sleep)
 
     def eeprom_write(self, id, ack=False):
@@ -376,6 +392,12 @@ class Master():
 
     def enter_bootloader(self, id):
         self.__write_bus(self.__driver_list[id].enter_bootloader())
+        time.sleep(self.__post_sleep)
+
+    def update_id(self, id, id_new):
+        if id_new > 255 or id_new < 0:
+            raise ValueError("Device ID can not be higher than 254 or lower than 0!")
+        self.__write_bus(self.__driver_list[id].update_id(id_new))
         time.sleep(self.__post_sleep)
 
     def scan(self) -> list:

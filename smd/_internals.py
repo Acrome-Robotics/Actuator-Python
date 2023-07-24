@@ -15,7 +15,7 @@ class Commands(enum.IntEnum):
     SCAN_SENSORS = 0x04
     REBOOT = 0x05
     RESET_ENC = 0x06
-    FACTORY_RESET = 0x17
+    HARD_RESET = 0x17
     ERROR_CLEAR = 0x18
     BL_JUMP = 0x30
     SYNC_WRITE = 0x40 | 0x01
@@ -85,7 +85,7 @@ Index = enum.IntEnum('Index', [
     'PresentPosition',
     'PresentVelocity',
     'MotorCurrent',
-    'AnalogPort'
+    'AnalogPort',
     'RollAngle',
     'PitchAngle',
     'ID1Button',
