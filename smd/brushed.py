@@ -3,11 +3,14 @@ import struct
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
 import time
+from packaging.version import parse as parse_version
 
 
 class Brushed():
+    _HEADER = 0x55
     _PRODUCT_TYPE = 0xBA
     _PACKAGE_ESSENTIAL_SIZE = 6
+    _STATUS_KEY_LIST = ['EEPROM', 'Software Version', 'Hardware Version']
 
     def __init__(self, ID: int) -> bool:
 
@@ -209,15 +212,6 @@ class Brushed():
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
-    def update_id(self, id):
-        self.vars[Index.Command].value(Commands.WRITE)
-        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
-        fmt_str += 'B' + self.vars[int(Index.DeviceID)].type()
-        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:6]], int(Index.DeviceID), id]))
-        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[int(Index.CRCValue)].size()
-        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
-        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
-
     def enter_bootloader(self):
         self.vars[Index.Command].value(Commands.BL_JUMP)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
@@ -352,6 +346,23 @@ class Master():
     def __bulk_read(self, id):
         raise NotImplementedError()
 
+    def update_board_baudrate(self, id, br):
+        self.set_variables(id, br)
+        self.reboot()
+
+    def update_master_baudrate(self, br):
+        self.__ph.reset_input_buffer()
+        self.__ph.reset_output_buffer()
+        try:
+            settings = self.__ph.get_settings()
+            self.__ph.close()
+            settings['baudrate'] = br
+            self.__ph.apply_settings(settings)
+            self.__ph.open()
+
+        except Exception as e:
+            raise e
+
     def reboot(self, id):
         self.__write_bus(self.__driver_list[id].reboot())
         time.sleep(self.__post_sleep)
@@ -394,7 +405,17 @@ class Master():
         self.__write_bus(self.__driver_list[id].enter_bootloader())
         time.sleep(self.__post_sleep)
 
-    def update_id(self, id, id_new):
+    def get_board_info(self, id):
+        st = dict()
+        data = self.get_variables([Index.Status, Index.HardwareVersion, Index.SoftwareVersion])
+        if data is not None:
+            st['HardwareVersion'] = data[1]
+            st['SoftwareVersion'] = data[2]
+            return st
+        else:
+            return None
+
+    def update_board_id(self, id, id_new):
         if id_new > 255 or id_new < 0:
             raise ValueError("Device ID can not be higher than 254 or lower than 0!")
         self.__write_bus(self.__driver_list[id].update_id(id_new))
