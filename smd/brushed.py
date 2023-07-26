@@ -239,8 +239,8 @@ class Master():
             self.__ph.reset_input_buffer()
             self.__ph.reset_output_buffer()
             self.__ph.close()
-        except:
-            pass
+        except Exception as e:
+            raise e
 
     def __write_bus(self, data):
         self.__ph.write(data)
@@ -347,8 +347,11 @@ class Master():
         raise NotImplementedError()
 
     def update_board_baudrate(self, id, br):
-        self.set_variables(id, br)
-        self.reboot()
+        self.set_variables(id, [[Index.Baudrate, br]])
+        time.sleep(self.__post_sleep)
+        self.eeprom_write(id)
+        time.sleep(self.__post_sleep)
+        self.reboot(id)
 
     def update_master_baudrate(self, br):
         self.__ph.reset_input_buffer()
