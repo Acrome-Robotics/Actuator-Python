@@ -221,6 +221,15 @@ class Brushed():
         self.__ack_size = 0
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
+    def update_id(self, id):
+        self.vars[Index.Command].value(Commands.WRITE)
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        fmt_str += 'B' + self.vars[int(Index.DeviceID)].type()
+        struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:6]], int(Index.DeviceID), id]))
+        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[int(Index.CRCValue)].size()
+        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
+
 
 class Master():
     _BROADCAST_ID = 0xFF
@@ -329,7 +338,7 @@ class Master():
         for pair in id_val_pairs:
             fmt_str += 'B'
             struct_out += list(struct.pack('<B', pair[0]))
-            struct_out += list(struct.pack('<' + dev.vars[index].type, pair[1]))
+            struct_out += list(struct.pack('<' + dev.vars[index].type(), pair[1]))
 
         struct_out[int(Index.PackageSize)] = len(struct_out) + dev.vars[Index.CRCValue].size()
         dev.vars[Index.CRCValue].value(CRC32.calc(struct_out))
@@ -362,6 +371,8 @@ class Master():
             settings['baudrate'] = br
             self.__ph.apply_settings(settings)
             self.__ph.open()
+
+            self.__post_sleep = 10 / br
 
         except Exception as e:
             raise e
