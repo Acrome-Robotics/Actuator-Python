@@ -6,7 +6,7 @@ import time
 from packaging.version import parse as parse_version
 
 
-class Brushed():
+class Red():
     _HEADER = 0x55
     _PRODUCT_TYPE = 0xBA
     _PACKAGE_ESSENTIAL_SIZE = 6
@@ -235,9 +235,9 @@ class Master():
     _BROADCAST_ID = 0xFF
 
     def __init__(self, portname, baudrate=115200) -> None:
-        self.__driver_list = [Brushed(255)] * 256
-        if baudrate > 6250000 or baudrate < 1537:
-            raise ValueError('Baudrate must be in range of 1537 to 6.25M')
+        self.__driver_list = [Red(255)] * 256
+        if baudrate > 12500000 or baudrate < 3053:
+            raise ValueError('Baudrate must be between 3.053 KBits/s and 12.5 MBits/s.')
         else:
             self.__baudrate = baudrate
             self.__post_sleep = 10 / self.__baudrate
@@ -271,11 +271,11 @@ class Master():
         except:
             pass
 
-    def attach(self, driver: Brushed):
+    def attach(self, driver: Red):
         self.__driver_list[driver.vars[Index.DeviceID].value()] = driver
 
     def detach(self, id):
-        self.__driver_list[id] = Brushed(255)
+        self.__driver_list[id] = Red(255)
 
     def set_variables(self, id, idx_val_pairs=[], ack=False):
         index_list = [pair[0] for pair in idx_val_pairs]
@@ -326,7 +326,7 @@ class Master():
             return False
 
     def sync_write(self, index: Index, id_val_pairs=[]):
-        dev = Brushed(self.__class__._BROADCAST_ID)
+        dev = Red(self.__class__._BROADCAST_ID)
         dev.vars[Index.Command].value(Commands.SYNC_WRITE)
 
         fmt_str = '<' + ''.join([var.type() for var in dev.vars[:6]])
@@ -355,7 +355,20 @@ class Master():
     def __bulk_read(self, id):
         raise NotImplementedError()
 
+    def scan(self) -> list:
+        connected = []
+        for idx in range(255):
+            self.attach(Red(idx))
+            if self.ping(idx):
+                connected.append(idx)
+            else:
+                self.detach(idx)
+        return connected
+
     def update_board_baudrate(self, id, br):
+        if br > 12500000 or br < 3053:
+            raise ValueError('Baudrate must be between 3.053 KBits/s and 12.5 MBits/s.')
+
         self.set_variables(id, [[Index.Baudrate, br]])
         time.sleep(self.__post_sleep)
         self.eeprom_write(id)
@@ -421,7 +434,7 @@ class Master():
 
     def get_board_info(self, id):
         st = dict()
-        data = self.get_variables([Index.Status, Index.HardwareVersion, Index.SoftwareVersion])
+        data = self.get_variables(id, [Index.Status, Index.HardwareVersion, Index.SoftwareVersion])
         if data is not None:
             st['HardwareVersion'] = data[1]
             st['SoftwareVersion'] = data[2]
@@ -435,12 +448,89 @@ class Master():
         self.__write_bus(self.__driver_list[id].update_id(id_new))
         time.sleep(self.__post_sleep)
 
-    def scan(self) -> list:
-        connected = []
-        for idx in range(255):
-            self.attach(Brushed(idx))
-            if self.ping(idx):
-                connected.append(idx)
-            else:
-                self.detach(idx)
-        return connected
+    def enable_torque(self, id, en: bool):
+        self.set_variables(id, [[Index.TorqueEnable, en]])
+        time.sleep(self.__post_sleep)
+
+    def set_operation_mode(self, id, mode):
+        self.set_variables(id, [[Index.OperationMode, mode]])
+        time.sleep(self.__post_sleep)
+
+    def get_operation_mode(self, id):
+        return self.get_variables(id, [Index.OperationMode])
+
+    def set_position_limits(self, id, plmin, plmax):
+        self.set_variables(id, [[Index.MinimumPositionLimit, plmin], [Index.MaximumPositionLimit, plmax]])
+        time.sleep(self.__post_sleep)
+
+    def get_position_limits(self, id):
+        return self.get_variables(id, [Index.MinimumPositionLimit, Index.MaximumPositionLimit])
+
+    def set_torque_limit(self, id, tl):
+        self.set_variables(id, [[Index.TorqueLimit, tl]])
+        time.sleep(self.__post_sleep)
+
+    def get_torque_limit(self, id):
+        return self.get_variables(id, [Index.TorqueLimit])
+
+    def set_velocity_limit(self, id, vl):
+        self.set_variables(id, [[Index.VelocityLimit, vl]])
+        time.sleep(self.__post_sleep)
+
+    def get_velocity_limit(self, id):
+        return self.get_variables(id, [Index.VelocityLimit])
+
+    def set_position(self, id, sp):
+        self.set_variables(id, [[Index.SetPosition, sp]])
+        time.sleep(self.__post_sleep)
+
+    def get_position(self, id):
+        return self.get_variables(id, [Index.PresentPosition])
+
+    def set_velocity(self, id, sp):
+        self.set_variables(id, [[Index.SetVelocity, sp]])
+        time.sleep(self.__post_sleep)
+
+    def get_velocity(self, id):
+        return self.get_variables(id, [Index.PresentVelocity])
+
+    def set_torque(self, id, sp):
+        self.set_variables(id, [[Index.SetTorque, sp]])
+        time.sleep(self.__post_sleep)
+
+    def get_torque(self, id):
+        return self.get_variables(id, [Index.MotorCurrent])
+
+    def set_duty_cycle(self, id, pct):
+        self.set_variables(id, [[Index.SetDutyCycle, pct]])
+        time.sleep(self.__post_sleep)
+
+    def set_pid_parameters_position_ctrl(self, id, p=None, i=None, d=None, ff=None):
+        index_list = [Index.PositionPGain, Index.PositionIGain, Index.PositionDGain, Index.PositionFF]
+        val_list = [p, i, d, ff]
+
+        self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
+        time.sleep(self.__post_sleep)
+
+    def get_pid_parameters_position_ctrl(self, id):
+        return self.get_variables(id, [Index.PositionPGain, Index.PositionIGain, Index.PositionDGain])
+
+    def set_pid_parameters_velocity_ctrl(self, id, p=None, i=None, d=None, ff=None):
+        index_list = [Index.VelocityPGain, Index.VelocityIGain, Index.VelocityDGain, Index.VelocityFF]
+        val_list = [p, i, d, ff]
+
+        self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
+        time.sleep(self.__post_sleep)
+
+    def get_pid_parameters_velocity_ctrl(self, id):
+        return self.get_variables(id, [Index.VelocityPGain, Index.VelocityIGain, Index.VelocityDGain])
+
+    def set_pid_parameters_torque_ctrl(self, id, p=None, i=None, d=None, ff=None):
+        index_list = [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueFF]
+        val_list = [p, i, d, ff]
+
+        self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
+        time.sleep(self.__post_sleep)
+
+    def get_pid_parameters_torque_ctrl(self, id):
+        return self.get_variables(id, [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain])

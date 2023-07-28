@@ -7,7 +7,7 @@ from smd import brushed
 class TestBrushed(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.dev = brushed.Brushed(1)
+        self.dev = brushed.Red(1)
 
     def tearDown(self) -> None:
         pass
