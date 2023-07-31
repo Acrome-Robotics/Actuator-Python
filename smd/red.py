@@ -511,32 +511,35 @@ class Master():
         self.set_variables(id, [[Index.SetDutyCycle, pct]])
         time.sleep(self.__post_sleep)
 
-    def set_pid_parameters_position_ctrl(self, id, p=None, i=None, d=None, ff=None):
-        index_list = [Index.PositionPGain, Index.PositionIGain, Index.PositionDGain, Index.PositionFF]
-        val_list = [p, i, d, ff]
+    def get_analog_port(self, id):
+        return self.get_variables(id, [Index.AnalogPort])
+
+    def set_control_parameters_position(self, id, p=None, i=None, d=None, db=None, ff=None, out_lim=None):
+        index_list = [Index.PositionPGain, Index.PositionIGain, Index.PositionDGain, Index.PositionDeadband, Index.PositionFF, Index.PositionOutputLimit]
+        val_list = [p, i, d, db, ff, out_lim]
 
         self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
         time.sleep(self.__post_sleep)
 
-    def get_pid_parameters_position_ctrl(self, id):
-        return self.get_variables(id, [Index.PositionPGain, Index.PositionIGain, Index.PositionDGain])
+    def get_control_parameters_position(self, id):
+        return self.get_variables(id, [Index.PositionPGain, Index.PositionIGain, Index.PositionDGain, Index.PositionDeadband, Index.PositionFF, Index.PositionOutputLimit])
 
-    def set_pid_parameters_velocity_ctrl(self, id, p=None, i=None, d=None, ff=None):
-        index_list = [Index.VelocityPGain, Index.VelocityIGain, Index.VelocityDGain, Index.VelocityFF]
-        val_list = [p, i, d, ff]
-
-        self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
-        time.sleep(self.__post_sleep)
-
-    def get_pid_parameters_velocity_ctrl(self, id):
-        return self.get_variables(id, [Index.VelocityPGain, Index.VelocityIGain, Index.VelocityDGain])
-
-    def set_pid_parameters_torque_ctrl(self, id, p=None, i=None, d=None, ff=None):
-        index_list = [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueFF]
-        val_list = [p, i, d, ff]
+    def set_control_parameters_velocity(self, id, p=None, i=None, d=None, db=None, ff=None, out_lim=None):
+        index_list = [Index.VelocityPGain, Index.VelocityIGain, Index.VelocityDGain, Index.VelocityDeadband, Index.VelocityFF, Index.VelocityOutputLimit]
+        val_list = [p, i, d, db, ff, out_lim]
 
         self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
         time.sleep(self.__post_sleep)
 
-    def get_pid_parameters_torque_ctrl(self, id):
-        return self.get_variables(id, [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain])
+    def get_control_parameters_velocity(self, id):
+        return self.get_variables(id, [Index.VelocityPGain, Index.VelocityIGain, Index.VelocityDGain, Index.VelocityDeadband, Index.VelocityFF, Index.VelocityOutputLimit])
+
+    def set_control_parameters_torque(self, id, p=None, i=None, d=None, db=None, ff=None, out_lim=None):
+        index_list = [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueDeadband, Index.TorqueFF, Index.TorqueOutputLimit]
+        val_list = [p, i, d, db, ff, out_lim]
+
+        self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
+        time.sleep(self.__post_sleep)
+
+    def get_control_parameters_torque(self, id):
+        return self.get_variables(id, [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueDeadband, Index.TorqueFF, Index.TorqueOutputLimit])
