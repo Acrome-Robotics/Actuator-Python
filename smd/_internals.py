@@ -26,16 +26,16 @@ class Commands(enum.IntEnum):
 
 
 class OperationMode():
-    POSITION = 0
-    VELOCITY = 1
-    TORQUE = 2
-    PWM = 3
+    PWM = 0
+    POSITION = 1
+    VELOCITY = 2
+    TORQUE = 3
 
 
 class Baudrate():
-    BAUD115200 = 115200,
-    BAUD921600 = 921600,
-    BAUD1152000 = 1152000
+    B115200 = 115200
+    B921600 = 921600
+    B1152000 = 1152000
 
 
 Index = enum.IntEnum('Index', [
@@ -52,8 +52,9 @@ Index = enum.IntEnum('Index', [
     'TorqueEnable',
     'TunerEnable',
     'TunerMethod',
-    'MotorCPR',
-    'MotorRPM',
+    'MotorShaftCPR',
+    'MotorShaftRPM',
+    'UserIndicator',
     'MinimumPositionLimit',
     'MaximumPositionLimit',
     'TorqueLimit',

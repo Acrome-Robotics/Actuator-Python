@@ -29,8 +29,9 @@ class Red():
             _Data(Index.TorqueEnable, 'B'),
             _Data(Index.TunerEnable, 'B'),
             _Data(Index.TunerMethod, 'B'),
-            _Data(Index.MotorCPR, 'f'),
-            _Data(Index.MotorRPM, 'f'),
+            _Data(Index.MotorShaftCPR, 'f'),
+            _Data(Index.MotorShaftRPM, 'f'),
+            _Data(Index.UserIndicator, 'B'),
             _Data(Index.MinimumPositionLimit, 'i'),
             _Data(Index.MaximumPositionLimit, 'i'),
             _Data(Index.TorqueLimit, 'H'),
@@ -362,6 +363,7 @@ class Master():
         raise NotImplementedError()
 
     def scan(self) -> list:
+        self.__ph.timeout(0.015)
         connected = []
         for idx in range(255):
             self.attach(Red(idx))
@@ -369,6 +371,7 @@ class Master():
                 connected.append(idx)
             else:
                 self.detach(idx)
+        self.__ph.timeout(0.1)
         return connected
 
     def update_board_baudrate(self, id, br):
@@ -464,6 +467,18 @@ class Master():
 
     def get_operation_mode(self, id):
         return self.get_variables(id, [Index.OperationMode])
+
+    def set_shaft_cpr(self, id, cpr):
+        self.set_variables(id, [[Index.MotorShaftCPR, cpr]])
+        time.sleep(self.__post_sleep)
+
+    def set_shaft_rpm(self, id, rpm):
+        self.set_variables(id, [[Index.MotorShaftRPM, rpm]])
+        time.sleep(self.__post_sleep)
+
+    def set_user_indicator(self, id):
+        self.set_variables(id, [[Index.UserIndicator, 1]])
+        time.sleep(self.__post_sleep)   
 
     def set_position_limits(self, id, plmin, plmax):
         self.set_variables(id, [[Index.MinimumPositionLimit, plmin], [Index.MaximumPositionLimit, plmax]])

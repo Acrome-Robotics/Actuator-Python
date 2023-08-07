@@ -1,13 +1,13 @@
 import unittest
 import unittest.mock
 from unittest.mock import patch
-from smd import brushed
+from smd import red
 
 
 class TestBrushed(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.dev = brushed.Red(1)
+        self.dev = red.Red(1)
 
     def tearDown(self) -> None:
         pass
@@ -33,7 +33,7 @@ class TestBrushed(unittest.TestCase):
 
 class TestMaster(unittest.TestCase):
     def setUp(self) -> None:
-        patcher = patch("smd.brushed.serial.Serial", autospec=True)
+        patcher = patch("smd.red.serial.Serial", autospec=True)
         self.mock = patcher.start()
         self.addCleanup(patcher.stop)
         self.mock.reset_mock()
