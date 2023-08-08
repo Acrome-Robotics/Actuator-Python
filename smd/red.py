@@ -1,4 +1,5 @@
-from smd._internals import _Data, Index, Commands
+from smd._internals import (_Data, Index, Commands,
+                            OperationMode, TuningMethod)
 import struct
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
@@ -15,6 +16,8 @@ class Red():
     def __init__(self, ID: int) -> bool:
 
         self.__ack_size = 0
+        self._config = None
+        self._fw_file = None
         self.vars = [
             _Data(Index.Header, 'B', False, 0x55),
             _Data(Index.DeviceID, 'B'),
@@ -173,7 +176,7 @@ class Red():
 
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
-    def hard_reset(self):
+    def factory_reset(self):
         self.vars[Index.Command].value(Commands.HARD_RESET)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
         struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
@@ -201,7 +204,7 @@ class Red():
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
-    def reset_enc(self):
+    def reset_encoder(self):
         self.vars[Index.Command].value(Commands.RESET_ENC)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
         struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
@@ -228,7 +231,7 @@ class Red():
         self.__ack_size = 0
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
-    def update_id(self, id):
+    def update_driver_id(self, id):
         self.vars[Index.Command].value(Commands.WRITE)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
         fmt_str += 'B' + self.vars[int(Index.DeviceID)].type()
@@ -265,44 +268,152 @@ class Master():
         self.__ph.reset_input_buffer()
         return self.__ph.read(size=size)
 
-    def update_id(self, id, id_new):
-        if id_new > 255 or id_new < 0:
-            raise ValueError("Device ID can not be higher than 254 or lower than 0!")
-        self.__write_bus(self.__driver_list[id].change_id(id_new))
+    def update_driver_baudrate(self, id: int, br: int):
+        """Update the baudrate of the driver with
+        given device ID. Following the method, the master
+        baudrate must be updated accordingly to initiate a
+        communication line with the board.
 
-    def update_baudrate(self, baud: int):
-        self.__ph.reset_input_buffer()
-        self.__ph.reset_output_buffer()
+        Args:
+            id (int): The device ID of the driver
+            br (int): New baudrate value
+
+        Raises:
+            ValueError: Baudrate is not valid
+        """
+
+        if (br < 3053) or (br > 12500000):
+            raise ValueError("{br} is not in acceptable range!")
+
+        self.set_variables(id, [[Index.Baudrate, br]])
+        time.sleep(self.__post_sleep)
+        self.eeprom_write(id)
+        time.sleep(self.__post_sleep)
+        self.reboot(id)
+
+    def update_master_baudrate(self, br: int):
+        """ Update the master serial port baudrate.
+
+        Args:
+            br (int): Baudrate in range [3053, 12500000]
+
+        Raises:
+            ValueError: Invalid baudrate
+            e: Unspecific exception
+        """
+
+        if (br < 3053) or (br > 12500000):
+            raise ValueError("{br} is not in acceptable range!")
+
         try:
-            self.__ph.baudrate(baud)
-        except:
-            pass
+            self.__ph.reset_input_buffer()
+            self.__ph.reset_output_buffer()
+            settings = self.__ph.get_settings()
+            self.__ph.close()
+            settings['baudrate'] = br
+            self.__ph.apply_settings(settings)
+            self.__ph.open()
+
+            self.__post_sleep = 10 / br
+
+        except Exception as e:
+            raise e
 
     def attach(self, driver: Red):
+        """ Attach a SMD driver to the master to define access to it.
+
+        Args:
+            driver (Red): Driver to be attached
+        """
         self.__driver_list[driver.vars[Index.DeviceID].value()] = driver
 
-    def detach(self, id):
+    def detach(self, id: int):
+        """ Detach the SMD driver with given ID from master driver list.
+
+        Args:
+            id (int): The device ID of the driver to be detached.
+
+        Raises:
+            ValueError: Device ID is not valid
+        """
+        if (id < 0) or (id > 255):
+            raise ValueError("{} is not a valid ID!".format(id))
+
         self.__driver_list[id] = Red(255)
 
-    def set_variables(self, id, idx_val_pairs=[], ack=False):
-        index_list = [pair[0] for pair in idx_val_pairs]
-        value_list = [pair[1] for pair in idx_val_pairs]
+    def set_variables(self, id: int, idx_val_pairs=[], ack=False) -> list | None:
+        """ Set variables on the driver with given ID
+        with a list containing [Index, value] sublists. Index
+        is the parameter index and the value is the value attached to it.
+
+        Args:
+            id (int):  The device ID of the driver
+            idx_val_pairs (list, optional): List containing Index, value pairs. Defaults to [].
+            ack (bool, optional): Get acknowledge from the driver. Defaults to False.
+
+        Raises:
+            ValueError: Device ID is not valid
+            IndexError: The given list is empty
+            Exception: Error raised from operation on the list except empty list
+
+        Returns:
+            list | None: Return the list of written values if ack is True, otherwise None.
+        """
+
+        if (id < 0) or (id > 254):
+            raise ValueError("{} is not a valid ID!".format(id))
+
+        if len(idx_val_pairs) == 0:
+            raise IndexError("Given id, value pair list is empty!")
+
+        try:
+            index_list = [pair[0] for pair in idx_val_pairs]
+            value_list = [pair[1] for pair in idx_val_pairs]
+        except Exception as e:
+            raise Exception(" Raised {} with args {}".format(e, e.args))
+
         self.__write_bus(self.__driver_list[id].set_variables(index_list, value_list, ack))
         if ack:
-            self.__read_ack(id)
-            return [self.__driver_list[id].vars[index].value() for index in index_list]
+            if self.__read_ack(id):
+                return [self.__driver_list[id].vars[index].value() for index in index_list]
         time.sleep(self.__post_sleep)
-        return [None]
+        return None
 
-    def get_variables(self, id, index_list) -> list:
+    def get_variables(self, id: int, index_list: list) -> list | None:
+        """ Get variables from the driver with respect to given list
+
+        Args:
+            id (int): The device ID of the driver
+            index_list (list): A list containing the Indexes to read
+
+        Raises:
+            ValueError: Device ID is not valid
+            IndexError: The given list is empty
+
+        Returns:
+            list | None: Return the list of read values if any, otherwise None.
+        """
+
+        if (id < 0) or (id > 254):
+            raise ValueError("{} is not a valid ID!".format(id))
+
+        if len(index_list) == 0:
+            raise IndexError("Given index list is empty!")
+
         self.__write_bus(self.__driver_list[id].get_variables(index_list))
         time.sleep(self.__post_sleep)
         if self.__read_ack(id):
             return [self.__driver_list[id].vars[index].value() for index in index_list]
         else:
-            return [None]
+            return None
 
-    def parse(self, data):
+    def __parse(self, data: bytes):
+        """ Parse the data which has passed the CRC check
+
+        Args:
+            data (bytes): Input data package in bytes
+        """
+
         id = data[Index.DeviceID]
         data = data[6:-4]
         fmt_str = '<'
@@ -318,12 +429,21 @@ class Master():
         for group in grouped:
             self.__driver_list[id].vars[group[0]].value(group[1])
 
-    def __read_ack(self, id) -> bool:
+    def __read_ack(self, id: int) -> bool:
+        """ Read acknowledge data from the driver with given ID.
+
+        Args:
+            id (int): The device ID of the driver
+
+        Returns:
+            bool: Return True if acknowledge is read and correct.
+        """
+
         ret = self.__read_bus(self.__driver_list[id].get_ack_size())
         if len(ret) == self.__driver_list[id].get_ack_size():
             if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
                 if ret[int(Index.PackageSize)] > 10:
-                    self.parse(ret)
+                    self.__parse(ret)
                     return True
                 else:
                     return True  # Ping package
@@ -332,7 +452,7 @@ class Master():
         else:
             return False
 
-    def sync_write(self, index: Index, id_val_pairs=[]):
+    def set_variables_sync(self, index: Index, id_val_pairs=[]):
         dev = Red(self.__class__._BROADCAST_ID)
         dev.vars[Index.Command].value(Commands.SYNC_WRITE)
 
@@ -353,61 +473,62 @@ class Master():
         self.__write_bus(bytes(struct_out) + struct.pack('<' + dev.vars[Index.CRCValue].type(), dev.vars[Index.CRCValue].value()))
         time.sleep(self.__post_sleep)
 
-    def __sync_read(self, id):
+    def __get_variables_sync(self, id: int):
         raise NotImplementedError()
 
-    def __bulk_write(self, id):
+    def __set_variables_bulk(self, id: int):
         raise NotImplementedError()
 
-    def __bulk_read(self, id):
+    def __get_variables_bulk(self, id: int):
         raise NotImplementedError()
 
     def scan(self) -> list:
-        self.__ph.timeout(0.015)
+        """ Scan the serial port and find drivers.
+
+        Returns:
+            list: Connected drivers.
+        """
+        self.__ph.timeout = 0.015
         connected = []
-        for idx in range(255):
-            self.attach(Red(idx))
-            if self.ping(idx):
-                connected.append(idx)
+        for id in range(255):
+            self.attach(Red(id))
+            if self.ping(id):
+                connected.append(id)
             else:
-                self.detach(idx)
-        self.__ph.timeout(0.1)
+                self.detach(id)
+        self.__ph.timeout = 0.1
         return connected
 
-    def update_board_baudrate(self, id, br):
-        if br > 12500000 or br < 3053:
-            raise ValueError('Baudrate must be between 3.053 KBits/s and 12.5 MBits/s.')
+    def reboot(self, id: int):
+        """ Reboot the driver.
 
-        self.set_variables(id, [[Index.Baudrate, br]])
-        time.sleep(self.__post_sleep)
-        self.eeprom_write(id)
-        time.sleep(self.__post_sleep)
-        self.reboot(id)
-
-    def update_master_baudrate(self, br):
-        self.__ph.reset_input_buffer()
-        self.__ph.reset_output_buffer()
-        try:
-            settings = self.__ph.get_settings()
-            self.__ph.close()
-            settings['baudrate'] = br
-            self.__ph.apply_settings(settings)
-            self.__ph.open()
-
-            self.__post_sleep = 10 / br
-
-        except Exception as e:
-            raise e
-
-    def reboot(self, id):
+        Args:
+            id (int): The device ID of the driver.
+        """
         self.__write_bus(self.__driver_list[id].reboot())
         time.sleep(self.__post_sleep)
 
-    def hard_reset(self, id):
-        self.__write_bus(self.__driver_list[id].hard_reset())
+    def factory_reset(self, id: int):
+        """ Clear the EEPROM config of the driver.
+
+        Args:
+            id (int): The device ID of the driver.
+        """
+        self.__write_bus(self.__driver_list[id].factory_reset())
         time.sleep(self.__post_sleep)
 
-    def eeprom_write(self, id, ack=False):
+    def eeprom_write(self, id: int, ack=False):
+        """ Save the config to the EEPROM.
+
+        Args:
+            id (int): The device ID of the driver.
+            ack (bool, optional): Wait for acknowledge. Defaults to False.
+
+        Returns:
+            bool | None: Return True if ack returns
+                         Return False if ack does not return or incorrect
+                         Return None if ack is not requested.
+        """
         self.__write_bus(self.__driver_list[id].EEPROM_write(ack=ack))
         time.sleep(self.__post_sleep)
 
@@ -416,8 +537,17 @@ class Master():
                 return True
             else:
                 return False
+        return None
 
-    def ping(self, id) -> bool:
+    def ping(self, id: int) -> bool:
+        """ Ping the driver with given ID.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            bool: Return True if device replies otherwise False.
+        """
         self.__write_bus(self.__driver_list[id].ping())
         time.sleep(self.__post_sleep)
 
@@ -426,8 +556,13 @@ class Master():
         else:
             return False
 
-    def reset_enc(self, id):
-        self.__write_bus(self.__driver_list[id].reset_enc())
+    def reset_encoder(self, id: int):
+        """ Reset the encoder.
+
+        Args:
+            id (int): The device ID of the driver.
+        """
+        self.__write_bus(self.__driver_list[id].reset_encoder())
         time.sleep(self.__post_sleep)
 
     def scan_sensors(self, id) -> list:
@@ -437,124 +572,374 @@ class Master():
 
         return connected
 
-    def enter_bootloader(self, id):
+    def enter_bootloader(self, id: int):
+        """ Put the driver into bootloader mode.
+
+        Args:
+            id (int): The device ID of the driver.
+        """
+
         self.__write_bus(self.__driver_list[id].enter_bootloader())
         time.sleep(self.__post_sleep)
 
-    def get_board_info(self, id):
+    def get_driver_info(self, id: int) -> dict | None:
+        """ Get hardware and software versions from the driver
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            dict | None: Dictionary containing versions or None.
+        """
         st = dict()
-        data = self.get_variables(id, [Index.Status, Index.HardwareVersion, Index.SoftwareVersion])
+        data = self.get_variables(id, [Index.HardwareVersion, Index.SoftwareVersion])
         if data is not None:
-            st['HardwareVersion'] = data[1]
-            st['SoftwareVersion'] = data[2]
+            ver = list(struct.pack('<I', data[0]))
+            st['HardwareVersion'] = "{1}.{2}.{3}".format(*ver[::-1])
+            ver = list(struct.pack('<I', data[1]))
+            st['SoftwareVersion'] = "{1}.{2}.{3}".format(*ver[::-1])
+
+            self.__driver_list[id]._config = st
             return st
         else:
             return None
 
-    def update_board_id(self, id, id_new):
-        if id_new > 255 or id_new < 0:
-            raise ValueError("Device ID can not be higher than 254 or lower than 0!")
-        self.__write_bus(self.__driver_list[id].update_id(id_new))
+    def update_driver_id(self, id: int, id_new: int):
+        """ Update the device ID of the driver
+
+        Args:
+            id (int): The device ID of the driver
+            id_new (int): New device ID
+
+        Raises:
+            ValueError: Current or updating device IDs are not valid
+        """
+        if (id < 0) or (id > 254):
+            raise ValueError("{} is not a valid ID!".format(id))
+
+        if (id_new < 0) or (id_new > 254):
+            raise ValueError("{} is not a valid ID argument!".format(id_new))
+
+        self.__write_bus(self.__driver_list[id].change_id(id_new))
         time.sleep(self.__post_sleep)
 
-    def enable_torque(self, id, en: bool):
+    def enable_torque(self, id: int, en: bool):
+        """ Enable power to the motor of the driver.
+
+        Args:
+            id (int): The device ID of the driver
+            en (bool): Enable. True enables the torque.
+        """
+
         self.set_variables(id, [[Index.TorqueEnable, en]])
         time.sleep(self.__post_sleep)
 
-    def set_operation_mode(self, id, mode):
+    def pid_tuner(self, id: int, tn: TuningMethod = TuningMethod.CohenCoon):
+        """ Start PID auto-tuning routine with given method.
+
+        Args:
+            id (int): The device ID of the driver.
+            tn (TuningMethod, optional): _description_. Defaults to TuningMethod.CohenCoon.
+        """
+        self.set_variables(id, [[Index.TorqueEnable, 1], [Index.TunerMethod, tn], [Index. TunerEnable, 1]])
+
+    def set_operation_mode(self, id: int, mode: OperationMode):
+        """ Set the operation mode of the driver.
+
+        Args:
+            id (int): The device ID of the driver.
+            mode (OperationMode): One of the PWM, Position, Velocity, Torque modes.
+        """
+
         self.set_variables(id, [[Index.OperationMode, mode]])
         time.sleep(self.__post_sleep)
 
-    def get_operation_mode(self, id):
+    def get_operation_mode(self, id: int) -> list | None:
+        """ Get the current operation mode from the driver.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the operation mode, otherwise None.
+        """
         return self.get_variables(id, [Index.OperationMode])
 
-    def set_shaft_cpr(self, id, cpr):
+    def set_shaft_cpr(self, id: int, cpr: float):
+        """ Set the count per revolution (CPR) of the motor output shaft.
+
+        Args:
+            id (int): The device ID of the driver.
+            cpr (float): The CPR value of the output shaft/
+        """
         self.set_variables(id, [[Index.MotorShaftCPR, cpr]])
         time.sleep(self.__post_sleep)
 
-    def set_shaft_rpm(self, id, rpm):
+    def set_shaft_rpm(self, id: int, rpm: float):
+        """ Set the revolution per minute (RPM) value of the output shaft at 12V rating.
+
+        Args:
+            id (int): The device ID of the driver.
+            rpm (float): The RPM value of the output shaft at 12V
+        """
         self.set_variables(id, [[Index.MotorShaftRPM, rpm]])
         time.sleep(self.__post_sleep)
 
-    def set_user_indicator(self, id):
-        self.set_variables(id, [[Index.UserIndicator, 1]])
-        time.sleep(self.__post_sleep)   
+    def set_user_indicator(self, id: int):
+        """ Set the user indicator color for 5 seconds. The user indicator color is cyan.
 
-    def set_position_limits(self, id, plmin, plmax):
+        Args:
+            id (int): The device ID of the driver.
+        """
+        self.set_variables(id, [[Index.UserIndicator, 1]])
+        time.sleep(self.__post_sleep)
+
+    def set_position_limits(self, id: int, plmin: int, plmax: int):
+        """ Set the position limits of the motor in terms of encoder ticks.
+        Default for min is -2,147,483,648 and for max is 2,147,483,647.
+        The torque ise disabled if the value is exceeded so a tolerence
+        factor should be taken into consideration when setting this values. 
+
+        Args:
+            id (int): The device ID of the driver.
+            plmin (int): The minimum position limit.
+            plmax (int): The maximum position limit.
+        """
         self.set_variables(id, [[Index.MinimumPositionLimit, plmin], [Index.MaximumPositionLimit, plmax]])
         time.sleep(self.__post_sleep)
 
-    def get_position_limits(self, id):
+    def get_position_limits(self, id: int) -> list | None:
+        """ Get the position limits of the motor in terms of encoder ticks.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the position limits, otherwise None.
+        """
         return self.get_variables(id, [Index.MinimumPositionLimit, Index.MaximumPositionLimit])
 
-    def set_torque_limit(self, id, tl):
+    def set_torque_limit(self, id: int, tl: int):
+        """ Set the torque limit of the driver in terms of milliamps (mA).
+        Torque is disabled after a timeout if the current drawn is over the
+        given torque limit. Default torque limit is 65535.
+
+        Args:
+            id (int): The device ID of the driver.
+            tl (int): New torque limit (mA)
+        """
         self.set_variables(id, [[Index.TorqueLimit, tl]])
         time.sleep(self.__post_sleep)
 
-    def get_torque_limit(self, id):
+    def get_torque_limit(self, id: int) -> list | None:
+        """ Get the torque limit from the driver in terms of milliamps (mA).
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the torque limit, otherwise None.
+        """
         return self.get_variables(id, [Index.TorqueLimit])
 
-    def set_velocity_limit(self, id, vl):
+    def set_velocity_limit(self, id: int, vl: int):
+        """ Set the velocity limit for the motor output shaft in terms of RPM. The velocity limit
+        applies only in velocity mode. Default velocity limit is 65535.
+
+        Args:
+            id (int): The device ID of the driver.
+            vl (int): New velocity limit (RPM)
+        """
         self.set_variables(id, [[Index.VelocityLimit, vl]])
         time.sleep(self.__post_sleep)
 
-    def get_velocity_limit(self, id):
+    def get_velocity_limit(self, id: int) -> list | None:
+        """ Get the velocity limit from the driver in terms of RPM.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the velocity limit, otherwise None.
+        """
         return self.get_variables(id, [Index.VelocityLimit])
 
-    def set_position(self, id, sp):
+    def set_position(self, id: int, sp: int | float):
+        """ Set the desired setpoint for the position control in terms of encoder ticks.
+
+        Args:
+            id (int): The device ID of the driver.
+            sp (int | float): Position control setpoint.
+        """
         self.set_variables(id, [[Index.SetPosition, sp]])
         time.sleep(self.__post_sleep)
 
-    def get_position(self, id):
+    def get_position(self, id: int) -> list | None:
+        """ Get the current position of the motor from the driver in terms of encoder ticks.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the current position, otherwise None.
+        """
         return self.get_variables(id, [Index.PresentPosition])
 
-    def set_velocity(self, id, sp):
+    def set_velocity(self, id: int, sp: int | float):
+        """ Set the desired setpoint for the velocity control in terms of RPM.
+
+        Args:
+            id (int): The device ID of the driver.
+            sp (int | float): Velocity control setpoint.
+        """
         self.set_variables(id, [[Index.SetVelocity, sp]])
         time.sleep(self.__post_sleep)
 
-    def get_velocity(self, id):
+    def get_velocity(self, id: int) -> list | None:
+        """ Get the current velocity of the motor output shaft from the driver in terms of RPM.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the current velocity, otherwise None.
+        """
         return self.get_variables(id, [Index.PresentVelocity])
 
-    def set_torque(self, id, sp):
+    def set_torque(self, id: int, sp: int | float):
+        """ Set the desired setpoint for the torque control in terms of milliamps (mA).
+
+        Args:
+            id (int): The device ID of the driver.
+            sp (int | float): Torque control setpoint.
+        """
         self.set_variables(id, [[Index.SetTorque, sp]])
         time.sleep(self.__post_sleep)
 
-    def get_torque(self, id):
+    def get_torque(self, id: int) -> list | None:
+        """ Get the current drawn from the motor from the driver in terms of milliamps (mA).
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the current, otherwise None.
+        """
         return self.get_variables(id, [Index.MotorCurrent])
 
-    def set_duty_cycle(self, id, pct):
+    def set_duty_cycle(self, id: int, pct: int | float):
+        """ Set the duty cycle to the motor for PWM control mode in terms of percentage.
+        Negative values will change the motor direction.
+
+        Args:
+            id (int): The device ID of the driver.
+            pct (int | float): Duty cycle percentage.
+        """
         self.set_variables(id, [[Index.SetDutyCycle, pct]])
         time.sleep(self.__post_sleep)
 
-    def get_analog_port(self, id):
+    def get_analog_port(self, id: int) -> list | None:
+        """ Get the ADC values from the analog port of the device with
+        10 bit resolution. The value is in range [0, 4095].
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the ADC conversion of the port, otherwise None.
+        """
         return self.get_variables(id, [Index.AnalogPort])
 
-    def set_control_parameters_position(self, id, p=None, i=None, d=None, db=None, ff=None, out_lim=None):
+    def set_control_parameters_position(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None):
+        """ Set the control block parameters for position control mode.
+        Only assigned parameters are written, None's are ignored. The default
+        max output limit is 950.
+
+        Args:
+            id (int): The device ID of the driver.
+            p (float): Proportional gain. Defaults to None.
+            i (float): Integral gain. Defaults to None.
+            d (float): Derivative gain. Defaults to None.
+            db (float): Deadband (of the setpoint type). Defaults to None.
+            ff (float): Feedforward. Defaults to None.
+            ol (float): Maximum output limit. Defaults to None.
+        """
         index_list = [Index.PositionPGain, Index.PositionIGain, Index.PositionDGain, Index.PositionDeadband, Index.PositionFF, Index.PositionOutputLimit]
-        val_list = [p, i, d, db, ff, out_lim]
+        val_list = [p, i, d, db, ff, ol]
 
         self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
         time.sleep(self.__post_sleep)
 
-    def get_control_parameters_position(self, id):
+    def get_control_parameters_position(self, id: int) -> list | None:
+        """ Get the position control block parameters.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list [P, I, D, FF, DB, OUTPUT_LIMIT], otherwise None.
+        """
+
         return self.get_variables(id, [Index.PositionPGain, Index.PositionIGain, Index.PositionDGain, Index.PositionDeadband, Index.PositionFF, Index.PositionOutputLimit])
 
-    def set_control_parameters_velocity(self, id, p=None, i=None, d=None, db=None, ff=None, out_lim=None):
+    def set_control_parameters_velocity(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None):
+        """ Set the control block parameters for velocity control mode.
+        Only assigned parameters are written, None's are ignored. The default
+        max output limit is 950.
+
+        Args:
+            id (int): The device ID of the driver.
+            p (float): Proportional gain. Defaults to None.
+            i (float): Integral gain. Defaults to None.
+            d (float): Derivative gain. Defaults to None.
+            db (float): Deadband (of the setpoint type). Defaults to None.
+            ff (float): Feedforward. Defaults to None.
+            ol (float): Maximum output limit. Defaults to None.
+        """
         index_list = [Index.VelocityPGain, Index.VelocityIGain, Index.VelocityDGain, Index.VelocityDeadband, Index.VelocityFF, Index.VelocityOutputLimit]
-        val_list = [p, i, d, db, ff, out_lim]
+        val_list = [p, i, d, db, ff, ol]
 
         self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
         time.sleep(self.__post_sleep)
 
-    def get_control_parameters_velocity(self, id):
+    def get_control_parameters_velocity(self, id: int):
+        """ Get the velocity control block parameters.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list [P, I, D, FF, DB, OUTPUT_LIMIT], otherwise None.
+        """
         return self.get_variables(id, [Index.VelocityPGain, Index.VelocityIGain, Index.VelocityDGain, Index.VelocityDeadband, Index.VelocityFF, Index.VelocityOutputLimit])
 
-    def set_control_parameters_torque(self, id, p=None, i=None, d=None, db=None, ff=None, out_lim=None):
+    def set_control_parameters_torque(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None):
+        """ Set the control block parameters for torque control mode.
+        Only assigned parameters are written, None's are ignored. The default
+        max output limit is 950.
+
+        Args:
+            id (int): The device ID of the driver.
+            p (float): Proportional gain. Defaults to None.
+            i (float): Integral gain. Defaults to None.
+            d (float): Derivative gain. Defaults to None.
+            db (float): Deadband (of the setpoint type). Defaults to None.
+            ff (float): Feedforward. Defaults to None.
+            ol (float): Maximum output limit. Defaults to None.
+        """
         index_list = [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueDeadband, Index.TorqueFF, Index.TorqueOutputLimit]
-        val_list = [p, i, d, db, ff, out_lim]
+        val_list = [p, i, d, db, ff, ol]
 
         self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
         time.sleep(self.__post_sleep)
 
-    def get_control_parameters_torque(self, id):
+    def get_control_parameters_torque(self, id: int):
+        """ Get the torque control block parameters.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list [P, I, D, FF, DB, OUTPUT_LIMIT], otherwise None.
+        """
         return self.get_variables(id, [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueDeadband, Index.TorqueFF, Index.TorqueOutputLimit])

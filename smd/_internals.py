@@ -27,9 +27,14 @@ class Commands(enum.IntEnum):
 
 class OperationMode():
     PWM = 0
-    POSITION = 1
-    VELOCITY = 2
-    TORQUE = 3
+    Position = 1
+    Velocity = 2
+    Torque = 3
+
+
+class TuningMethod():
+    CohenCoon = 0
+    ZieglerNichols = 1
 
 
 class Baudrate():
