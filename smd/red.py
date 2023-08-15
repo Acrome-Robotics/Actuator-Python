@@ -32,8 +32,8 @@ class Red():
             _Data(Index.TorqueEnable, 'B'),
             _Data(Index.TunerEnable, 'B'),
             _Data(Index.TunerMethod, 'B'),
-            _Data(Index.MotorShaftCPR, 'f'),
-            _Data(Index.MotorShaftRPM, 'f'),
+            _Data(Index.OutputShaftCPR, 'f'),
+            _Data(Index.OutputShaftRPM, 'f'),
             _Data(Index.UserIndicator, 'B'),
             _Data(Index.MinimumPositionLimit, 'i'),
             _Data(Index.MaximumPositionLimit, 'i'),
@@ -565,12 +565,26 @@ class Master():
         self.__write_bus(self.__driver_list[id].reset_encoder())
         time.sleep(self.__post_sleep)
 
-    def scan_sensors(self, id) -> list:
-        connected = []
-        self.__write_bus(self.__driver_list[id].scan_sensors())
-        time.sleep(self.__post_sleep)
+    def scan_sensors(self, id: int) -> list:
+        """ Get the list of I2C sensor IDs which are connected to the driver.
 
-        return connected
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list: List of the I2C IDs of the connected sensors otherwise None.
+        """
+
+        self.__write_bus(self.__driver_list[id].scan_sensors())
+        time.sleep(1.5)
+        self.__write_bus(self.__driver_list[id].scan_sensors())
+        ret = self.__read_bus(255)
+        size = list(ret)[int(Index.PackageSize)]
+        if len(ret) == size:
+            if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
+                return list(ret)[6:-4]
+        else:
+            return None
 
     def enter_bootloader(self, id: int):
         """ Put the driver into bootloader mode.
@@ -641,7 +655,7 @@ class Master():
             id (int): The device ID of the driver.
             tn (TuningMethod, optional): _description_. Defaults to TuningMethod.CohenCoon.
         """
-        self.set_variables(id, [[Index.TorqueEnable, 1], [Index.TunerMethod, tn], [Index. TunerEnable, 1]])
+        self.set_variables(id, [[Index.TunerMethod, tn], [Index. TunerEnable, 1]])
 
     def set_operation_mode(self, id: int, mode: OperationMode):
         """ Set the operation mode of the driver.
@@ -672,7 +686,7 @@ class Master():
             id (int): The device ID of the driver.
             cpr (float): The CPR value of the output shaft/
         """
-        self.set_variables(id, [[Index.MotorShaftCPR, cpr]])
+        self.set_variables(id, [[Index.OutputShaftCPR, cpr]])
         time.sleep(self.__post_sleep)
 
     def set_shaft_rpm(self, id: int, rpm: float):
@@ -682,7 +696,7 @@ class Master():
             id (int): The device ID of the driver.
             rpm (float): The RPM value of the output shaft at 12V
         """
-        self.set_variables(id, [[Index.MotorShaftRPM, rpm]])
+        self.set_variables(id, [[Index.OutputShaftRPM, rpm]])
         time.sleep(self.__post_sleep)
 
     def set_user_indicator(self, id: int):
