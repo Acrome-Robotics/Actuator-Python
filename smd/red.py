@@ -64,62 +64,60 @@ class Red():
             _Data(Index.SetVelocity, 'f'),
             _Data(Index.SetTorque, 'f'),
             _Data(Index.SetDutyCycle, 'f'),
-            _Data(Index.ID11Buzzer, 'B'),
-            _Data(Index.ID12Buzzer, 'B'),
-            _Data(Index.ID13Buzzer, 'B'),
-            _Data(Index.ID14Buzzer, 'B'),
-            _Data(Index.ID15Buzzer, 'B'),
+            _Data(Index.Buzzer_1, 'B'),
+            _Data(Index.Buzzer_2, 'B'),
+            _Data(Index.Buzzer_3, 'B'),
+            _Data(Index.Buzzer_4, 'B'),
+            _Data(Index.Buzzer_5, 'B'),
+            _Data(Index.Servo_1, 'B'),
+            _Data(Index.Servo_2, 'B'),
+            _Data(Index.Servo_3, 'B'),
+            _Data(Index.Servo_4, 'B'),
+            _Data(Index.Servo_5, 'B'),
+            _Data(Index.RGB_1, 'B'),
+            _Data(Index.RGB_2, 'B'),
+            _Data(Index.RGB_3, 'B'),
+            _Data(Index.RGB_4, 'B'),
+            _Data(Index.RGB_5, 'B'),
             _Data(Index.PresentPosition, 'f'),
             _Data(Index.PresentVelocity, 'f'),
             _Data(Index.MotorCurrent, 'f'),
             _Data(Index.AnalogPort, 'H'),
-            _Data(Index.RollAngle, 'f'),
-            _Data(Index.PitchAngle, 'f'),
-            _Data(Index.ID1Button, 'B'),
-            _Data(Index.ID2Button, 'B'),
-            _Data(Index.ID3Button, 'B'),
-            _Data(Index.ID4Button, 'B'),
-            _Data(Index.ID5Button, 'B'),
-            _Data(Index.ID6Light, 'H'),
-            _Data(Index.ID7Light, 'H'),
-            _Data(Index.ID8Light, 'H'),
-            _Data(Index.ID9Light, 'H'),
-            _Data(Index.ID10Light, 'H'),
-            _Data(Index.ID16JoystickX, 'f'),
-            _Data(Index.ID16JoystickY, 'f'),
-            _Data(Index.ID16JoystickButton, 'B'),
-            _Data(Index.ID17JoystickX, 'f'),
-            _Data(Index.ID17JoystickY, 'f'),
-            _Data(Index.ID17JoystickButton, 'B'),
-            _Data(Index.ID18JoystickX, 'f'),
-            _Data(Index.ID18JoystickY, 'f'),
-            _Data(Index.ID18JoystickButton, 'B'),
-            _Data(Index.ID19JoystickX, 'f'),
-            _Data(Index.ID19JoystickY, 'f'),
-            _Data(Index.ID19JoystickButton, 'B'),
-            _Data(Index.ID20JoystickX, 'f'),
-            _Data(Index.ID20JoystickY, 'f'),
-            _Data(Index.ID20JoystickButton, 'B'),
-            _Data(Index.ID21Distance, 'H'),
-            _Data(Index.ID22Distance, 'H'),
-            _Data(Index.ID23Distance, 'H'),
-            _Data(Index.ID24Distance, 'H'),
-            _Data(Index.ID25Distance, 'H'),
-            _Data(Index.ID26QTR, 'B'),
-            _Data(Index.ID27QTR, 'B'),
-            _Data(Index.ID28QTR, 'B'),
-            _Data(Index.ID29QTR, 'B'),
-            _Data(Index.ID30QTR, 'B'),
-            _Data(Index.ID31Servo, 'B'),
-            _Data(Index.ID32Servo, 'B'),
-            _Data(Index.ID33Servo, 'B'),
-            _Data(Index.ID34Servo, 'B'),
-            _Data(Index.ID35Servo, 'B'),
-            _Data(Index.ID36Pot, 'H'),
-            _Data(Index.ID37Pot, 'H'),
-            _Data(Index.ID38Pot, 'H'),
-            _Data(Index.ID39Pot, 'H'),
-            _Data(Index.ID40Pot, 'H'),
+            _Data(Index.Button_1, 'B'),
+            _Data(Index.Button_2, 'B'),
+            _Data(Index.Button_3, 'B'),
+            _Data(Index.Button_4, 'B'),
+            _Data(Index.Button_5, 'B'),
+            _Data(Index.Light_1, 'H'),
+            _Data(Index.Light_2, 'H'),
+            _Data(Index.Light_3, 'H'),
+            _Data(Index.Light_4, 'H'),
+            _Data(Index.Light_5, 'H'),
+            _Data(Index.Joystick_1, 'ffB'),
+            _Data(Index.Joystick_2, 'ffB'),
+            _Data(Index.Joystick_3, 'ffB'),
+            _Data(Index.Joystick_4, 'ffB'),
+            _Data(Index.Joystick_5, 'ffB'),
+            _Data(Index.Distance_1, 'H'),
+            _Data(Index.Distance_2, 'H'),
+            _Data(Index.Distance_3, 'H'),
+            _Data(Index.Distance_4, 'H'),
+            _Data(Index.Distance_5, 'H'),
+            _Data(Index.QTR_1, 'B'),
+            _Data(Index.QTR_2, 'B'),
+            _Data(Index.QTR_3, 'B'),
+            _Data(Index.QTR_4, 'B'),
+            _Data(Index.QTR_5, 'B'),
+            _Data(Index.Pot_1, 'H'),
+            _Data(Index.Pot_2, 'H'),
+            _Data(Index.Pot_3, 'H'),
+            _Data(Index.Pot_4, 'H'),
+            _Data(Index.Pot_5, 'H'),
+            _Data(Index.IMU_1, 'ff'),
+            _Data(Index.IMU_2, 'ff'),
+            _Data(Index.IMU_3, 'ff'),
+            _Data(Index.IMU_4, 'ff'),
+            _Data(Index.IMU_5, 'ff'),
             _Data(Index.CRCValue, 'I')
         ]
 
@@ -416,18 +414,16 @@ class Master():
 
         id = data[Index.DeviceID]
         data = data[6:-4]
-        fmt_str = '<'
 
         i = 0
         while i < len(data):
-            fmt_str += 'B' + self.__driver_list[id].vars[data[i]].type()
+            fmt_str = '<B' + self.__driver_list[id].vars[data[i]].type()
+
+            sdata = data[i: i + self.__driver_list[id].vars[data[i]].size() + 1]
+            unpacked = list(struct.unpack(fmt_str, sdata))
+
+            self.__driver_list[id].vars[unpacked[0]].value(unpacked[1] if len(unpacked) <= 2 else unpacked[1::])
             i += self.__driver_list[id].vars[data[i]].size() + 1
-
-        unpacked = list(struct.unpack(fmt_str, data))
-        grouped = zip(*[iter(unpacked)] * 2, strict=True)
-
-        for group in grouped:
-            self.__driver_list[id].vars[group[0]].value(group[1])
 
     def __read_ack(self, id: int) -> bool:
         """ Read acknowledge data from the driver with given ID.
@@ -566,23 +562,23 @@ class Master():
         time.sleep(self.__post_sleep)
 
     def scan_sensors(self, id: int) -> list:
-        """ Get the list of I2C sensor IDs which are connected to the driver.
+        """ Get the list of sensor IDs which are connected to the driver.
 
         Args:
             id (int): The device ID of the driver.
 
         Returns:
-            list: List of the I2C IDs of the connected sensors otherwise None.
+            list: List of the protocol IDs of the connected sensors otherwise None.
         """
 
         self.__write_bus(self.__driver_list[id].scan_sensors())
-        time.sleep(1.5)
+        time.sleep(2)
         self.__write_bus(self.__driver_list[id].scan_sensors())
         ret = self.__read_bus(255)
         size = list(ret)[int(Index.PackageSize)]
         if len(ret) == size:
             if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
-                return list(ret)[6:-4]
+                return [Index(i) for i in list(ret)[6:-4]]
         else:
             return None
 
