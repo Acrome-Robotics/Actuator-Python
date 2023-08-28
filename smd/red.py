@@ -1,10 +1,14 @@
 from smd._internals import (_Data, Index, Commands,
-                            OperationMode)
+                            OperationMode, Colors)
 import struct
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
 import time
 from packaging.version import parse as parse_version
+
+
+class InvalidIndexError(BaseException):
+    pass
 
 
 class Red():
@@ -965,3 +969,62 @@ class Master():
             list | None: Returns the list [P, I, D, FF, DB, OUTPUT_LIMIT], otherwise None.
         """
         return self.get_variables(id, [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueDeadband, Index.TorqueFF, Index.TorqueOutputLimit])
+
+    def get_button(self, id: int, index: Index):
+        if (index < Index.Button_1) or (index > Index.Button_5):
+            raise InvalidIndexError()
+        return self.get_variables(id, [index])
+
+    def get_light(self, id: int, index: Index):
+        if (index < Index.Light_1) or (index > Index.Light_5):
+            raise InvalidIndexError()
+        return self.get_variables(id, [index])
+
+    def set_buzzer(self, id: int, index: Index, en: bool):
+        if (index < Index.Buzzer_1) or (index > Index.Buzzer_5):
+            raise InvalidIndexError()
+        return self.set_variables(id, [[Index, en]])
+
+    def get_joystick(self, id: int, index: Index):
+        if (index < Index.Joystick_1) or (index > Index.Joystick_5):
+            raise InvalidIndexError()
+        return self.get_variables(id, [index])
+
+    def get_distance(self, id: int, index: Index):
+        if (index < Index.Distance_1) or (index > Index.Distance_5):
+            raise InvalidIndexError()
+        return self.get_variables(id, [index])
+
+    def get_qtr(self, id: int, index: Index):
+        if (index < Index.QTR_1) or (index > Index.QTR_5):
+            raise InvalidIndexError()
+
+        data = self.get_variables(id, [index])
+        if data is not None:
+            return [data & (1 << i) for i in range(3)]
+        else:
+            return None
+
+    def set_servo(self, id: int, index: Index, val: int):
+        if val < 0 or val > 255:
+            raise ValueError()
+        if (index < Index.Servo_1) or (index > Index.Servo_5):
+            raise InvalidIndexError()
+        return self.set_variables(id, [[Index, val]])
+
+    def get_potantiometer(self, id: int, index: Index):
+        if (index < Index.Pot_1) or (index > Index.Pot_5):
+            raise InvalidIndexError()
+        return self.get_variables(id, [index])
+
+    def set_rgb(self, id: int, index: Index, color: Colors):
+        if color < Colors.NO_COLOR or color > Colors.INDIGO:
+            raise ValueError()
+        if (index < Index.RGB_1) or (index > Index.RGB_5):
+            raise InvalidIndexError()
+        return self.set_variables(id, [[Index, color]])
+
+    def get_imu(self, id: int, index: Index):
+        if (index < Index.IMU_1) or (index > Index.IMU_5):
+            raise InvalidIndexError()
+        return self.get_variables(id, [index])

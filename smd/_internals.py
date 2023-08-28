@@ -28,6 +28,23 @@ class OperationMode():
     Torque = 3
 
 
+class Colors():
+    NO_COLOR = 0
+    RED = 1
+    GREEN = 2
+    BLUE = 3
+    WHITE = 4
+    YELLOW = 5
+    CYAN = 6
+    MAGENTA = 7
+    ORANGE = 8
+    PURPLE = 9
+    PINK = 10
+    AMBER = 11
+    TEAL = 12
+    INDIGO = 13
+
+
 Index = enum.IntEnum('Index', [
     'Header',
     'DeviceID',
