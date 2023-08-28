@@ -2,10 +2,6 @@ import struct
 import enum
 
 
-class FamilyType():  # Specify Red, Blue and Green types
-    pass
-
-
 class Commands(enum.IntEnum):
     PING = 0x00
     WRITE = 0x01
@@ -30,17 +26,6 @@ class OperationMode():
     Position = 1
     Velocity = 2
     Torque = 3
-
-
-class TuningMethod():
-    CohenCoon = 0
-    ZieglerNichols = 1
-
-
-class Baudrate():
-    B115200 = 115200
-    B921600 = 921600
-    B1152000 = 1152000
 
 
 Index = enum.IntEnum('Index', [

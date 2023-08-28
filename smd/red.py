@@ -1,5 +1,5 @@
 from smd._internals import (_Data, Index, Commands,
-                            OperationMode, TuningMethod)
+                            OperationMode)
 import struct
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
@@ -243,12 +243,13 @@ class Master():
     _BROADCAST_ID = 0xFF
 
     def __init__(self, portname, baudrate=115200) -> None:
+        self.__attached_drivers = []
         self.__driver_list = [Red(255)] * 256
         if baudrate > 12500000 or baudrate < 3053:
             raise ValueError('Baudrate must be between 3.053 KBits/s and 12.5 MBits/s.')
         else:
             self.__baudrate = baudrate
-            self.__post_sleep = 10 / self.__baudrate
+            self.__post_sleep = (10 / self.__baudrate) * 3
             self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.1)
 
     def __del__(self):
@@ -265,6 +266,9 @@ class Master():
     def __read_bus(self, size) -> bytes:
         self.__ph.reset_input_buffer()
         return self.__ph.read(size=size)
+
+    def attached(self):
+        return self.__attached_drivers
 
     def update_driver_baudrate(self, id: int, br: int):
         """Update the baudrate of the driver with
@@ -312,7 +316,7 @@ class Master():
             self.__ph.apply_settings(settings)
             self.__ph.open()
 
-            self.__post_sleep = 10 / br
+            self.__post_sleep = (10 / br) * 3
 
         except Exception as e:
             raise e
@@ -469,9 +473,6 @@ class Master():
         self.__write_bus(bytes(struct_out) + struct.pack('<' + dev.vars[Index.CRCValue].type(), dev.vars[Index.CRCValue].value()))
         time.sleep(self.__post_sleep)
 
-    def __get_variables_sync(self, id: int):
-        raise NotImplementedError()
-
     def __set_variables_bulk(self, id: int):
         raise NotImplementedError()
 
@@ -484,7 +485,9 @@ class Master():
         Returns:
             list: Connected drivers.
         """
-        self.__ph.timeout = 0.015
+        self.__ph.reset_input_buffer()
+        self.__ph.reset_output_buffer()
+        self.__ph.timeout = 0.025
         connected = []
         for id in range(255):
             self.attach(Red(id))
@@ -493,6 +496,7 @@ class Master():
             else:
                 self.detach(id)
         self.__ph.timeout = 0.1
+        self.__attached_drivers = connected
         return connected
 
     def reboot(self, id: int):
@@ -571,14 +575,19 @@ class Master():
             list: List of the protocol IDs of the connected sensors otherwise None.
         """
 
+        _ID_OFFSETS = [[1, 64], [6, 69], [11, 45], [16, 74], [21, 79], [26, 85], [31, 50], [36, 89], [41, 55], [46, 94]]
         self.__write_bus(self.__driver_list[id].scan_sensors())
         time.sleep(2)
         self.__write_bus(self.__driver_list[id].scan_sensors())
-        ret = self.__read_bus(255)
-        size = list(ret)[int(Index.PackageSize)]
-        if len(ret) == size:
+        ret = self.__read_bus(18)
+        if len(ret) == 18:
             if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
-                return [Index(i) for i in list(ret)[6:-4]]
+                data = struct.unpack('<Q', ret[6:-4])[0]
+                addrs = [i for i in range(64) if (data & (1 << i)) == (1 << i)]
+                result = []
+                for addr in addrs:
+                    result.append(Index(addr - _ID_OFFSETS[int(addr / 5)][0] + _ID_OFFSETS[int(addr / 5)][1]))
+                return result
         else:
             return None
 
@@ -630,8 +639,11 @@ class Master():
         if (id_new < 0) or (id_new > 254):
             raise ValueError("{} is not a valid ID argument!".format(id_new))
 
-        self.__write_bus(self.__driver_list[id].change_id(id_new))
+        self.__write_bus(self.__driver_list[id].update_driver_id(id_new))
         time.sleep(self.__post_sleep)
+        self.eeprom_write(id_new)
+        time.sleep(self.__post_sleep)
+        self.reboot(id)
 
     def enable_torque(self, id: int, en: bool):
         """ Enable power to the motor of the driver.
@@ -644,14 +656,14 @@ class Master():
         self.set_variables(id, [[Index.TorqueEnable, en]])
         time.sleep(self.__post_sleep)
 
-    def pid_tuner(self, id: int, tn: TuningMethod = TuningMethod.CohenCoon):
-        """ Start PID auto-tuning routine with given method.
+    def pid_tuner(self, id: int):
+        """ Start PID auto-tuning routine. This routine will estimate
+        PID coefficients for position and velocity control operation modes.
 
         Args:
             id (int): The device ID of the driver.
-            tn (TuningMethod, optional): _description_. Defaults to TuningMethod.CohenCoon.
         """
-        self.set_variables(id, [[Index.TunerMethod, tn], [Index. TunerEnable, 1]])
+        self.set_variables(id, [[Index. TunerEnable, 1]])
 
     def set_operation_mode(self, id: int, mode: OperationMode):
         """ Set the operation mode of the driver.
