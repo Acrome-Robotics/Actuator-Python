@@ -971,41 +971,138 @@ class Master():
         return self.get_variables(id, [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueDeadband, Index.TorqueFF, Index.TorqueOutputLimit])
 
     def get_button(self, id: int, index: Index):
+        """ Get the button module data with given index.
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the button module.
+
+        Raises:
+            InvalidIndexError: Index is not a button module index
+
+        Returns:
+            int: Returns the button state
+        """
         if (index < Index.Button_1) or (index > Index.Button_5):
             raise InvalidIndexError()
-        return self.get_variables(id, [index])
+
+        ret = self.get_variables(id, [index])
+        if ret is None:
+            return ret
+        return ret[0]
 
     def get_light(self, id: int, index: Index):
+        """ Get the ambient light module data with given index.
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the ambient light module.
+
+        Raises:
+            InvalidIndexError: Index is not a light module index
+
+        Returns:
+            float: Returns the ambient light measurement (in lux)
+        """
         if (index < Index.Light_1) or (index > Index.Light_5):
             raise InvalidIndexError()
-        return self.get_variables(id, [index])
+
+        ret = self.get_variables(id, [index])
+        if ret is None:
+            return ret
+        return ret[0]
 
     def set_buzzer(self, id: int, index: Index, en: bool):
+        """ Enable/disable the buzzer module with given index.
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the buzzer module.
+            en (bool): Enable = 1, Disable = 0
+
+        Raises:
+            InvalidIndexError: Index is not a buzzer module index
+        """
         if (index < Index.Buzzer_1) or (index > Index.Buzzer_5):
             raise InvalidIndexError()
         return self.set_variables(id, [[Index, en]])
 
     def get_joystick(self, id: int, index: Index):
+        """ Get the joystick module data with given index.
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the joystick module.
+
+        Raises:
+            InvalidIndexError: Index is not a joystick module index
+
+        Returns:
+            list: Returns the joystick module analogs and button data
+        """
         if (index < Index.Joystick_1) or (index > Index.Joystick_5):
             raise InvalidIndexError()
-        return self.get_variables(id, [index])
+
+        ret = self.get_variables(id, [index])
+        if ret is None:
+            return ret
+        return ret[0]
 
     def get_distance(self, id: int, index: Index):
+        """ Get the ultrasonic distance module data with given index.
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the ultrasonic distance module.
+
+        Raises:
+            InvalidIndexError: Index is not a ultrasonic distance module index
+
+        Returns:
+            int: Returns the distance from the ultrasonic distance module (in cm)
+        """
         if (index < Index.Distance_1) or (index > Index.Distance_5):
             raise InvalidIndexError()
-        return self.get_variables(id, [index])
+
+        ret = self.get_variables(id, [index])
+        if ret is None:
+            return ret
+        return ret[0]
 
     def get_qtr(self, id: int, index: Index):
+        """ Get the qtr module data with given index.
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the qtr module.
+
+        Raises:
+            InvalidIndexError: Index is not a qtr module index
+
+        Returns:
+            list: Returns qtr module data: [Left(bool), Middle(bool), Right(bool)]
+        """
         if (index < Index.QTR_1) or (index > Index.QTR_5):
             raise InvalidIndexError()
 
         data = self.get_variables(id, [index])
         if data is not None:
-            return [data & (1 << i) for i in range(3)]
+            return [data[0] & (1 << i) for i in range(3)]
         else:
             return None
 
     def set_servo(self, id: int, index: Index, val: int):
+        """ Move servo module to a position.
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the servo module.
+            val (int): The value to write to the servo
+
+        Raises:
+            ValueError: Value should be in range [0, 255]
+            InvalidIndexError: Index is not a servo module index
+        """
         if val < 0 or val > 255:
             raise ValueError()
         if (index < Index.Servo_1) or (index > Index.Servo_5):
@@ -1013,11 +1110,38 @@ class Master():
         return self.set_variables(id, [[Index, val]])
 
     def get_potantiometer(self, id: int, index: Index):
+        """ Get the potantiometer module data with given index.
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the potantiometer module.
+
+        Raises:
+            InvalidIndexError: Index is not a potantiometer module index
+
+        Returns:
+            int: Returns the ADC conversion from the potantiometer module
+        """
         if (index < Index.Pot_1) or (index > Index.Pot_5):
             raise InvalidIndexError()
-        return self.get_variables(id, [index])
+
+        ret = self.get_variables(id, [index])
+        if ret is None:
+            return ret
+        return ret[0]
 
     def set_rgb(self, id: int, index: Index, color: Colors):
+        """ Set the colour emitted from the RGB module.
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the RGB module.
+            color (Colors): Color for RGB from Colors class
+
+        Raises:
+            ValueError: Color is invalid
+            InvalidIndexError: Index is not a RGB module index
+        """
         if color < Colors.NO_COLOR or color > Colors.INDIGO:
             raise ValueError()
         if (index < Index.RGB_1) or (index > Index.RGB_5):
@@ -1025,6 +1149,22 @@ class Master():
         return self.set_variables(id, [[Index, color]])
 
     def get_imu(self, id: int, index: Index):
+        """ Get IMU module data (roll, pitch)
+
+        Args:
+            id (int): The device ID of the driver.
+            index (Index): The index of the IMU module.
+
+        Raises:
+            InvalidIndexError: Index is not a IMU module index
+
+        Returns:
+            list: Returns roll, pitch angles
+        """
         if (index < Index.IMU_1) or (index > Index.IMU_5):
             raise InvalidIndexError()
-        return self.get_variables(id, [index])
+
+        ret = self.get_variables(id, [index])
+        if ret is None:
+            return ret
+        return ret[0]
