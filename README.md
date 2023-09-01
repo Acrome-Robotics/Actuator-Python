@@ -9,6 +9,13 @@ This library provides easy-to-use Python modules and methods for interfacing wit
 ## Methods
 
 - ### Red Class
+  Methods of the `Red` class are used for the underlying logic of the Master class. As such, it is not recommended for users to call `Red` class methods explicitly. Users may create instances of the class in order to attach to the master. Thus, only `__init__` constructor is given here.
+
+  - #### `__init__(self, ID: int)`:
+
+    This is the initalizer for Red class which represents an object of SMD (Smart Motor Drivers) driver.
+
+    `ID` argument is the device ID of the created driver.
 
 - ### Master Class
 
@@ -289,4 +296,167 @@ This library provides easy-to-use Python modules and methods for interfacing wit
     This method gets the velocity limit from the driver in terms of RPM.
 
     `id` argument is the device ID of the connected driver.
+
+
+  - ####  `set_position(self, id: int, sp: int)`
+
+    **`Return:`** *None*
+
+      This method sets the desired setpoint for the position control in terms of encoder ticks.
+
+      `id` argument is the device ID of the driver.
+
+      `sp` argument is the position control setpoint.
+
+
+  - ####  `get_position(self, id: int)`
+
+    **`Return:`** *Current position of the motor shaft*
+
+      This method gets the current position of the motor from the driver in terms of encoder ticks.
+
+      `id` argument is the device ID of the driver.
+
+  - ####  `set_velocity(self, id: int, sp: int)`
+
+    **`Return:`** *None*
+
+      This method sets the desired setpoint for the velocity control in terms of RPM.
+
+      `id` argument is the device ID of the driver.
+
+
+  - ####  `get_velocity(self, id: int)`
+
+    **`Return:`** *Current velocity of the motor shaft*
+
+      This method gets the current velocity of the motor output shaft from the driver in terms of RPM.
+
+      `id` argument is the device ID of the driver.
+
+  - ####  `set_torque(self, id: int, sp: int)`
+
+    **`Return:`** *None*
+
+      This method sets the desired setpoint for the torque control in terms of milliamps (mA).
+
+      `id` argument is the device ID of the driver.
+
+
+  - ####  `get_torque(self, id: int)`
+
+    **`Return:`** *Current drawn from the motor (mA)*
+
+      This method gets the current drawn from the motor from the driver in terms of milliamps (mA).
+
+      `id` argument is the device ID of the driver.
+
+  - ####  `set_duty_cycle(self, id: int, pct: float):`
+
+    **`Return:`** *None*
+
+      This method sets the duty cycle to the motor for PWM control mode in terms of percentage. Negative values will change the motor direction.
+
+      `id` argument is the device ID of the driver.
+
+      `id` argument is the duty cycle percentage.
+
+  - ####  `get_analog_port(self, id: int):`
+
+    **`Return:`** *ADC conversion value of the port*
+
+      This method gets the ADC values from the analog port of the device with
+      10 bit resolution. The value is in range [0, 4095].
+
+      `id` argument is the device ID of the driver.
+
+  - ####  `set_control_parameters_position(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
+
+    **`Return:`** *None*
+
+      This method sets the control block parameters for position control mode.
+      Only assigned parameters are written, `None`'s are ignored. The default
+      max output limit is 950.
+
+      `id` argument is the device ID of the driver.
+
+      `p` argument is the the proportional gain. Defaults to None.
+
+      `i` argument is the integral gain. Defaults to None.
+
+      `d` argument is the derivative gain. Defaults to None.
+
+      `db` argument is the deadband (of the setpoint type) value. Defaults to None.
+
+      `ff` argument is the feedforward value. Defaults to None.
+
+      `ol` argument is the maximum output limit. Defaults to None.
+
+  - ####  `get_control_parameters_position(self, id: int)`
+
+    **`Return:`** *Returns the list [P, I, D, Feedforward, Deadband, OutputLimit]*
+
+      This method gets the position control block parameters.
+
+      `id` argument is the device ID of the driver.
+
+  - ####  `set_control_parameters_velocity(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
+
+    **`Return:`** *None*
+
+      This method sets the control block parameters for velocity control mode.
+        Only assigned parameters are written, `None`'s are ignored. The default
+        max output limit is 950.
+
+      `id` argument is the device ID of the driver.
+
+      `p` argument is the the proportional gain. Defaults to None.
+
+      `i` argument is the integral gain. Defaults to None.
+
+      `d` argument is the derivative gain. Defaults to None.
+
+      `db` argument is the deadband (of the setpoint type) value. Defaults to None.
+
+      `ff` argument is the feedforward value. Defaults to None.
+
+      `ol` argument is the maximum output limit. Defaults to None.
+
+  - ####  `get_control_parameters_velocity(self, id: int)`
+
+    **`Return:`** *Returns the list [P, I, D, Feedforward, Deadband, OutputLimit]*
+
+      This method gets the velocity control block parameters.
+
+      `id` argument is the device ID of the driver.
+
+  - ####  `set_control_parameters_torque(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
+
+    **`Return:`** *None*
+
+      This method sets the control block parameters for torque control mode.
+        Only assigned parameters are written, `None`'s are ignored. The default
+        max output limit is 950.
+
+      `id` argument is the device ID of the driver.
+
+      `p` argument is the the proportional gain. Defaults to None.
+
+      `i` argument is the integral gain. Defaults to None.
+
+      `d` argument is the derivative gain. Defaults to None.
+
+      `db` argument is the deadband (of the setpoint type) value. Defaults to None.
+
+      `ff` argument is the feedforward value. Defaults to None.
+
+      `ol` argument is the maximum output limit. Defaults to None.
+
+  - ####  `get_control_parameters_torque(self, id: int)`
+
+    **`Return:`** *Returns the list [P, I, D, Feedforward, Deadband, OutputLimit]*
+
+      This method gets the torque control block parameters.
+
+      `id` argument is the device ID of the driver.
 
