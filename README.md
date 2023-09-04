@@ -460,3 +460,110 @@ This library provides easy-to-use Python modules and methods for interfacing wit
 
       `id` argument is the device ID of the driver.
 
+  - ####  `get_button(self, id: int)`
+
+    **`Return:`** *Returns the button state*
+
+      This method gets the button module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the button module.
+
+  - ####  `get_light(self, id: int, index: Index):`
+
+    **`Return:`** *Returns the ambient light measurement (in lux)*
+
+      This method gets the ambient light module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the ambient light module.
+
+  - ####  `set_buzzer(self, id: int, index: Index, en: bool):`
+
+    **`Return:`** *None*
+
+      This method enables/disables the buzzer module with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the buzzer module.
+
+      `en` argument enables or disables the buzzer. (Enable = 1, Disable = 0)
+
+  - ####  `get_joystick(self, id: int, index: Index):`
+
+    **`Return:`** *Returns the joystick module analogs and button data*
+
+      This method gets the joystick module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the joystick module.
+
+  - ####  `get_distance(self, id: int, index: Index):`
+
+    **`Return:`** *Returns the distance from the ultrasonic distance module (in cm)*
+
+      This method gets the ultrasonic distance module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the ultrasonic distance module.
+
+  - ####  `get_qtr(self, id: int, index: Index):`
+
+    **`Return:`** *Returns qtr module data: [Left(bool), Middle(bool), Right(bool)]*
+
+      This method gets the qtr module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the qtr module.
+
+  - ####  `set_servo(self, id: int, index: Index, val: int):`
+
+    **`Return:`** *None*
+
+      This method moves servo module to a desired position.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the servo module.
+
+      `val`argument is the value to write to the servo (0, 255).
+
+  - ####  `get_potantiometer(self, id: int, index: Index):`
+
+    **`Return:`** *Returns the ADC conversion from the potantiometer module*
+
+      This method gets the potantiometer module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the potantiometer module.
+
+  - ####  `set_rgb(self, id: int, index: Index, color: Colors):`
+
+    **`Return:`** *None*
+
+      This method sets the colour emitted from the RGB module.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the RGB module.
+
+      `color` argument is the color for RGB from Colors class.
+
+  - ####  `get_imu(self, id: int, index: Index):`
+
+    **`Return:`** *Returns roll, pitch angles*
+
+      This method gets the IMU module data (roll, pitch).
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the IMU module.
+
+
