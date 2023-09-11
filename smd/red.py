@@ -347,7 +347,7 @@ class Master():
 
         self.__driver_list[id] = Red(255)
 
-    def set_variables(self, id: int, idx_val_pairs=[], ack=False) -> list | None:
+    def set_variables(self, id: int, idx_val_pairs=[], ack=False):
         """ Set variables on the driver with given ID
         with a list containing [Index, value] sublists. Index
         is the parameter index and the value is the value attached to it.
@@ -385,7 +385,7 @@ class Master():
         time.sleep(self.__post_sleep)
         return None
 
-    def get_variables(self, id: int, index_list: list) -> list | None:
+    def get_variables(self, id: int, index_list: list):
         """ Get variables from the driver with respect to given list
 
         Args:
@@ -605,7 +605,7 @@ class Master():
         self.__write_bus(self.__driver_list[id].enter_bootloader())
         time.sleep(self.__post_sleep)
 
-    def get_driver_info(self, id: int) -> dict | None:
+    def get_driver_info(self, id: int):
         """ Get hardware and software versions from the driver
 
         Args:
@@ -680,7 +680,7 @@ class Master():
         self.set_variables(id, [[Index.OperationMode, mode]])
         time.sleep(self.__post_sleep)
 
-    def get_operation_mode(self, id: int) -> list | None:
+    def get_operation_mode(self, id: int):
         """ Get the current operation mode from the driver.
 
         Args:
@@ -734,7 +734,7 @@ class Master():
         self.set_variables(id, [[Index.MinimumPositionLimit, plmin], [Index.MaximumPositionLimit, plmax]])
         time.sleep(self.__post_sleep)
 
-    def get_position_limits(self, id: int) -> list | None:
+    def get_position_limits(self, id: int):
         """ Get the position limits of the motor in terms of encoder ticks.
 
         Args:
@@ -757,7 +757,7 @@ class Master():
         self.set_variables(id, [[Index.TorqueLimit, tl]])
         time.sleep(self.__post_sleep)
 
-    def get_torque_limit(self, id: int) -> list | None:
+    def get_torque_limit(self, id: int):
         """ Get the torque limit from the driver in terms of milliamps (mA).
 
         Args:
@@ -779,7 +779,7 @@ class Master():
         self.set_variables(id, [[Index.VelocityLimit, vl]])
         time.sleep(self.__post_sleep)
 
-    def get_velocity_limit(self, id: int) -> list | None:
+    def get_velocity_limit(self, id: int):
         """ Get the velocity limit from the driver in terms of RPM.
 
         Args:
@@ -790,7 +790,7 @@ class Master():
         """
         return self.get_variables(id, [Index.VelocityLimit])
 
-    def set_position(self, id: int, sp: int | float):
+    def set_position(self, id: int, sp: int):
         """ Set the desired setpoint for the position control in terms of encoder ticks.
 
         Args:
@@ -800,7 +800,7 @@ class Master():
         self.set_variables(id, [[Index.SetPosition, sp]])
         time.sleep(self.__post_sleep)
 
-    def get_position(self, id: int) -> list | None:
+    def get_position(self, id: int):
         """ Get the current position of the motor from the driver in terms of encoder ticks.
 
         Args:
@@ -811,7 +811,7 @@ class Master():
         """
         return self.get_variables(id, [Index.PresentPosition])
 
-    def set_velocity(self, id: int, sp: int | float):
+    def set_velocity(self, id: int, sp: float):
         """ Set the desired setpoint for the velocity control in terms of RPM.
 
         Args:
@@ -821,7 +821,7 @@ class Master():
         self.set_variables(id, [[Index.SetVelocity, sp]])
         time.sleep(self.__post_sleep)
 
-    def get_velocity(self, id: int) -> list | None:
+    def get_velocity(self, id: int):
         """ Get the current velocity of the motor output shaft from the driver in terms of RPM.
 
         Args:
@@ -832,7 +832,7 @@ class Master():
         """
         return self.get_variables(id, [Index.PresentVelocity])
 
-    def set_torque(self, id: int, sp: int | float):
+    def set_torque(self, id: int, sp: float):
         """ Set the desired setpoint for the torque control in terms of milliamps (mA).
 
         Args:
@@ -842,7 +842,7 @@ class Master():
         self.set_variables(id, [[Index.SetTorque, sp]])
         time.sleep(self.__post_sleep)
 
-    def get_torque(self, id: int) -> list | None:
+    def get_torque(self, id: int):
         """ Get the current drawn from the motor from the driver in terms of milliamps (mA).
 
         Args:
@@ -853,7 +853,7 @@ class Master():
         """
         return self.get_variables(id, [Index.MotorCurrent])
 
-    def set_duty_cycle(self, id: int, pct: int | float):
+    def set_duty_cycle(self, id: int, pct: float):
         """ Set the duty cycle to the motor for PWM control mode in terms of percentage.
         Negative values will change the motor direction.
 
@@ -864,7 +864,7 @@ class Master():
         self.set_variables(id, [[Index.SetDutyCycle, pct]])
         time.sleep(self.__post_sleep)
 
-    def get_analog_port(self, id: int) -> list | None:
+    def get_analog_port(self, id: int):
         """ Get the ADC values from the analog port of the device with
         10 bit resolution. The value is in range [0, 4095].
 
@@ -896,7 +896,7 @@ class Master():
         self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
         time.sleep(self.__post_sleep)
 
-    def get_control_parameters_position(self, id: int) -> list | None:
+    def get_control_parameters_position(self, id: int):
         """ Get the position control block parameters.
 
         Args:
