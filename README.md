@@ -9,7 +9,58 @@ SMD Python Library takes your projects to the next level by offering seamless in
 
 Develop your projects with "Acrome Smart Motor Drivers" and a computer that can run your Python code.
 
-## Installation
+You can reach the Acrome Smart Motors Drivers documentation [here](https://acrome-smd.readthedocs.io/en/latest/getting-started.html).
+
+# Installation
+
+To use [Acrome Smart Motor Drivers](https://acrome.net/product/smart-motor-drivers) with python library, follow the installation steps below. Library is compatible with Python 3.x and can be installed on both Windows and Linux systems.
+
+### Prerequisites
+
+Before you begin, make sure you have the following prerequisites:
+
+- Python 3.x: [Python Official Website](https://www.python.org/downloads/)
+
+### Installation
+
+#### Windows
+
+1. Open a Command Prompt with administrative privileges.
+
+2. Install SMD library using `pip` (Python package manager) by running the following command:
+
+  ```shell
+  pip install acrome-smd
+  ```
+
+3. Wait for the installation to complete. Pip will automatically download and install the library along with any required dependencies.
+
+#### Linux
+1. Open a terminal.
+
+2. Install SMD library using pip (Python package manager) by running the following command:
+
+  ```shell
+  pip install acrome-smd
+  ```
+
+3. Wait for the installation to complete. Pip will automatically download and install SMD Library along with any required dependencies.
+
+### Verification
+To verify that SMD library has been successfully installed, open a Python interpreter and run the following command:
+
+```python
+import smd
+import smd.red
+```
+If no errors are raised, the installation was successful.
+
+### Upgrading
+To upgrade SMD Library to the latest version, you can use the following pip command:
+
+  ```shell
+  pip install acrome-smd
+  ```
 
 
 ## Usage
