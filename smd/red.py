@@ -67,61 +67,61 @@ class Red():
             _Data(Index.SetPosition, 'f'),
             _Data(Index.SetVelocity, 'f'),
             _Data(Index.SetTorque, 'f'),
-            _Data(Index.SetDutyCycle, 'f'),
-            _Data(Index.Buzzer_1, 'B'),
+            _Data(Index.SetDutyCycle, 'f'), 
+            _Data(Index.Buzzer_1, 'B'),         #45
             _Data(Index.Buzzer_2, 'B'),
             _Data(Index.Buzzer_3, 'B'),
             _Data(Index.Buzzer_4, 'B'),
-            _Data(Index.Buzzer_5, 'B'),
-            _Data(Index.Servo_1, 'B'),
+            _Data(Index.Buzzer_5, 'B'),         #49
+            _Data(Index.Servo_1, 'B'),          #50
             _Data(Index.Servo_2, 'B'),
             _Data(Index.Servo_3, 'B'),
             _Data(Index.Servo_4, 'B'),
-            _Data(Index.Servo_5, 'B'),
-            _Data(Index.RGB_1, 'B'),
+            _Data(Index.Servo_5, 'B'),          #54
+            _Data(Index.RGB_1, 'B'),            #55
             _Data(Index.RGB_2, 'B'),
             _Data(Index.RGB_3, 'B'),
             _Data(Index.RGB_4, 'B'),
             _Data(Index.RGB_5, 'B'),
-            _Data(Index.PresentPosition, 'f'),
+            _Data(Index.PresentPosition, 'f'),  #60
             _Data(Index.PresentVelocity, 'f'),
             _Data(Index.MotorCurrent, 'f'),
-            _Data(Index.AnalogPort, 'H'),
-            _Data(Index.Button_1, 'B'),
+            _Data(Index.AnalogPort, 'H'),       #63
+            _Data(Index.Button_1, 'B'),         #64
             _Data(Index.Button_2, 'B'),
-            _Data(Index.Button_3, 'B'),
+            _Data(Index.Button_3, 'B'),         #66
             _Data(Index.Button_4, 'B'),
             _Data(Index.Button_5, 'B'),
-            _Data(Index.Light_1, 'H'),
+            _Data(Index.Light_1, 'H'),          #69
             _Data(Index.Light_2, 'H'),
             _Data(Index.Light_3, 'H'),
             _Data(Index.Light_4, 'H'),
             _Data(Index.Light_5, 'H'),
-            _Data(Index.Joystick_1, 'ffB'),
+            _Data(Index.Joystick_1, 'ffB'),     #74
             _Data(Index.Joystick_2, 'ffB'),
             _Data(Index.Joystick_3, 'ffB'),
             _Data(Index.Joystick_4, 'ffB'),
             _Data(Index.Joystick_5, 'ffB'),
-            _Data(Index.Distance_1, 'H'),
+            _Data(Index.Distance_1, 'H'),       #79
             _Data(Index.Distance_2, 'H'),
             _Data(Index.Distance_3, 'H'),
             _Data(Index.Distance_4, 'H'),
-            _Data(Index.Distance_5, 'H'),
-            _Data(Index.QTR_1, 'B'),
+            _Data(Index.Distance_5, 'H'),       #83
+            _Data(Index.QTR_1, 'B'),            #84
             _Data(Index.QTR_2, 'B'),
             _Data(Index.QTR_3, 'B'),
             _Data(Index.QTR_4, 'B'),
             _Data(Index.QTR_5, 'B'),
-            _Data(Index.Pot_1, 'H'),
+            _Data(Index.Pot_1, 'H'),            #89
             _Data(Index.Pot_2, 'H'),
             _Data(Index.Pot_3, 'H'),
             _Data(Index.Pot_4, 'H'),
             _Data(Index.Pot_5, 'H'),
-            _Data(Index.IMU_1, 'ff'),
+            _Data(Index.IMU_1, 'ff'),           #94
             _Data(Index.IMU_2, 'ff'),
             _Data(Index.IMU_3, 'ff'),
             _Data(Index.IMU_4, 'ff'),
-            _Data(Index.IMU_5, 'ff'),
+            _Data(Index.IMU_5, 'ff'),           #98
             _Data(Index.CRCValue, 'I')
         ]
 

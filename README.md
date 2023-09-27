@@ -489,6 +489,7 @@ To upgrade SMD Library to the latest version, you can use the following pip comm
       This method gets the velocity control block parameters.
 
       `id` argument is the device ID of the driver.
+  
 
   - ####  `set_control_parameters_torque(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
 
@@ -520,7 +521,7 @@ To upgrade SMD Library to the latest version, you can use the following pip comm
 
       `id` argument is the device ID of the driver.
 
-  - ####  `get_button(self, id: int)`
+  - ####  `get_button(self, id: int, index: Index)`
 
     **`Return:`** *Returns the button state*
 
@@ -738,6 +739,4 @@ master.set_torque(ID, 80)          #sets the setpoint to 80 mili amps(mA).
 master.enable_torque(ID, True)      #enables the motor torque to start rotating
 ```
 You must enter the PID values of the Torque Control Mode. Since Auto tune does not produce these values, you must set them yourself. If you do not do this, the motor cannot rotate properly.
-
-
 

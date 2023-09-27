@@ -91,17 +91,17 @@ Index = enum.IntEnum('Index', [
     'SetVelocity',
     'SetTorque',
     'SetDutyCycle',
-    'Buzzer_1',
+    'Buzzer_1',                     #45
     'Buzzer_2',
     'Buzzer_3',
     'Buzzer_4',
     'Buzzer_5',
-    'Servo_1',
+    'Servo_1',                      #50
     'Servo_2',
     'Servo_3',
     'Servo_4',
     'Servo_5',
-    'RGB_1',
+    'RGB_1',                        #55
     'RGB_2',
     'RGB_3',
     'RGB_4',
@@ -120,11 +120,11 @@ Index = enum.IntEnum('Index', [
     'Light_3',
     'Light_4',
     'Light_5',
-    'Joystick_1',
+    'Joystick_1',                   #//75
     'Joystick_2',
     'Joystick_3',
     'Joystick_4',
-    'Joystick_5',
+    'Joystick_5',                   #//79
     'Distance_1',
     'Distance_2',
     'Distance_3',
