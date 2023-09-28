@@ -1,3 +1,4 @@
+
 # Python Library
 
 # Overview
@@ -7,7 +8,7 @@ Embrace the world of motor control with simplicity using our SMD Python Library.
 
 Whether your project requires basic speed adjustments or precise position control, quickly and easily leverage the flexibility of Python to effortlessly implement a wide variety of motor control strategies.
 
-SMD Python Library takes your projects to the next level by offering seamless integration ith SMD Sensor modules. With this library, you can increase the functionality and efficiency of your project bwy effortlessly collecting data from SMD sensor modules via SMD.
+SMD Python Library takes your projects to the next level by offering seamless integration with SMD Sensor modules. With this library, you can increase the functionality and efficiency of your project by effortlessly collecting data from SMD sensor modules via SMD.
 
 Develop your projects with "Acrome Smart Motor Drivers" and a computer that can run your Python code.
 
@@ -62,6 +63,7 @@ To upgrade SMD Library to the latest version, you can use the following pip comm
   ```shell
   pip install acrome-smd
   ```
+
 # Usage
 Import the BLABLA Library:
 First, import the BLABLA library at the beginning of your Python script:
@@ -110,7 +112,180 @@ You can access all sample codes from [here](https:asıodasdasd.com) .
 Please read full documentation to use all features of a **SMD** 
 
 
-# Brushed DC Motor Control and Control Modes
+
+
+
+# Control
+## PID Tune and Control Parameters
+
+The control modes on the SMD operate with PID control. Therefore, correctly tuning the P, I, and D constants is crucial for accurate control. The device features an autotune capability to automatically set these values. Alternatively, users can manually input these values if desired.
+
+### Autotune
+To utilize the autotune feature on the device, it's essential to ensure that the motor is in a freely rotatable position. This is because the card continuously rotates the motor during the autotuning process.
+
+Following this, the next step is to input the motor's CPR (Counts Per Revolution) and RPM (Revolutions Per Minute) values into the card using the provided methods below. Failing to do this accurately may result in incorrect calculations.
+
+  - #### `set_shaft_cpr(self, id: int, cpr: float)`
+
+    **`Return:`** *None*
+
+    This method sets the count per revolution (CPR) of the motor output shaft.
+
+    `id` argument is the device ID of the connected driver.
+
+    `cpr` argument is the CPR value of the output shaft
+
+  - #### `set_shaft_rpm(self, id: int, rpm: float)`
+
+    **`Return:`** *None*
+
+    This method sets the revolution per minute (RPM) value of the output shaft at 12V rating.
+
+    `id` argument is the device ID of the connected driver.
+
+    `rpm` argument is the RPM value of the output shaft at 12V
+
+After completing these steps, you should initiate the tuning process using the ``pid_tuner()`` method. Please note that immediately after calling this method, the motors will start rotating with varying speeds.
+
+  - #### `pid_tuner(self, id: int)`
+
+    **`Return:`** *None*
+
+    This method starts a PID tuning process. Shaft CPR and RPM values **must** be configured beforehand. If CPR and RPM values are not configured, motors will not spin.
+
+    `id` argument is the device ID of the connected driver.
+
+Once the ``pid_tuner()`` method is initiated, the state of the torque (whether it's enabled or not) does not affect motor operation. There is no need to use the ``enable_torque()`` function.
+
+#### An Example of Autotune 
+```python
+from smd.red import *
+import time
+
+MASTER_PORT =  "/dev/ttyUSB0" #depending on operating system, port, etc. may vary depending on the
+master = Master(MASTER_PORT) #creating master object
+
+print(master.scan()) #prints ID list of connected SMDs
+
+ID = master.attached()[0] #getting ID of first SMD from scanned ones. You can use directly ID = 0 if it has never been changed before.
+
+master.set_shaft_rpm(ID,10000)  #rpm and cpr values are depend on the motor you use.
+master.set_shaft_cpr(ID,64)
+master.pid_tuner(ID)            #starts autotune for setting PID values of control algorithms
+```
+
+### Setting PID Values
+Manual input of the necessary constants for PID control is also possible. For this, separate P, I, and D constants should be configured for each control mode. Please note that each mode utilizes its own set of constants to control the motor. There are dedicated methods for configuring these constants for each control mode.
+
+- ####  `set_control_parameters_position(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
+
+    **`Return:`** *None*
+
+      This method sets the control block parameters for position control mode.
+      Only assigned parameters are written, `None`'s are ignored. The default
+      max output limit is 950.
+
+      `id` argument is the device ID of the driver.
+
+      `p` argument is the the proportional gain. Defaults to None.
+
+      `i` argument is the integral gain. Defaults to None.
+
+      `d` argument is the derivative gain. Defaults to None.
+
+      `db` argument is the deadband (of the setpoint type) value. Defaults to None.
+
+      `ff` argument is the feedforward value. Defaults to None.
+
+      `ol` argument is the maximum output limit. Defaults to None.
+
+
+- ####  `set_control_parameters_velocity(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
+
+    **`Return:`** *None*
+
+      This method sets the control block parameters for velocity control mode.
+        Only assigned parameters are written, `None`'s are ignored. The default
+        max output limit is 950.
+
+      `id` argument is the device ID of the driver.
+
+      `p` argument is the the proportional gain. Defaults to None.
+
+      `i` argument is the integral gain. Defaults to None.
+
+      `d` argument is the derivative gain. Defaults to None.
+
+      `db` argument is the deadband (of the setpoint type) value. Defaults to None.
+
+      `ff` argument is the feedforward value. Defaults to None.
+
+      `ol` argument is the maximum output limit. Defaults to None.
+- ####  `set_control_parameters_torque(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
+
+    **`Return:`** *None*
+
+      This method sets the control block parameters for torque control mode.
+        Only assigned parameters are written, `None`'s are ignored. The default
+        max output limit is 950.
+
+      `id` argument is the device ID of the driver.
+
+      `p` argument is the the proportional gain. Defaults to None.
+
+      `i` argument is the integral gain. Defaults to None.
+
+      `d` argument is the derivative gain. Defaults to None.
+
+      `db` argument is the deadband (of the setpoint type) value. Defaults to None.
+
+      `ff` argument is the feedforward value. Defaults to None.
+
+      `ol` argument is the maximum output limit. Defaults to None.
+
+### Getting PID Values and Control values
+The P, I, and D constants and other values entered for control modes can be obtained. This can be achieved by using the methods provided below.
+
+- ####  `get_control_parameters_position(self, id: int)`
+
+    **`Return:`** *Returns the list [P, I, D, Feedforward, Deadband, OutputLimit]*
+
+    This method gets the position control block parameters.
+
+    `id` argument is the device ID of the driver.
+
+- ####  `get_control_parameters_velocity(self, id: int)`
+
+    **`Return:`** *Returns the list [P, I, D, Feedforward, Deadband, OutputLimit]*
+
+    This method gets the velocity control block parameters.
+
+    `id` argument is the device ID of the driver.
+  
+- ####  `get_control_parameters_torque(self, id: int)`
+
+    **`Return:`** *Returns the list [P, I, D, Feedforward, Deadband, OutputLimit]*
+
+    This method gets the torque control block parameters.
+
+    `id` argument is the device ID of the driver.
+
+#### you can see the PID values after then autotune with code below. 
+```python
+from smd.red import *
+import time
+
+MASTER_PORT =  "/dev/ttyUSB0"
+master = Master(MASTER_PORT) #creating master object
+print(master.scan())
+ID = 0 #ID of the SMD connected and autotuned.
+
+print(master.get_control_parameters_position(ID))
+print(master.get_control_parameters_velocity(ID))
+
+```
+
+## Brushed DC Motor Controls
 The SMD Red has 4 control modes:
 
 - **PWM Control:** This mode provides power to a brushed DC motor using PWM signals.
@@ -357,191 +532,182 @@ master.enable_torque(ID, True)      #enables the motor torque to start rotating
 ```
 **_You must enter the PID values of the Torque Control Mode. Since Auto tune does not produce these values, you must set them yourself._** If you do not do this, the motor cannot rotate properly.
 
-# PID Tune and Setting Control Parameters
 
-The control modes on the SMD device operate with PID control. Therefore, correctly tuning the P, I, and D constants is crucial for accurate control. The device features an autotune capability to automatically set these values. Alternatively, users can manually input these values if desired.
 
-### Autotune
-To utilize the autotune feature on the device, it's essential to ensure that the motor is in a freely rotatable position. This is because the card continuously rotates the motor during the autotuning process.
 
-Following this, the next step is to input the motor's CPR (Counts Per Revolution) and RPM (Revolutions Per Minute) values into the card using the provided methods below. Failing to do this accurately may result in incorrect calculations.
 
-  - #### `set_shaft_cpr(self, id: int, cpr: float)`
+# Base methods
+- ### Red Class
+  Methods of the `Red` class are used for the underlying logic of the Master class. As such, it is not recommended for users to call `Red` class methods explicitly. Users may create instances of the class in order to attach to the master. Thus, only `__init__` constructor is given here.
+
+  - #### `__init__(self, ID: int)`:
+
+    This is the initalizer for Red class which represents an object of SMD (Smart Motor Drivers) driver.
+
+    `ID` argument is the device ID of the created driver.
+
+- ### Master Class
+
+  - #### `__init__(self, portname, baudrate=115200)`
 
     **`Return:`** *None*
 
-    This method sets the count per revolution (CPR) of the motor output shaft.
+    This is the initializer for Master class which controls the serial bus.
+
+    `portname` argument is the serial/COM port of the host computer which is connected to the Acrome Smart Motor Drivers via Mastercard.
+
+    `baudrate` argument specifies the baudrate of the serial port. User may change this value to something between 3.053 KBits/s and 12.5 MBits/s. However, it is up to the user to select a value which is supported by the user's host computer.
+
+  - #### `update_driver_baudrate(self, id: int, br: int):`
+
+    **`Return:`** *None*
+
+    This method updates the baudrate of the driver, saves it to EEPROM and resets the driver board. Once the board is up again, the new baudrate is applied.
 
     `id` argument is the device ID of the connected driver.
 
-    `cpr` argument is the CPR value of the output shaft
+    `br` argument is the user entered baudrate value. This value must be between 3.053 KBits/s and 12.5 MBits/s.
 
-  - #### `set_shaft_rpm(self, id: int, rpm: float)`
+  - #### `update_master_baudrate(self, br: int):`
 
     **`Return:`** *None*
 
-    This method sets the revolution per minute (RPM) value of the output shaft at 12V rating.
+    This method updates the baudrate of the host computer's serial port and should be called after changing the baudrate of the driver board to sustain connection.
+
+    `br` argument is the user entered baudrate value. This value must be between 3.053 KBits/s and 12.5 MBits/s.
+
+  - #### `attach(self, driver: Red):`
+
+    **`Return:`** *None*
+
+    This method attaches an instance of Red class to the master. If a device ID is not attached to the master beforehand, methods of the master class will not work on the given device ID.
+
+    `driver` argument is an instance of the Red class. Argument must be an instance with a valid device ID.
+
+
+  - #### `detach(self, id: int):`
+
+    **`Return:`** *None*
+
+    This method removes the driver with the given devic ID from thee master. Any future action to the removed device ID will fail unless it is re-attached.
+
+  - #### `set_variables(self, id: int, idx_val_pairs=[], ack=False)`
+
+    **`Return:`** *List of the acknowledged variables or None*
+
+    This method updates the variables of the driver board with respect to given index/value pairs.
 
     `id` argument is the device ID of the connected driver.
 
-    `rpm` argument is the RPM value of the output shaft at 12V
+    `idx_val_pairs` argument is a list, consisting of lists of parameter indexes and their value correspondents.
 
-After completing these steps, you should initiate the tuning process using the ``pid_tuner()`` method. Please note that immediately after calling this method, the motors will start rotating with varying speeds.
+  - #### `get_variables(self, id: int, index_list: list)`
 
-  - #### `pid_tuner(self, id: int)`
+    **`Return:`** *List of the read variables or None*
 
-    **`Return:`** *None*
-
-    This method starts a PID tuning process. Shaft CPR and RPM values **must** be configured beforehand. If CPR and RPM values are not configured, motors will not spin.
+    This method reads the variables of the driver board with respect to given index list.
 
     `id` argument is the device ID of the connected driver.
 
-Once the ``pid_tuner()`` method is initiated, the state of the torque (whether it's enabled or not) does not affect motor operation. There is no need to use the ``enable_torque()`` function.
+    `index_list` argument is a list with every element is a parameter index intended to read.
 
-#### An Example of Autotune 
-```python
-from smd.red import *
-import time
+  - #### `set_variables_sync(self, index: Index, id_val_pairs=[])`
 
-MASTER_PORT =  "/dev/ttyUSB0" #depending on operating system, port, etc. may vary depending on the
-master = Master(MASTER_PORT) #creating master object
+    **`Return:`** *List of the read variables or None*
 
-print(master.scan()) #prints ID list of connected SMDs
+    This method updates a specific variable of the  multiple driver boards at once.
 
-ID = master.attached()[0] #getting ID of first SMD from scanned ones. You can use directly ID = 0 if it has never been changed before.
+    `index` argument is the parameter to be updated.
 
-master.set_shaft_rpm(ID,10000)  #rpm and cpr values are depend on the motor you use.
-master.set_shaft_cpr(ID,64)
-master.pid_tuner(ID)            #starts autotune for setting PID values of control algorithms
-```
+    `id_val_pairs` argument is a list, consisting of lists of device IDs and the desired parameter value correspondents.
 
-### Setting PID Values
-Manual input of the necessary constants for PID control is also possible. For this, separate P, I, and D constants should be configured for each control mode. Please note that each mode utilizes its own set of constants to control the motor. There are dedicated methods for configuring these constants for each control mode.
+  - #### `scan(self)`
 
-- ####  `set_control_parameters_position(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
+    **`Return:`** *List of the connected driver device IDs.*
+
+    This method scans the serial port, detects and returns the connected drivers.
+
+  - #### `reboot(self, id: int)`
 
     **`Return:`** *None*
 
-      This method sets the control block parameters for position control mode.
-      Only assigned parameters are written, `None`'s are ignored. The default
-      max output limit is 950.
+    This method reboots the driver with given ID. Any runtime parameter or configuration which is not saved to EEPROM is lost after a reboot. EEPROM retains itself.
 
-      `id` argument is the device ID of the driver.
+    `id` argument is the device ID of the connected driver.
 
-      `p` argument is the the proportional gain. Defaults to None.
-
-      `i` argument is the integral gain. Defaults to None.
-
-      `d` argument is the derivative gain. Defaults to None.
-
-      `db` argument is the deadband (of the setpoint type) value. Defaults to None.
-
-      `ff` argument is the feedforward value. Defaults to None.
-
-      `ol` argument is the maximum output limit. Defaults to None.
-
-
-- ####  `set_control_parameters_velocity(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
+  - #### `factory_reset(self, id: int)`
 
     **`Return:`** *None*
 
-      This method sets the control block parameters for velocity control mode.
-        Only assigned parameters are written, `None`'s are ignored. The default
-        max output limit is 950.
+    This method clears the EEPROM config of the driver and restores it to factory defaults.
+    
+    `id` argument is the device ID of the connected driver.
 
-      `id` argument is the device ID of the driver.
-
-      `p` argument is the the proportional gain. Defaults to None.
-
-      `i` argument is the integral gain. Defaults to None.
-
-      `d` argument is the derivative gain. Defaults to None.
-
-      `db` argument is the deadband (of the setpoint type) value. Defaults to None.
-
-      `ff` argument is the feedforward value. Defaults to None.
-
-      `ol` argument is the maximum output limit. Defaults to None.
-- ####  `set_control_parameters_torque(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None)`
+  - #### `eeprom_write(self, id: int, ack=False)`
 
     **`Return:`** *None*
 
-      This method sets the control block parameters for torque control mode.
-        Only assigned parameters are written, `None`'s are ignored. The default
-        max output limit is 950.
+    This method clears the EEPROM config of the driver and restores it to factory defaults.
+    
+    `id` argument is the device ID of the connected driver.
 
-      `id` argument is the device ID of the driver.
+  - #### `ping(self, id: int)`
 
-      `p` argument is the the proportional gain. Defaults to None.
+    **`Return:`** *True or False*
 
-      `i` argument is the integral gain. Defaults to None.
+    This method sends a ping package to the driver and returns `True` if it receives an acknowledge otherwise `False`.
+    
+    `id` argument is the device ID of the connected driver.
 
-      `d` argument is the derivative gain. Defaults to None.
+  - #### `reset_encoder(self, id: int)`
 
-      `db` argument is the deadband (of the setpoint type) value. Defaults to None.
+    **`Return:`** *None*
+    
+    This method resets the encoder counter to zero.
 
-      `ff` argument is the feedforward value. Defaults to None.
+    `id` argument is the device ID of the connected driver.
+  - #### `enter_bootloader(self, id: int)`
 
-      `ol` argument is the maximum output limit. Defaults to None.
+    **`Return:`** *None*
+    
+    This method puts the driver into bootloader. After a call to this function, firmware of the driver can be updated with a valid binary or hex file. To exit the bootloader, unplug - plug the driver from power or press the reset button.
 
-### Getting PID Values and Control values
-The P, I, and D constants and other values entered for control modes can be obtained. This can be achieved by using the methods provided below.
+    `id` argument is the device ID of the connected driver.
 
-- ####  `get_control_parameters_position(self, id: int)`
+  - #### `get_driver_info(self, id: int)`
 
-    **`Return:`** *Returns the list [P, I, D, Feedforward, Deadband, OutputLimit]*
+    **`Return:`** *Dictionary containing version info*
+    
+    This method reads the hardware and software versions of the driver and returns as a dictionary.
 
-    This method gets the position control block parameters.
+    `id` argument is the device ID of the connected driver.
+    
+  - #### `update_driver_id(self, id: int, id_new: int)`
 
-    `id` argument is the device ID of the driver.
+    **`Return:`** *None*
+    
+    This method updates the device ID of the driver temporarily. `eeprom_write(self, id:int)` method must be called to register the new device ID.
 
-- ####  `get_control_parameters_velocity(self, id: int)`
+    `id` argument is the device ID of the connected driver.
 
-    **`Return:`** *Returns the list [P, I, D, Feedforward, Deadband, OutputLimit]*
+    `id_new` argument is the new intended device ID of the connected driver.
+    
+  - #### `set_user_indicator(self, id: int)`
 
-    This method gets the velocity control block parameters.
+    **`Return:`** *None*
 
-    `id` argument is the device ID of the driver.
-  
-- ####  `get_control_parameters_torque(self, id: int)`
+    This method sets the user indicator color on the RGB LED for 5 seconds. The user indicator color is cyan.
 
-    **`Return:`** *Returns the list [P, I, D, Feedforward, Deadband, OutputLimit]*
-
-    This method gets the torque control block parameters.
-
-    `id` argument is the device ID of the driver.
-
-#### you can see the PID values after then autotune with code below. 
-```python
-from smd.red import *
-import time
-
-MASTER_PORT =  "/dev/ttyUSB0"
-master = Master(MASTER_PORT) #creating master object
-print(master.scan())
-ID = 0 #ID of the SMD connected and autotuned.
-
-print(master.get_control_parameters_position(ID))
-print(master.get_control_parameters_velocity(ID))
-
-```
-
-
-### Setting Control Limits 
-
-
-
-
-
+    `id` argument is the device ID of the connected driver.
 
 
 
 # Sensor Modules
-#### Seonsor Modules Basic
+#### Sensor Modules Basic
 #####  Sensor 1
 #####  Sensor 2
 #####  Sensor ....
 
 
-# All Methods
+
 
