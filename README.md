@@ -65,15 +65,15 @@ To upgrade SMD Library to the latest version, you can use the following pip comm
   ```
 
 # Usage
-Import the BLABLA Library:
-First, import the BLABLA library at the beginning of your Python script:
+Import the SMD Library:
+First, import the SMD library at the beginning of your Python script:
 
 ```python
 from smd.red import *
 ```
 ### Initialize SMD:
 
-Create an instance of the BLA class by initializing it with the appropriate settings. This instance represents your BLABLA motor driver and allows you to control it.
+Create an instance of the Master class by initializing it with the appropriate settings. This instance represents your SMD and allows you to control it.
 
 ````python
 ID = 0  # Set the ID of your SMART MOTOR DRIVER
@@ -702,12 +702,149 @@ master.enable_torque(ID, True)      #enables the motor torque to start rotating
 
 
 
-# Sensor Modules
-#### Sensor Modules Basic
-#####  Sensor 1
-#####  Sensor 2
-#####  Sensor ....
+# SMD Modules
+### SMD Modules Basic
+To use SMD modules, you should initially utilize the following scanning function. This function returns which modules are connected to the SMD. Each module has a type and an ID, and through this scanning process, you can learn these properties of the connected modules. When the board is powered up for the first time, this scan is automatically performed once, but afterward, this command should be used manually.
+  - #### `scan_sensors(self, id: int)`
+
+    **`Return:`** *List of connected sensors*
+    
+    This method scans and returns the sensor IDs which are currently connected to a driver.
+
+    `id` argument is the device ID of the connected driver.
+
+#### Button Module
+  - ####  `get_button(self, id: int, index: Index)`
+
+    **`Return:`** *Returns the button state*
+
+      This method gets the button module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the button module.
+
+#### Light Module
+  - ####  `get_light(self, id: int, index: Index):`
+
+    **`Return:`** *Returns the ambient light measurement (in lux)*
+
+      This method gets the ambient light module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the ambient light module.
+
+#### Buzzer Module
+  - ####  `set_buzzer(self, id: int, index: Index, en: bool):`
+
+    **`Return:`** *None*
+
+      This method enables/disables the buzzer module with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the buzzer module.
+
+      `en` argument enables or disables the buzzer. (Enable = 1, Disable = 0)
+
+#### Joystick Module
+  - ####  `get_joystick(self, id: int, index: Index):`
+
+    **`Return:`** *Returns the joystick module analogs and button data*
+
+      This method gets the joystick module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the joystick module.
+
+#### Distance Module
+  - ####  `get_distance(self, id: int, index: Index):`
+
+    **`Return:`** *Returns the distance from the ultrasonic distance module (in cm)*
+
+      This method gets the ultrasonic distance module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the ultrasonic distance module.
+
+#### QTR Module
+  - ####  `get_qtr(self, id: int, index: Index):`
+
+    **`Return:`** *Returns qtr module data: [Left(bool), Middle(bool), Right(bool)]*
+
+      This method gets the qtr module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the qtr module.
+
+#### Servo Module
+  - ####  `set_servo(self, id: int, index: Index, val: int):`
+
+    **`Return:`** *None*
+
+      This method moves servo module to a desired position.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the servo module.
+
+      `val`argument is the value to write to the servo (0, 255).
+
+#### Potantiometer Module
+  - ####  `get_potantiometer(self, id: int, index: Index):`
+
+    **`Return:`** *Returns the ADC conversion from the potantiometer module*
+
+      This method gets the potantiometer module data with given index.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the potantiometer module.
+
+#### RGB Led Module
+The setRGB() method is used to control an RGB (Red, Green, Blue) LED module by specifying the intensity or color values for each of the RGB components.
+
+  - ####  `set_rgb(self, id: int, index: Index, color: Colors):`
+
+    **`Return:`** *None*
+
+      This method sets the colour emitted from the RGB module.
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the RGB module.
+
+      `color` argument is the color for RGB from Colors class.
 
 
+  Colors available in RGB sensor module :
+  - RED,
+  - GREEN,
+  - BLUE,
+  - WHITE,
+  - YELLOW,
+  - CYAN,
+  - MAGENTA,
+  - ORANGE,
+  - PURPLE,
+  - PINK,
+  - AMBER,
+  - TEAL,
+  - INDIGO
 
+  In the method, you can use these colors in the same way as capital letters or you can use numbers from 0 to 12. For example 0 for red 
 
+#### IMU Module
+  - ####  `get_imu(self, id: int, index: Index):`
+
+    **`Return:`** *Returns roll, pitch angles*
+
+      This method gets the IMU module data (roll, pitch).
+
+      `id` argument is the device ID of the driver.
+
+      `index` argument is the protocol index of the IMU module.

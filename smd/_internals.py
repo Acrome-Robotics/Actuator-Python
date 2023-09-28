@@ -106,41 +106,41 @@ Index = enum.IntEnum('Index', [
     'RGB_3',
     'RGB_4',
     'RGB_5',
-    'PresentPosition',
+    'PresentPosition',              #60
     'PresentVelocity',
     'MotorCurrent',
     'AnalogPort',
-    'Button_1',
+    'Button_1',                     #64
     'Button_2',
     'Button_3',
     'Button_4',
     'Button_5',
-    'Light_1',
+    'Light_1',                      #69
     'Light_2',
     'Light_3',
     'Light_4',
     'Light_5',
-    'Joystick_1',                   #//75
+    'Joystick_1',                   #74
     'Joystick_2',
     'Joystick_3',
     'Joystick_4',
-    'Joystick_5',                   #//79
-    'Distance_1',
+    'Joystick_5',                   
+    'Distance_1',                   #79
     'Distance_2',
     'Distance_3',
     'Distance_4',
     'Distance_5',
-    'QTR_1',
+    'QTR_1',                        #84
     'QTR_2',
     'QTR_3',
     'QTR_4',
     'QTR_5',
-    'Pot_1',
+    'Pot_1',                        #89
     'Pot_2',
     'Pot_3',
     'Pot_4',
     'Pot_5',
-    'IMU_1',
+    'IMU_1',                        #94
     'IMU_2',
     'IMU_3',
     'IMU_4',

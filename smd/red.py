@@ -89,7 +89,7 @@ class Red():
             _Data(Index.AnalogPort, 'H'),       #63
             _Data(Index.Button_1, 'B'),         #64
             _Data(Index.Button_2, 'B'),
-            _Data(Index.Button_3, 'B'),         #66
+            _Data(Index.Button_3, 'B'),
             _Data(Index.Button_4, 'B'),
             _Data(Index.Button_5, 'B'),
             _Data(Index.Light_1, 'H'),          #69
@@ -106,7 +106,7 @@ class Red():
             _Data(Index.Distance_2, 'H'),
             _Data(Index.Distance_3, 'H'),
             _Data(Index.Distance_4, 'H'),
-            _Data(Index.Distance_5, 'H'),       #83
+            _Data(Index.Distance_5, 'H'),       
             _Data(Index.QTR_1, 'B'),            #84
             _Data(Index.QTR_2, 'B'),
             _Data(Index.QTR_3, 'B'),
@@ -121,8 +121,8 @@ class Red():
             _Data(Index.IMU_2, 'ff'),
             _Data(Index.IMU_3, 'ff'),
             _Data(Index.IMU_4, 'ff'),
-            _Data(Index.IMU_5, 'ff'),           #98
-            _Data(Index.CRCValue, 'I')
+            _Data(Index.IMU_5, 'ff'),
+            _Data(Index.CRCValue, 'I')          #99
         ]
 
         if ID > 255 or ID < 0:
@@ -579,7 +579,7 @@ class Master():
             list: List of the protocol IDs of the connected sensors otherwise None.
         """
 
-        _ID_OFFSETS = [[1, 64], [6, 69], [11, 45], [16, 74], [21, 79], [26, 85], [31, 50], [36, 89], [41, 55], [46, 94]]
+        _ID_OFFSETS = [[1, 64], [6, 69], [11, 45], [16, 74], [21, 79], [26, 84], [31, 50], [36, 89], [41, 55], [46, 94]]
         self.__write_bus(self.__driver_list[id].scan_sensors())
         time.sleep(2)
         self.__write_bus(self.__driver_list[id].scan_sensors())
@@ -1107,7 +1107,7 @@ class Master():
             raise ValueError()
         if (index < Index.Servo_1) or (index > Index.Servo_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[Index, val]])
+        return self.set_variables(id, [[index, val]])
 
     def get_potantiometer(self, id: int, index: Index):
         """ Get the potantiometer module data with given index.
