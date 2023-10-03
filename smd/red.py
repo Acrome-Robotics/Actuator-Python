@@ -5,11 +5,25 @@ from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
 import time
 from packaging.version import parse as parse_version
+import requests
+import hashlib
+import tempfile
+from stm32loader.main import main as stm32loader_main
 
 
 class InvalidIndexError(BaseException):
     pass
 
+
+class UnsupportedHardware(BaseException):
+    pass
+
+
+class UnsupportedFirmware(BaseException):
+    pass
+
+
+__RELEASE_URL = "https://github.com/Acrome-Smart-Motor-Driver/SMD-Red-Firmware/releases/{version}"
 
 class Red():
     _HEADER = 0x55
@@ -67,62 +81,62 @@ class Red():
             _Data(Index.SetPosition, 'f'),
             _Data(Index.SetVelocity, 'f'),
             _Data(Index.SetTorque, 'f'),
-            _Data(Index.SetDutyCycle, 'f'), 
-            _Data(Index.Buzzer_1, 'B'),         #45
+            _Data(Index.SetDutyCycle, 'f'),
+            _Data(Index.Buzzer_1, 'B'),
             _Data(Index.Buzzer_2, 'B'),
             _Data(Index.Buzzer_3, 'B'),
             _Data(Index.Buzzer_4, 'B'),
-            _Data(Index.Buzzer_5, 'B'),         #49
-            _Data(Index.Servo_1, 'B'),          #50
+            _Data(Index.Buzzer_5, 'B'),
+            _Data(Index.Servo_1, 'B'),
             _Data(Index.Servo_2, 'B'),
             _Data(Index.Servo_3, 'B'),
             _Data(Index.Servo_4, 'B'),
-            _Data(Index.Servo_5, 'B'),          #54
-            _Data(Index.RGB_1, 'B'),            #55
+            _Data(Index.Servo_5, 'B'),
+            _Data(Index.RGB_1, 'B'),
             _Data(Index.RGB_2, 'B'),
             _Data(Index.RGB_3, 'B'),
             _Data(Index.RGB_4, 'B'),
             _Data(Index.RGB_5, 'B'),
-            _Data(Index.PresentPosition, 'f'),  #60
+            _Data(Index.PresentPosition, 'f'),
             _Data(Index.PresentVelocity, 'f'),
             _Data(Index.MotorCurrent, 'f'),
-            _Data(Index.AnalogPort, 'H'),       #63
-            _Data(Index.Button_1, 'B'),         #64
+            _Data(Index.AnalogPort, 'H'),
+            _Data(Index.Button_1, 'B'),
             _Data(Index.Button_2, 'B'),
             _Data(Index.Button_3, 'B'),
             _Data(Index.Button_4, 'B'),
             _Data(Index.Button_5, 'B'),
-            _Data(Index.Light_1, 'H'),          #69
+            _Data(Index.Light_1, 'H'),
             _Data(Index.Light_2, 'H'),
             _Data(Index.Light_3, 'H'),
             _Data(Index.Light_4, 'H'),
             _Data(Index.Light_5, 'H'),
-            _Data(Index.Joystick_1, 'ffB'),     #74
+            _Data(Index.Joystick_1, 'ffB'),
             _Data(Index.Joystick_2, 'ffB'),
             _Data(Index.Joystick_3, 'ffB'),
             _Data(Index.Joystick_4, 'ffB'),
             _Data(Index.Joystick_5, 'ffB'),
-            _Data(Index.Distance_1, 'H'),       #79
+            _Data(Index.Distance_1, 'H'),
             _Data(Index.Distance_2, 'H'),
             _Data(Index.Distance_3, 'H'),
             _Data(Index.Distance_4, 'H'),
-            _Data(Index.Distance_5, 'H'),       
-            _Data(Index.QTR_1, 'B'),            #84
+            _Data(Index.Distance_5, 'H'),
+            _Data(Index.QTR_1, 'B'),
             _Data(Index.QTR_2, 'B'),
             _Data(Index.QTR_3, 'B'),
             _Data(Index.QTR_4, 'B'),
             _Data(Index.QTR_5, 'B'),
-            _Data(Index.Pot_1, 'H'),            #89
+            _Data(Index.Pot_1, 'H'),
             _Data(Index.Pot_2, 'H'),
             _Data(Index.Pot_3, 'H'),
             _Data(Index.Pot_4, 'H'),
             _Data(Index.Pot_5, 'H'),
-            _Data(Index.IMU_1, 'ff'),           #94
+            _Data(Index.IMU_1, 'ff'),
             _Data(Index.IMU_2, 'ff'),
             _Data(Index.IMU_3, 'ff'),
             _Data(Index.IMU_4, 'ff'),
             _Data(Index.IMU_5, 'ff'),
-            _Data(Index.CRCValue, 'I')          #99
+            _Data(Index.CRCValue, 'I')
         ]
 
         if ID > 255 or ID < 0:
@@ -273,6 +287,72 @@ class Master():
 
     def attached(self):
         return self.__attached_drivers
+
+    def update_firmware(self, id: int, version=''):
+
+        fw_file = tempfile.NamedTemporaryFile("wb+")
+        if version == '':
+            version = 'latest'
+        else:
+            version = 'tags/' + version
+
+        response = requests.get(url=__RELEASE_URL.format(version=version))
+        if response.status_code in [200, 302]:
+            assets = response.json()['assets']
+
+            fw_dl_url = None
+            md5_dl_url = None
+            for asset in assets:
+                if '.bin' in asset['name']:
+                    fw_dl_url = asset['browser_download_url']
+                elif '.md5' in asset['name']:
+                    md5_dl_url = asset['browser_download_url']
+
+            if None in [fw_dl_url, md5_dl_url]:
+                raise Exception("Could not found requested firmware file! Check your connection to GitHub.")
+
+            #  Get binary firmware file
+            md5_fw = None
+            response = requests.get(fw_dl_url, stream=True)
+            if (response.status_code in [200, 302]):
+                fw_file.write(response.content)
+                md5_fw = hashlib.md5(response.content).hexdigest()
+            else:
+                raise Exception("Could not fetch requested binary file! Check your connection to GitHub.")
+
+            #  Get MD5 file
+            response = requests.get(md5_dl_url, stream=True)
+            if (response.status_code in [200, 302]):
+                md5_retreived = response.text.split(' ')[0]
+                if (md5_fw == md5_retreived):
+
+                    # Put the driver in to bootloader mode
+                    self.enter_bootloader(id)
+                    time.sleep(0.1)
+
+                    # Close serial port
+                    serial_settings = self.__ph.get_settings()
+                    self.__ph.close()
+
+                    # Upload binary
+                    args = ['-p', self.__ph.portstr, '-b', str(115200), '-e', '-w', '-v', self.fw_file.name]
+                    stm32loader_main(*args)
+
+                    # Delete uploaded binary
+                    if (not fw_file.closed):
+                        fw_file.close()
+
+                    # Re open port to the user with saved settings
+                    self.__ph.apply_settings(serial_settings)
+                    self.__ph.open()
+                    return True
+
+                else:
+                    raise Exception("MD5 Mismatch!")
+            else:
+                raise Exception("Could not fetch requested MD5 file! Check your connection to GitHub.")
+        else:
+            raise Exception("Could not found requested firmware files list! Check your connection to GitHub.")
 
     def update_driver_baudrate(self, id: int, br: int):
         """Update the baudrate of the driver with
@@ -1025,7 +1105,7 @@ class Master():
         """
         if (index < Index.Buzzer_1) or (index > Index.Buzzer_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[Index, en]])
+        return self.set_variables(id, [[index, en]])
 
     def get_joystick(self, id: int, index: Index):
         """ Get the joystick module data with given index.
@@ -1146,7 +1226,7 @@ class Master():
             raise ValueError()
         if (index < Index.RGB_1) or (index > Index.RGB_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[Index, color]])
+        return self.set_variables(id, [[index, color]])
 
     def get_imu(self, id: int, index: Index):
         """ Get IMU module data (roll, pitch)
