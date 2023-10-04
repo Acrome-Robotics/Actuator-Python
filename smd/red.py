@@ -23,8 +23,6 @@ class UnsupportedFirmware(BaseException):
     pass
 
 
-__RELEASE_URL = "https://github.com/Acrome-Smart-Motor-Driver/SMD-Red-Firmware/releases/{version}"
-
 class Red():
     _HEADER = 0x55
     _PRODUCT_TYPE = 0xBA
@@ -259,6 +257,7 @@ class Red():
 
 class Master():
     _BROADCAST_ID = 0xFF
+    __RELEASE_URL = "https://api.github.com/repos/Acrome-Smart-Motor-Driver/SMD-Red-Firmware/releases/{version}"
 
     def __init__(self, portname, baudrate=115200) -> None:
         self.__attached_drivers = []
@@ -288,7 +287,12 @@ class Master():
     def attached(self):
         return self.__attached_drivers
 
-    def update_firmware(self, id: int, version=''):
+    def get_latest_fw_version(self):
+        response = requests.get(url=self.__class__.__RELEASE_URL.format(version='latest'))
+        if (response.status_code in [200, 302]):
+            return (response.json()['tag_name'])
+
+    def update_fw_version(self, id: int, version=''):
 
         fw_file = tempfile.NamedTemporaryFile("wb+")
         if version == '':
@@ -296,7 +300,7 @@ class Master():
         else:
             version = 'tags/' + version
 
-        response = requests.get(url=__RELEASE_URL.format(version=version))
+        response = requests.get(url=self.__class__.__RELEASE_URL.format(version=version))
         if response.status_code in [200, 302]:
             assets = response.json()['assets']
 
@@ -335,7 +339,7 @@ class Master():
                     self.__ph.close()
 
                     # Upload binary
-                    args = ['-p', self.__ph.portstr, '-b', str(115200), '-e', '-w', '-v', self.fw_file.name]
+                    args = ['-p', self.__ph.portstr, '-b', str(115200), '-e', '-w', '-v', fw_file.name]
                     stm32loader_main(*args)
 
                     # Delete uploaded binary
