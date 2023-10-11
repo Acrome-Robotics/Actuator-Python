@@ -702,9 +702,9 @@ class Master():
         data = self.get_variables(id, [Index.HardwareVersion, Index.SoftwareVersion])
         if data is not None:
             ver = list(struct.pack('<I', data[0]))
-            st['HardwareVersion'] = "{1}.{2}.{3}".format(*ver[::-1])
+            st['HardwareVersion'] = "v{1}.{2}.{3}".format(*ver[::-1])
             ver = list(struct.pack('<I', data[1]))
-            st['SoftwareVersion'] = "{1}.{2}.{3}".format(*ver[::-1])
+            st['SoftwareVersion'] = "v{1}.{2}.{3}".format(*ver[::-1])
 
             self.__driver_list[id]._config = st
             return st
