@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="acrome-smd",
-    version="1.1.1",
+    version="1.1.2",
     author="Furkan Kırlangıç",
     author_email="furkankirlangic@acrome.net",
     description="Python library for interfacing with Acrome Smart Motor Drivers (SMD) products.",
@@ -21,6 +21,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     packages=setuptools.find_packages(exclude=['tests', 'test']),
-    install_requires=["pyserial", "stm32loader", "crccheck", "requests", "packaging", "tempfile"],
+    install_requires=["pyserial", "stm32loader", "crccheck", "requests", "packaging"],
     python_requires=">=3.7"
 )
