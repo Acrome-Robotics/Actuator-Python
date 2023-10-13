@@ -5,9 +5,21 @@ from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
 import time
 from packaging.version import parse as parse_version
+import requests
+import hashlib
+import tempfile
+from stm32loader.main import main as stm32loader_main
 
 
 class InvalidIndexError(BaseException):
+    pass
+
+
+class UnsupportedHardware(BaseException):
+    pass
+
+
+class UnsupportedFirmware(BaseException):
     pass
 
 
@@ -34,8 +46,6 @@ class Red():
             _Data(Index.Baudrate, 'I'),
             _Data(Index.OperationMode, 'B'),
             _Data(Index.TorqueEnable, 'B'),
-            _Data(Index.TunerEnable, 'B'),
-            _Data(Index.TunerMethod, 'B'),
             _Data(Index.OutputShaftCPR, 'f'),
             _Data(Index.OutputShaftRPM, 'f'),
             _Data(Index.UserIndicator, 'B'),
@@ -215,8 +225,17 @@ class Red():
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
-    def scan_sensors(self):
-        self.vars[Index.Command].value(Commands.SCAN_SENSORS)
+    def tune(self):
+        self.vars[Index.Command].value(Commands.TUNE)
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
+        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
+        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+        self.__ack_size = 0
+        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
+
+    def scan_modules(self):
+        self.vars[Index.Command].value(Commands.MODULE_SCAN)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
         struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
@@ -245,6 +264,7 @@ class Red():
 
 class Master():
     _BROADCAST_ID = 0xFF
+    __RELEASE_URL = "https://api.github.com/repos/Acrome-Smart-Motor-Driver/SMD-Red-Firmware/releases/{version}"
 
     def __init__(self, portname, baudrate=115200) -> None:
         self.__attached_drivers = []
@@ -272,7 +292,97 @@ class Master():
         return self.__ph.read(size=size)
 
     def attached(self):
+        """ Return the scanned drivers
+
+        Returns:
+            List: Scanned drivers
+        """
         return self.__attached_drivers
+
+    def get_latest_fw_version(self):
+        """ Get the latest firmware version from the Github servers.
+
+        Returns:
+            String: Latest firmware version
+        """
+        response = requests.get(url=self.__class__.__RELEASE_URL.format(version='latest'))
+        if (response.status_code in [200, 302]):
+            return (response.json()['tag_name'])
+
+    def update_fw_version(self, id: int, version=''):
+        """ Update firmware version with respect to given version string.
+
+        Args:
+            id (int): The device ID of the driver
+            version (str, optional): Desired firmware version. Defaults to ''.
+
+        Returns:
+            Bool: True if the firmware is updated
+        """
+
+        fw_file = tempfile.NamedTemporaryFile("wb+")
+        if version == '':
+            version = 'latest'
+        else:
+            version = 'tags/' + version
+
+        response = requests.get(url=self.__class__.__RELEASE_URL.format(version=version))
+        if response.status_code in [200, 302]:
+            assets = response.json()['assets']
+
+            fw_dl_url = None
+            md5_dl_url = None
+            for asset in assets:
+                if '.bin' in asset['name']:
+                    fw_dl_url = asset['browser_download_url']
+                elif '.md5' in asset['name']:
+                    md5_dl_url = asset['browser_download_url']
+
+            if None in [fw_dl_url, md5_dl_url]:
+                raise Exception("Could not found requested firmware file! Check your connection to GitHub.")
+
+            #  Get binary firmware file
+            md5_fw = None
+            response = requests.get(fw_dl_url, stream=True)
+            if (response.status_code in [200, 302]):
+                fw_file.write(response.content)
+                md5_fw = hashlib.md5(response.content).hexdigest()
+            else:
+                raise Exception("Could not fetch requested binary file! Check your connection to GitHub.")
+
+            #  Get MD5 file
+            response = requests.get(md5_dl_url, stream=True)
+            if (response.status_code in [200, 302]):
+                md5_retreived = response.text.split(' ')[0]
+                if (md5_fw == md5_retreived):
+
+                    # Put the driver in to bootloader mode
+                    self.enter_bootloader(id)
+                    time.sleep(0.1)
+
+                    # Close serial port
+                    serial_settings = self.__ph.get_settings()
+                    self.__ph.close()
+
+                    # Upload binary
+                    args = ['-p', self.__ph.portstr, '-b', str(115200), '-e', '-w', '-v', fw_file.name]
+                    stm32loader_main(*args)
+
+                    # Delete uploaded binary
+                    if (not fw_file.closed):
+                        fw_file.close()
+
+                    # Re open port to the user with saved settings
+                    self.__ph.apply_settings(serial_settings)
+                    self.__ph.open()
+                    return True
+
+                else:
+                    raise Exception("MD5 Mismatch!")
+            else:
+                raise Exception("Could not fetch requested MD5 file! Check your connection to GitHub.")
+        else:
+            raise Exception("Could not found requested firmware files list! Check your connection to GitHub.")
 
     def update_driver_baudrate(self, id: int, br: int):
         """Update the baudrate of the driver with
@@ -569,7 +679,7 @@ class Master():
         self.__write_bus(self.__driver_list[id].reset_encoder())
         time.sleep(self.__post_sleep)
 
-    def scan_sensors(self, id: int) -> list:
+    def scan_modules(self, id: int) -> list:
         """ Get the list of sensor IDs which are connected to the driver.
 
         Args:
@@ -579,11 +689,12 @@ class Master():
             list: List of the protocol IDs of the connected sensors otherwise None.
         """
 
-        _ID_OFFSETS = [[1, 64], [6, 69], [11, 45], [16, 74], [21, 79], [26, 85], [31, 50], [36, 89], [41, 55], [46, 94]]
-        self.__write_bus(self.__driver_list[id].scan_sensors())
+        _ID_OFFSETS = [[1, Index.Button_1], [6, Index.Light_1], [11, Index.Buzzer_1], [16, Index.Joystick_1], [21, Index.Distance_1], [26, Index.QTR_1], [31, Index.Servo_1], [36, Index.Pot_1], [41, Index.RGB_1], [46, Index.IMU_1]]
+        self.__write_bus(self.__driver_list[id].scan_modules())
         time.sleep(2)
-        self.__write_bus(self.__driver_list[id].scan_sensors())
+        self.__write_bus(self.__driver_list[id].scan_modules())
         ret = self.__read_bus(18)
+        print(list(ret))
         if len(ret) == 18:
             if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
                 data = struct.unpack('<Q', ret[6:-4])[0]
@@ -618,9 +729,9 @@ class Master():
         data = self.get_variables(id, [Index.HardwareVersion, Index.SoftwareVersion])
         if data is not None:
             ver = list(struct.pack('<I', data[0]))
-            st['HardwareVersion'] = "{1}.{2}.{3}".format(*ver[::-1])
+            st['HardwareVersion'] = "v{1}.{2}.{3}".format(*ver[::-1])
             ver = list(struct.pack('<I', data[1]))
-            st['SoftwareVersion'] = "{1}.{2}.{3}".format(*ver[::-1])
+            st['SoftwareVersion'] = "v{1}.{2}.{3}".format(*ver[::-1])
 
             self.__driver_list[id]._config = st
             return st
@@ -667,7 +778,8 @@ class Master():
         Args:
             id (int): The device ID of the driver.
         """
-        self.set_variables(id, [[Index. TunerEnable, 1]])
+        self.__write_bus(self.__driver_list[id].tune())
+        time.sleep(self.__post_sleep)
 
     def set_operation_mode(self, id: int, mode: OperationMode):
         """ Set the operation mode of the driver.
@@ -1025,7 +1137,7 @@ class Master():
         """
         if (index < Index.Buzzer_1) or (index > Index.Buzzer_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[Index, en]])
+        return self.set_variables(id, [[index, en]])
 
     def get_joystick(self, id: int, index: Index):
         """ Get the joystick module data with given index.
@@ -1107,7 +1219,7 @@ class Master():
             raise ValueError()
         if (index < Index.Servo_1) or (index > Index.Servo_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[Index, val]])
+        return self.set_variables(id, [[index, val]])
 
     def get_potantiometer(self, id: int, index: Index):
         """ Get the potantiometer module data with given index.
@@ -1146,7 +1258,7 @@ class Master():
             raise ValueError()
         if (index < Index.RGB_1) or (index > Index.RGB_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[Index, color]])
+        return self.set_variables(id, [[index, color]])
 
     def get_imu(self, id: int, index: Index):
         """ Get IMU module data (roll, pitch)
