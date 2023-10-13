@@ -46,8 +46,6 @@ class Red():
             _Data(Index.Baudrate, 'I'),
             _Data(Index.OperationMode, 'B'),
             _Data(Index.TorqueEnable, 'B'),
-            _Data(Index.TunerEnable, 'B'),
-            _Data(Index.TunerMethod, 'B'),
             _Data(Index.OutputShaftCPR, 'f'),
             _Data(Index.OutputShaftRPM, 'f'),
             _Data(Index.UserIndicator, 'B'),
@@ -227,8 +225,17 @@ class Red():
         self.__ack_size = struct.calcsize(fmt_str + self.vars[Index.CRCValue].type())
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
 
-    def scan_sensors(self):
-        self.vars[Index.Command].value(Commands.SCAN_SENSORS)
+    def tune(self):
+        self.vars[Index.Command].value(Commands.TUNE)
+        fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
+        struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
+        struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
+        self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
+        self.__ack_size = 0
+        return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
+
+    def scan_modules(self):
+        self.vars[Index.Command].value(Commands.MODULE_SCAN)
         fmt_str = '<' + ''.join([var.type() for var in self.vars[:6]])
         struct_out = list(struct.pack(fmt_str, *[var.value() for var in self.vars[:6]]))
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[Index.CRCValue].size()
@@ -653,7 +660,7 @@ class Master():
         self.__write_bus(self.__driver_list[id].reset_encoder())
         time.sleep(self.__post_sleep)
 
-    def scan_sensors(self, id: int) -> list:
+    def scan_modules(self, id: int) -> list:
         """ Get the list of sensor IDs which are connected to the driver.
 
         Args:
@@ -663,10 +670,10 @@ class Master():
             list: List of the protocol IDs of the connected sensors otherwise None.
         """
 
-        _ID_OFFSETS = [[1, 64], [6, 69], [11, 45], [16, 74], [21, 79], [26, 84], [31, 50], [36, 89], [41, 55], [46, 94]]
-        self.__write_bus(self.__driver_list[id].scan_sensors())
+        _ID_OFFSETS = [[1, Index.Button_1], [6, Index.Light_1], [11, Index.Buzzer_1], [16, Index.Joystick_1], [21, Index.Distance_1], [26, Index.QTR_1], [31, Index.Servo_1], [36, Index.Pot_1], [41, Index.RGB_1], [46, Index.IMU_1]]
+        self.__write_bus(self.__driver_list[id].scan_modules())
         time.sleep(2)
-        self.__write_bus(self.__driver_list[id].scan_sensors())
+        self.__write_bus(self.__driver_list[id].scan_modules())
         ret = self.__read_bus(18)
         if len(ret) == 18:
             if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
@@ -751,7 +758,8 @@ class Master():
         Args:
             id (int): The device ID of the driver.
         """
-        self.set_variables(id, [[Index. TunerEnable, 1]])
+        self.__write_bus(self.__driver_list[id].tune())
+        time.sleep(self.__post_sleep)
 
     def set_operation_mode(self, id: int, mode: OperationMode):
         """ Set the operation mode of the driver.

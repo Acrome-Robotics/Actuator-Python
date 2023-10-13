@@ -7,6 +7,6 @@ m = Master(port)
 id = 2
 m.attach(Red(id))
 
-print(m.scan_sensors(id))
+print(m.scan_modules(id))
 
 m.set_variables(id,[[Index.Servo_2, 50]])
