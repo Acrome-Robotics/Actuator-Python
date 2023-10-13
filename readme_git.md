@@ -9,5 +9,3 @@ SMD Python Library takes your projects to the next level by offering seamless in
 Develop your projects with "Acrome Smart Motor Drivers" and a computer that can run your Python code.
 
 You can reach the Acrome Smart Motors Drivers documentation [here](https://acrome-smd.readthedocs.io/en/latest/getting-started.html).
-
-you 

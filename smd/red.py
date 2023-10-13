@@ -292,14 +292,33 @@ class Master():
         return self.__ph.read(size=size)
 
     def attached(self):
+        """ Return the scanned drivers
+
+        Returns:
+            List: Scanned drivers
+        """
         return self.__attached_drivers
 
     def get_latest_fw_version(self):
+        """ Get the latest firmware version from the Github servers.
+
+        Returns:
+            String: Latest firmware version
+        """
         response = requests.get(url=self.__class__.__RELEASE_URL.format(version='latest'))
         if (response.status_code in [200, 302]):
             return (response.json()['tag_name'])
 
     def update_fw_version(self, id: int, version=''):
+        """ Update firmware version with respect to given version string.
+
+        Args:
+            id (int): The device ID of the driver
+            version (str, optional): Desired firmware version. Defaults to ''.
+
+        Returns:
+            Bool: True if the firmware is updated
+        """
 
         fw_file = tempfile.NamedTemporaryFile("wb+")
         if version == '':
@@ -675,6 +694,7 @@ class Master():
         time.sleep(2)
         self.__write_bus(self.__driver_list[id].scan_modules())
         ret = self.__read_bus(18)
+        print(list(ret))
         if len(ret) == 18:
             if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
                 data = struct.unpack('<Q', ret[6:-4])[0]
