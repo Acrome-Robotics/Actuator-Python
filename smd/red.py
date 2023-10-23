@@ -122,11 +122,11 @@ class Red():
             _Data(Index.QTR_3, 'B'),
             _Data(Index.QTR_4, 'B'),
             _Data(Index.QTR_5, 'B'),
-            _Data(Index.Pot_1, 'H'),
-            _Data(Index.Pot_2, 'H'),
-            _Data(Index.Pot_3, 'H'),
-            _Data(Index.Pot_4, 'H'),
-            _Data(Index.Pot_5, 'H'),
+            _Data(Index.Pot_1, 'B'),
+            _Data(Index.Pot_2, 'B'),
+            _Data(Index.Pot_3, 'B'),
+            _Data(Index.Pot_4, 'B'),
+            _Data(Index.Pot_5, 'B'),
             _Data(Index.IMU_1, 'ff'),
             _Data(Index.IMU_2, 'ff'),
             _Data(Index.IMU_3, 'ff'),
@@ -694,14 +694,13 @@ class Master():
         time.sleep(2)
         self.__write_bus(self.__driver_list[id].scan_modules())
         ret = self.__read_bus(18)
-        print(list(ret))
         if len(ret) == 18:
             if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
                 data = struct.unpack('<Q', ret[6:-4])[0]
                 addrs = [i for i in range(64) if (data & (1 << i)) == (1 << i)]
                 result = []
                 for addr in addrs:
-                    result.append(Index(addr - _ID_OFFSETS[int(addr / 5)][0] + _ID_OFFSETS[int(addr / 5)][1]))
+                    result.append(Index(addr - _ID_OFFSETS[int((addr - 1) / 5)][0] + _ID_OFFSETS[int((addr - 1) / 5)][1]))
                 return result
         else:
             return None
@@ -1199,7 +1198,7 @@ class Master():
 
         data = self.get_variables(id, [index])
         if data is not None:
-            return [data[0] & (1 << i) for i in range(3)]
+            return [(data[0] & (1 << i)) >> i for i in range(3)]
         else:
             return None
 
