@@ -476,8 +476,11 @@ class Master():
             list | None: Return the list of written values if ack is True, otherwise None.
         """
 
-        if (id < 0) or (id > 254):
+        if (id < 0) or (id > 255):
             raise ValueError("{} is not a valid ID!".format(id))
+        
+        if (id is not self.__driver_list[id].vars[Index.DeviceID].value()):
+            raise ValueError("{} is not an attached ID!".format(id))
 
         if len(idx_val_pairs) == 0:
             raise IndexError("Given id, value pair list is empty!")
@@ -512,6 +515,12 @@ class Master():
 
         if (id < 0) or (id > 254):
             raise ValueError("{} is not a valid ID!".format(id))
+        
+        if (id == self.__class__._BROADCAST_ID):
+            raise ValueError("Can't read with broadcast ID!")
+        
+        if (id is not self.__driver_list[id].vars[Index.DeviceID].value()):
+            raise ValueError("{} is not an attached ID!".format(id))
 
         if len(index_list) == 0:
             raise IndexError("Given index list is empty!")
