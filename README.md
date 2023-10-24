@@ -759,6 +759,22 @@ To use SMD modules, you should initially utilize the following scanning function
 
       `index` argument is the protocol index of the joystick module.
 
+  #### Example of Joystick Module Usage
+  ``` python
+  from smd.red import*
+  import time
+  m = Master("/dev/ttyUSB0")
+  m.attach(Red(0))
+  m.scan_modules(0)
+
+  # It continuously receives data from the joystick module.
+  while True:
+    joystick = m.get_joystick(0, Index.Joystick_1)
+    joystick_X = joystick[0]
+    joystick_Y = joystick[1]
+    joystick_button = joystick[2]
+  ```
+
 #### Distance Module
   - ####  `get_distance(self, id: int, index: Index):`
 
@@ -806,7 +822,7 @@ To use SMD modules, you should initially utilize the following scanning function
       `index` argument is the protocol index of the potantiometer module.
 
 #### RGB Led Module
-The setRGB() method is used to control an RGB (Red, Green, Blue) LED module by specifying the intensity or color values for each of the RGB components.
+The setRGB() method is used to control an RGB Led module by specifying the intensity or color values for each of the RGB components.
 
   - ####  `set_rgb(self, id: int, index: Index, color: Colors):`
 
@@ -822,6 +838,7 @@ The setRGB() method is used to control an RGB (Red, Green, Blue) LED module by s
 
 
   Colors available in RGB sensor module :
+  - NO_COLOR,
   - RED,
   - GREEN,
   - BLUE,
@@ -836,8 +853,24 @@ The setRGB() method is used to control an RGB (Red, Green, Blue) LED module by s
   - TEAL,
   - INDIGO
 
-  In the method, you can use these colors in the same way as capital letters or you can use numbers from 0 to 12. For example 0 for red 
+  The method and colors can be used as in the example below for the RGB module.
+  #### Example of RGB Module Usage
+  ``` python
+  from smd.red import*
+  import time
+  m = Master("/dev/ttyUSB0")
+  m.attach(Red(0))
+  m.scan_modules(0)
 
+  m.set_rgb(0, Index.RGB_1, Colors.RED)
+  time.sleep(0.5)
+  m.set_rgb(0, Index.RGB_1, Colors.GREEN)
+  time.sleep(0.5)
+  m.set_rgb(0, Index.RGB_1, Colors.BLUE)
+  time.sleep(0.5)
+  m.set_rgb(0, Index.RGB_1, Colors.PURPLE)
+  time.sleep(0.5)
+  ```
 #### IMU Module
   - ####  `get_imu(self, id: int, index: Index):`
 
@@ -848,3 +881,18 @@ The setRGB() method is used to control an RGB (Red, Green, Blue) LED module by s
       `id` argument is the device ID of the driver.
 
       `index` argument is the protocol index of the IMU module.
+
+  #### Example of IMU Module Usage
+  ``` python
+  from smd.red import*
+  import time
+  m = Master("/dev/ttyUSB0")
+  m.attach(Red(0))
+  m.scan_modules(0)
+
+  # It continuously receives data from the IMU module.
+  while True:
+    IMU = m.get_imu(0, Index.IMU_1)
+    roll  = IMU[0]
+    pitch = IMU[1]
+  ```
