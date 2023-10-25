@@ -4,7 +4,7 @@ from unittest.mock import patch
 from smd import red
 
 
-class TestBrushed(unittest.TestCase):
+class TestRed(unittest.TestCase):
 
     def setUp(self) -> None:
         self.dev = red.Red(1)

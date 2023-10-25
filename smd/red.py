@@ -122,11 +122,11 @@ class Red():
             _Data(Index.QTR_3, 'B'),
             _Data(Index.QTR_4, 'B'),
             _Data(Index.QTR_5, 'B'),
-            _Data(Index.Pot_1, 'H'),
-            _Data(Index.Pot_2, 'H'),
-            _Data(Index.Pot_3, 'H'),
-            _Data(Index.Pot_4, 'H'),
-            _Data(Index.Pot_5, 'H'),
+            _Data(Index.Pot_1, 'B'),
+            _Data(Index.Pot_2, 'B'),
+            _Data(Index.Pot_3, 'B'),
+            _Data(Index.Pot_4, 'B'),
+            _Data(Index.Pot_5, 'B'),
             _Data(Index.IMU_1, 'ff'),
             _Data(Index.IMU_2, 'ff'),
             _Data(Index.IMU_3, 'ff'),
@@ -407,6 +407,17 @@ class Master():
         time.sleep(self.__post_sleep)
         self.reboot(id)
 
+    def get_driver_baudrate(self, id: int):
+        """ Get the current baudrate from the driver.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the baudrate, otherwise None.
+        """
+        return self.get_variables(id, [Index.Baudrate])
+
     def update_master_baudrate(self, br: int):
         """ Update the master serial port baudrate.
 
@@ -476,8 +487,11 @@ class Master():
             list | None: Return the list of written values if ack is True, otherwise None.
         """
 
-        if (id < 0) or (id > 254):
+        if (id < 0) or (id > 255):
             raise ValueError("{} is not a valid ID!".format(id))
+        
+        if (id is not self.__driver_list[id].vars[Index.DeviceID].value()):
+            raise ValueError("{} is not an attached ID!".format(id))
 
         if len(idx_val_pairs) == 0:
             raise IndexError("Given id, value pair list is empty!")
@@ -512,6 +526,12 @@ class Master():
 
         if (id < 0) or (id > 254):
             raise ValueError("{} is not a valid ID!".format(id))
+        
+        if (id == self.__class__._BROADCAST_ID):
+            raise ValueError("Can't read with broadcast ID!")
+        
+        if (id is not self.__driver_list[id].vars[Index.DeviceID].value()):
+            raise ValueError("{} is not an attached ID!".format(id))
 
         if len(index_list) == 0:
             raise IndexError("Given index list is empty!")
@@ -694,14 +714,13 @@ class Master():
         time.sleep(2)
         self.__write_bus(self.__driver_list[id].scan_modules())
         ret = self.__read_bus(18)
-        print(list(ret))
         if len(ret) == 18:
             if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
                 data = struct.unpack('<Q', ret[6:-4])[0]
                 addrs = [i for i in range(64) if (data & (1 << i)) == (1 << i)]
                 result = []
                 for addr in addrs:
-                    result.append(Index(addr - _ID_OFFSETS[int(addr / 5)][0] + _ID_OFFSETS[int(addr / 5)][1]))
+                    result.append(Index(addr - _ID_OFFSETS[int((addr - 1) / 5)][0] + _ID_OFFSETS[int((addr - 1) / 5)][1]))
                 return result
         else:
             return None
@@ -813,6 +832,17 @@ class Master():
         self.set_variables(id, [[Index.OutputShaftCPR, cpr]])
         time.sleep(self.__post_sleep)
 
+    def get_shaft_cpr(self, id: int):
+        """ Get the count per revolution (CPR) of the motor output shaft.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the output shaft CPR, otherwise None.
+        """
+        return self.get_variables(id, [Index.OutputShaftCPR])
+
     def set_shaft_rpm(self, id: int, rpm: float):
         """ Set the revolution per minute (RPM) value of the output shaft at 12V rating.
 
@@ -822,6 +852,17 @@ class Master():
         """
         self.set_variables(id, [[Index.OutputShaftRPM, rpm]])
         time.sleep(self.__post_sleep)
+
+    def get_shaft_rpm(self, id: int):
+        """ Get the revolution per minute (RPM) value of the output shaft at 12V rating.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the output shaft RPM characteristics, otherwise None.
+        """
+        return self.get_variables(id, [Index.OutputShaftRPM])
 
     def set_user_indicator(self, id: int):
         """ Set the user indicator color for 5 seconds. The user indicator color is cyan.
@@ -1199,7 +1240,7 @@ class Master():
 
         data = self.get_variables(id, [index])
         if data is not None:
-            return [data[0] & (1 << i) for i in range(3)]
+            return [(data[0] & (1 << i)) >> i for i in range(3)]
         else:
             return None
 

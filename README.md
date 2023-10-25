@@ -100,20 +100,36 @@ Configure SMD:
 
 ````python
 #rpm and cpr values are depend on the motor you use.
-master.set_shaft_rpm(ID,10000) 
-master.set_shaft_cpr(ID,64)
+master.set_shaft_rpm(ID, 10000) 
+master.set_shaft_cpr(ID, 64)
 
 #starts autotune for setting PID values of control algorithms
 master.pid_tuner(ID)            
 ````
 You can configure and use the **SMD**  using specific methods belonging to the master class, just like in the code above.
 
-You can access all sample codes from [here](https:asıodasdasd.com) .
+You can access all sample codes from [here](https://github.com/Acrome-Smart-Motor-Driver/Example-Projects).
 Please read full documentation to use all features of a **SMD** 
 
+# Firmware Update
 
+The following methods provide users with ability to update firmware of their SMDs. To use these methods users must have an internet connection. __Users should not disconnect power from the device or it may break the device.__
 
+  - #### `get_latest_fw_version(self)`
 
+    **`Return:`** *Latest firmware version*
+
+    This method gets the latest firmware version from the Github servers.
+
+  - #### `update_fw_version(self, id: int, version='')`
+
+    **`Return:`** *True if the firmware is updated*
+
+    This method updates the firmware version with respect to given version string and ID.
+
+    `id` argument is the device ID of the connected driver.
+
+    `version` argument is the version to be updated. If version string is not given, driver is updated to the latest version available on Github.
 
 # Control
 ## PID Tune and Control Parameters
@@ -568,6 +584,14 @@ master.enable_torque(ID, True)      #enables the motor torque to start rotating
 
     `br` argument is the user entered baudrate value. This value must be between 3.053 KBits/s and 12.5 MBits/s.
 
+  - #### `get_driver_baudrate(self, id: int):`
+
+    **`Return:`** *The baudrate of the driver with given ID*
+
+    This method reads the baudrate of the driver in bps.
+
+    `id` argument is the device ID of the connected driver.
+
   - #### `update_master_baudrate(self, br: int):`
 
     **`Return:`** *None*
@@ -759,6 +783,22 @@ To use SMD modules, you should initially utilize the following scanning function
 
       `index` argument is the protocol index of the joystick module.
 
+  #### Example of Joystick Module Usage
+  ``` python
+  from smd.red import*
+  import time
+  m = Master("/dev/ttyUSB0")
+  m.attach(Red(0))
+  m.scan_modules(0)
+
+  # It continuously receives data from the joystick module.
+  while True:
+    joystick = m.get_joystick(0, Index.Joystick_1)
+    joystick_X = joystick[0]
+    joystick_Y = joystick[1]
+    joystick_button = joystick[2]
+  ```
+
 #### Distance Module
   - ####  `get_distance(self, id: int, index: Index):`
 
@@ -806,7 +846,7 @@ To use SMD modules, you should initially utilize the following scanning function
       `index` argument is the protocol index of the potantiometer module.
 
 #### RGB Led Module
-The setRGB() method is used to control an RGB (Red, Green, Blue) LED module by specifying the intensity or color values for each of the RGB components.
+The setRGB() method is used to control an RGB Led module by specifying the intensity or color values for each of the RGB components.
 
   - ####  `set_rgb(self, id: int, index: Index, color: Colors):`
 
@@ -822,6 +862,7 @@ The setRGB() method is used to control an RGB (Red, Green, Blue) LED module by s
 
 
   Colors available in RGB sensor module :
+  - NO_COLOR,
   - RED,
   - GREEN,
   - BLUE,
@@ -836,8 +877,24 @@ The setRGB() method is used to control an RGB (Red, Green, Blue) LED module by s
   - TEAL,
   - INDIGO
 
-  In the method, you can use these colors in the same way as capital letters or you can use numbers from 0 to 12. For example 0 for red 
+  The method and colors can be used as in the example below for the RGB module.
+  #### Example of RGB Module Usage
+  ``` python
+  from smd.red import*
+  import time
+  m = Master("/dev/ttyUSB0")
+  m.attach(Red(0))
+  m.scan_modules(0)
 
+  m.set_rgb(0, Index.RGB_1, Colors.RED)
+  time.sleep(0.5)
+  m.set_rgb(0, Index.RGB_1, Colors.GREEN)
+  time.sleep(0.5)
+  m.set_rgb(0, Index.RGB_1, Colors.BLUE)
+  time.sleep(0.5)
+  m.set_rgb(0, Index.RGB_1, Colors.PURPLE)
+  time.sleep(0.5)
+  ```
 #### IMU Module
   - ####  `get_imu(self, id: int, index: Index):`
 
@@ -848,3 +905,18 @@ The setRGB() method is used to control an RGB (Red, Green, Blue) LED module by s
       `id` argument is the device ID of the driver.
 
       `index` argument is the protocol index of the IMU module.
+
+  #### Example of IMU Module Usage
+  ``` python
+  from smd.red import*
+  import time
+  m = Master("/dev/ttyUSB0")
+  m.attach(Red(0))
+  m.scan_modules(0)
+
+  # It continuously receives data from the IMU module.
+  while True:
+    IMU = m.get_imu(0, Index.IMU_1)
+    roll  = IMU[0]
+    pitch = IMU[1]
+  ```
