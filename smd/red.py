@@ -407,6 +407,17 @@ class Master():
         time.sleep(self.__post_sleep)
         self.reboot(id)
 
+    def get_driver_baudrate(self, id: int):
+        """ Get the current baudrate from the driver.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the baudrate, otherwise None.
+        """
+        return self.get_variables(id, [Index.Baudrate])
+
     def update_master_baudrate(self, br: int):
         """ Update the master serial port baudrate.
 
@@ -821,6 +832,17 @@ class Master():
         self.set_variables(id, [[Index.OutputShaftCPR, cpr]])
         time.sleep(self.__post_sleep)
 
+    def get_shaft_cpr(self, id: int):
+        """ Get the count per revolution (CPR) of the motor output shaft.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the output shaft CPR, otherwise None.
+        """
+        return self.get_variables(id, [Index.OutputShaftCPR])
+
     def set_shaft_rpm(self, id: int, rpm: float):
         """ Set the revolution per minute (RPM) value of the output shaft at 12V rating.
 
@@ -830,6 +852,17 @@ class Master():
         """
         self.set_variables(id, [[Index.OutputShaftRPM, rpm]])
         time.sleep(self.__post_sleep)
+
+    def get_shaft_rpm(self, id: int):
+        """ Get the revolution per minute (RPM) value of the output shaft at 12V rating.
+
+        Args:
+            id (int): The device ID of the driver.
+
+        Returns:
+            list | None: Returns the list containing the output shaft RPM characteristics, otherwise None.
+        """
+        return self.get_variables(id, [Index.OutputShaftRPM])
 
     def set_user_indicator(self, id: int):
         """ Set the user indicator color for 5 seconds. The user indicator color is cyan.

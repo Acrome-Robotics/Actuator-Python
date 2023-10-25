@@ -100,20 +100,36 @@ Configure SMD:
 
 ````python
 #rpm and cpr values are depend on the motor you use.
-master.set_shaft_rpm(ID,10000) 
-master.set_shaft_cpr(ID,64)
+master.set_shaft_rpm(ID, 10000) 
+master.set_shaft_cpr(ID, 64)
 
 #starts autotune for setting PID values of control algorithms
 master.pid_tuner(ID)            
 ````
 You can configure and use the **SMD**  using specific methods belonging to the master class, just like in the code above.
 
-You can access all sample codes from [here](https:asıodasdasd.com) .
+You can access all sample codes from [here](https://github.com/Acrome-Smart-Motor-Driver/Example-Projects).
 Please read full documentation to use all features of a **SMD** 
 
+# Firmware Update
 
+The following methods provide users with ability to update firmware of their SMDs. To use these methods users must have an internet connection. __Users should not disconnect power from the device or it may break the device.__
 
+  - #### `get_latest_fw_version(self)`
 
+    **`Return:`** *Latest firmware version*
+
+    This method gets the latest firmware version from the Github servers.
+
+  - #### `update_fw_version(self, id: int, version='')`
+
+    **`Return:`** *True if the firmware is updated*
+
+    This method updates the firmware version with respect to given version string and ID.
+
+    `id` argument is the device ID of the connected driver.
+
+    `version` argument is the version to be updated. If version string is not given, driver is updated to the latest version available on Github.
 
 # Control
 ## PID Tune and Control Parameters
@@ -567,6 +583,14 @@ master.enable_torque(ID, True)      #enables the motor torque to start rotating
     `id` argument is the device ID of the connected driver.
 
     `br` argument is the user entered baudrate value. This value must be between 3.053 KBits/s and 12.5 MBits/s.
+
+  - #### `get_driver_baudrate(self, id: int):`
+
+    **`Return:`** *The baudrate of the driver with given ID*
+
+    This method reads the baudrate of the driver in bps.
+
+    `id` argument is the device ID of the connected driver.
 
   - #### `update_master_baudrate(self, br: int):`
 
