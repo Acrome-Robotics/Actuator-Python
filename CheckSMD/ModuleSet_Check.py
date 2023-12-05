@@ -2,6 +2,7 @@ from smd.red import*
 from colorama import Fore, Style, init
 from tabulate import tabulate
 import os
+from osModules import*
 
 colorsForRGB = [
     Colors.NO_COLOR,
@@ -33,10 +34,10 @@ RGB_check	    = False
 IMU_check		= False
 
 
-port = "COM11"
+port = USB_serial_port()
 m = Master(port)
 m.attach(Red(0))
-ID = 0
+ID = 0      #connect to all IDs
 
 modulesList = m.scan_modules(0)
 print(modulesList)
@@ -139,7 +140,7 @@ while True:
         RGBcounter = 0
 
 
-    qtrToServo = qtr[0]*30 + qtr[1]*60 + qtr[2]*90
+    #qtrToServo = qtr[0]*30 + qtr[1]*60 + qtr[2]*90
     
     try:
         buzzer = m.set_buzzer(0, Index.Buzzer_1, (distance < 20)) # set buzzer by distance
@@ -149,6 +150,7 @@ while True:
         rgb = m.set_rgb(0, Index.RGB_1, colorsForRGB[RGBcounter//3])  #set rgb by button
     except:
         rgb = False
+
     try:
         servo = m.set_servo(0, Index.Servo_1, qtrToServo) # set servo by gtr
     except:

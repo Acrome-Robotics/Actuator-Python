@@ -119,7 +119,7 @@ Index = enum.IntEnum('Index', [
     'Light_3',
     'Light_4',
     'Light_5',
-    'Joystick_1',                   
+    'Joystick_1',
     'Joystick_2',
     'Joystick_3',
     'Joystick_4',
