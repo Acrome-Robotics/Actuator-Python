@@ -88,11 +88,11 @@ class Red():
             _Data(Index.Servo_3, 'B'),
             _Data(Index.Servo_4, 'B'),
             _Data(Index.Servo_5, 'B'),
-            _Data(Index.RGB_1, 'B'),
-            _Data(Index.RGB_2, 'B'),
-            _Data(Index.RGB_3, 'B'),
-            _Data(Index.RGB_4, 'B'),
-            _Data(Index.RGB_5, 'B'),
+            _Data(Index.RGB_1, 'i'),
+            _Data(Index.RGB_2, 'i'),
+            _Data(Index.RGB_3, 'i'),
+            _Data(Index.RGB_4, 'i'),
+            _Data(Index.RGB_5, 'i'),
             _Data(Index.PresentPosition, 'f'),
             _Data(Index.PresentVelocity, 'f'),
             _Data(Index.MotorCurrent, 'f'),
@@ -107,11 +107,11 @@ class Red():
             _Data(Index.Light_3, 'H'),
             _Data(Index.Light_4, 'H'),
             _Data(Index.Light_5, 'H'),
-            _Data(Index.Joystick_1, 'ffB'),
-            _Data(Index.Joystick_2, 'ffB'),
-            _Data(Index.Joystick_3, 'ffB'),
-            _Data(Index.Joystick_4, 'ffB'),
-            _Data(Index.Joystick_5, 'ffB'),
+            _Data(Index.Joystick_1, 'iiB'),
+            _Data(Index.Joystick_2, 'iiB'), 
+            _Data(Index.Joystick_3, 'iiB'),
+            _Data(Index.Joystick_4, 'iiB'),
+            _Data(Index.Joystick_5, 'iiB'),
             _Data(Index.Distance_1, 'H'),
             _Data(Index.Distance_2, 'H'),
             _Data(Index.Distance_3, 'H'),
@@ -1123,7 +1123,7 @@ class Master():
         """
         return self.get_variables(id, [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueDeadband, Index.TorqueFF, Index.TorqueOutputLimit])
 
-    def get_button(self, id: int, index: Index):
+    def get_button(self, id: int, module_id: int):
         """ Get the button module data with given index.
 
         Args:
@@ -1136,6 +1136,7 @@ class Master():
         Returns:
             int: Returns the button state
         """
+        index =  module_id + Index.Button_1 - 1
         if (index < Index.Button_1) or (index > Index.Button_5):
             raise InvalidIndexError()
 
@@ -1144,7 +1145,7 @@ class Master():
             return ret
         return ret[0]
 
-    def get_light(self, id: int, index: Index):
+    def get_light(self, id: int, module_id: int):
         """ Get the ambient light module data with given index.
 
         Args:
@@ -1157,6 +1158,7 @@ class Master():
         Returns:
             float: Returns the ambient light measurement (in lux)
         """
+        index =  module_id + Index.Light_1 - 1
         if (index < Index.Light_1) or (index > Index.Light_5):
             raise InvalidIndexError()
 
@@ -1165,7 +1167,7 @@ class Master():
             return ret
         return ret[0]
 
-    def set_buzzer(self, id: int, index: Index, en: bool):
+    def set_buzzer(self, id: int, module_id: int, note_frequency: int):
         """ Enable/disable the buzzer module with given index.
 
         Args:
@@ -1176,11 +1178,12 @@ class Master():
         Raises:
             InvalidIndexError: Index is not a buzzer module index
         """
+        index =  module_id + Index.Buzzer_1 - 1
         if (index < Index.Buzzer_1) or (index > Index.Buzzer_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[index, en]])
+        return self.set_variables(id, [[index, note_frequency]])
 
-    def get_joystick(self, id: int, index: Index):
+    def get_joystick(self, id: int, module_id: int):
         """ Get the joystick module data with given index.
 
         Args:
@@ -1193,6 +1196,7 @@ class Master():
         Returns:
             list: Returns the joystick module analogs and button data
         """
+        index =  module_id + Index.Joystick_1 - 1
         if (index < Index.Joystick_1) or (index > Index.Joystick_5):
             raise InvalidIndexError()
 
@@ -1201,7 +1205,7 @@ class Master():
             return ret
         return ret[0]
 
-    def get_distance(self, id: int, index: Index):
+    def get_distance(self, id: int, module_id: int):
         """ Get the ultrasonic distance module data with given index.
 
         Args:
@@ -1214,6 +1218,7 @@ class Master():
         Returns:
             int: Returns the distance from the ultrasonic distance module (in cm)
         """
+        index =  module_id + Index.Distance_1 - 1
         if (index < Index.Distance_1) or (index > Index.Distance_5):
             raise InvalidIndexError()
 
@@ -1222,7 +1227,7 @@ class Master():
             return ret
         return ret[0]
 
-    def get_qtr(self, id: int, index: Index):
+    def get_qtr(self, id: int, module_id: int):
         """ Get the qtr module data with given index.
 
         Args:
@@ -1235,6 +1240,7 @@ class Master():
         Returns:
             list: Returns qtr module data: [Left(bool), Middle(bool), Right(bool)]
         """
+        index =  module_id + Index.QTR_1 - 1
         if (index < Index.QTR_1) or (index > Index.QTR_5):
             raise InvalidIndexError()
 
@@ -1244,7 +1250,7 @@ class Master():
         else:
             return None
 
-    def set_servo(self, id: int, index: Index, val: int):
+    def set_servo(self, id: int, module_id: int, val: int):
         """ Move servo module to a position.
 
         Args:
@@ -1258,11 +1264,12 @@ class Master():
         """
         if val < 0 or val > 255:
             raise ValueError()
+        index =  module_id + Index.Servo_1 - 1
         if (index < Index.Servo_1) or (index > Index.Servo_5):
             raise InvalidIndexError()
         return self.set_variables(id, [[index, val]])
 
-    def get_potantiometer(self, id: int, index: Index):
+    def get_potantiometer(self, id: int, module_id: int):
         """ Get the potantiometer module data with given index.
 
         Args:
@@ -1275,6 +1282,7 @@ class Master():
         Returns:
             int: Returns the ADC conversion from the potantiometer module
         """
+        index =  module_id + Index.Pot_1 - 1
         if (index < Index.Pot_1) or (index > Index.Pot_5):
             raise InvalidIndexError()
 
@@ -1283,25 +1291,34 @@ class Master():
             return ret
         return ret[0]
 
-    def set_rgb(self, id: int, index: Index, color: Colors):
+    def set_rgb(self, id: int, module_id: int, red: int, green: int, blue: int):
         """ Set the colour emitted from the RGB module.
 
         Args:
             id (int): The device ID of the driver.
             index (Index): The index of the RGB module.
             color (Colors): Color for RGB from Colors class
-
         Raises:
             ValueError: Color is invalid
             InvalidIndexError: Index is not a RGB module index
         """
-        if color < Colors.NO_COLOR or color > Colors.INDIGO:
+
+
+        if red < 0 or red > 255:
             raise ValueError()
+        if green < 0 or green > 255:
+            raise ValueError()
+        if blue < 0 or blue > 255:
+            raise ValueError()
+        
+        color_RGB = red + green*(2**8) + blue*(2**16)
+
+        index =  module_id + Index.RGB_1 - 1
         if (index < Index.RGB_1) or (index > Index.RGB_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[index, color]])
+        return self.set_variables(id, [[index, color_RGB]])
 
-    def get_imu(self, id: int, index: Index):
+    def get_imu(self, id: int, module_id: int):
         """ Get IMU module data (roll, pitch)
 
         Args:
@@ -1314,6 +1331,8 @@ class Master():
         Returns:
             list: Returns roll, pitch angles
         """
+        index =  module_id + Index.IMU_1 - 1
+
         if (index < Index.IMU_1) or (index > Index.IMU_5):
             raise InvalidIndexError()
 
