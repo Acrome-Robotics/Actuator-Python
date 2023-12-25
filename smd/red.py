@@ -273,7 +273,7 @@ class Master():
             raise ValueError('Baudrate must be between 3.053 KBits/s and 12.5 MBits/s.')
         else:
             self.__baudrate = baudrate
-            self.__post_sleep = (10 / self.__baudrate) * 3
+            self.__post_sleep = (10 / self.__baudrate) * 12
             self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.1)
 
     def __del__(self):
@@ -441,7 +441,7 @@ class Master():
             self.__ph.apply_settings(settings)
             self.__ph.open()
 
-            self.__post_sleep = (10 / br) * 3
+            self.__post_sleep = (10 / br) * 12
 
         except Exception as e:
             raise e
@@ -1181,7 +1181,8 @@ class Master():
         index =  module_id + Index.Buzzer_1 - 1
         if (index < Index.Buzzer_1) or (index > Index.Buzzer_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[index, note_frequency]])
+        self.set_variables(id, [[index, note_frequency]])
+        time.sleep(self.__post_sleep)
 
     def get_joystick(self, id: int, module_id: int):
         """ Get the joystick module data with given index.
@@ -1267,7 +1268,8 @@ class Master():
         index =  module_id + Index.Servo_1 - 1
         if (index < Index.Servo_1) or (index > Index.Servo_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[index, val]])
+        self.set_variables(id, [[index, val]])
+        time.sleep(self.__post_sleep)
 
     def get_potantiometer(self, id: int, module_id: int):
         """ Get the potantiometer module data with given index.
@@ -1316,7 +1318,8 @@ class Master():
         index =  module_id + Index.RGB_1 - 1
         if (index < Index.RGB_1) or (index > Index.RGB_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[index, color_RGB]])
+        self.set_variables(id, [[index, color_RGB]])
+        time.sleep(self.__post_sleep)
 
     def get_imu(self, id: int, module_id: int):
         """ Get IMU module data (roll, pitch)
