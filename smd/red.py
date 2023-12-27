@@ -320,7 +320,7 @@ class Master():
             Bool: True if the firmware is updated
         """
 
-        fw_file = tempfile.NamedTemporaryFile("wb+")
+        fw_file = tempfile.NamedTemporaryFile("wb+",delete=False)
         if version == '':
             version = 'latest'
         else:
