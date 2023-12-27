@@ -1307,11 +1307,11 @@ class Master():
 
 
         if red < 0 or red > 255:
-            raise ValueError()
+            raise ValueError("RGB color values must be in range 0 - 255")
         if green < 0 or green > 255:
-            raise ValueError()
+            raise ValueError("RGB color values must be in range 0 - 255")
         if blue < 0 or blue > 255:
-            raise ValueError()
+            raise ValueError("RGB color values must be in range 0 - 255")
         
         color_RGB = red + green*(2**8) + blue*(2**16)
 
