@@ -1,5 +1,5 @@
 from smd._internals import (_Data, Index, Commands,
-                            OperationMode, Colors)
+                            OperationMode, BuzzerNotes)
 import struct
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
@@ -78,11 +78,11 @@ class Red():
             _Data(Index.SetVelocity, 'f'),
             _Data(Index.SetTorque, 'f'),
             _Data(Index.SetDutyCycle, 'f'),
-            _Data(Index.Buzzer_1, 'B'),
-            _Data(Index.Buzzer_2, 'B'),
-            _Data(Index.Buzzer_3, 'B'),
-            _Data(Index.Buzzer_4, 'B'),
-            _Data(Index.Buzzer_5, 'B'),
+            _Data(Index.Buzzer_1, 'i'),
+            _Data(Index.Buzzer_2, 'i'),
+            _Data(Index.Buzzer_3, 'i'),
+            _Data(Index.Buzzer_4, 'i'),
+            _Data(Index.Buzzer_5, 'i'),
             _Data(Index.Servo_1, 'B'),
             _Data(Index.Servo_2, 'B'),
             _Data(Index.Servo_3, 'B'),
@@ -720,7 +720,7 @@ class Master():
                 addrs = [i for i in range(64) if (data & (1 << i)) == (1 << i)]
                 result = []
                 for addr in addrs:
-                    result.append(Index(addr - _ID_OFFSETS[int((addr - 1) / 5)][0] + _ID_OFFSETS[int((addr - 1) / 5)][1]))
+                    result.append((Index(addr - _ID_OFFSETS[int((addr - 1) / 5)][0] + _ID_OFFSETS[int((addr - 1) / 5)][1])).name)
                 return result
         else:
             return None
@@ -1178,6 +1178,10 @@ class Master():
         Raises:
             InvalidIndexError: Index is not a buzzer module index
         """
+        if note_frequency < 0 :
+            print("note frequency cannot be negative!")
+            raise InvalidIndexError()
+        
         index =  module_id + Index.Buzzer_1 - 1
         if (index < Index.Buzzer_1) or (index > Index.Buzzer_5):
             raise InvalidIndexError()

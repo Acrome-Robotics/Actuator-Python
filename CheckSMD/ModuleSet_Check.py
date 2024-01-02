@@ -4,24 +4,6 @@ from tabulate import tabulate
 import os
 from osModules import*
 
-colorsForRGB = [
-    Colors.NO_COLOR,
-    Colors.RED,
-    Colors.GREEN,
-    Colors.BLUE,
-    Colors.WHITE,
-    Colors.YELLOW,
-    Colors.CYAN,
-    Colors.MAGENTA,
-    Colors.ORANGE,
-    Colors.PURPLE,
-    Colors.PINK,
-    Colors.AMBER,
-    Colors.TEAL,
-    Colors.INDIGO, 
-    Colors.AMBER
-    ]
-
 BUTTON_check	= False
 LIGHT_check		= False
 BUZZER_check	= False
@@ -33,7 +15,7 @@ POT_check	    = False
 RGB_check	    = False 
 IMU_check		= False
 
-
+operatingSystem = whichOS()
 port = USB_serial_port()
 m = Master(port)
 m.attach(Red(0))
@@ -42,36 +24,39 @@ ID = 0      #connect to all IDs
 modulesList = m.scan_modules(0)
 print(modulesList)
 
+modulesID = 1
+
+
 
 try:
-    if Index.Button_1 in modulesList:
+    if "Button_1" in modulesList:
         BUTTON_check = True
     
-    if Index.Light_1 in modulesList:
+    if "Light_1" in modulesList:
         LIGHT_check = True
 
-    if Index.Buzzer_1 in modulesList:
+    if "Buzzer_1" in modulesList:
         BUZZER_check = True
 
-    if Index.Joystick_1 in modulesList:
+    if "Joystick_1" in modulesList:
         JOYSTICK_check = True   
 
-    if Index.Distance_1 in modulesList:
+    if "Distance_1" in modulesList:
         DISTANCE_check = True
 
-    if Index.QTR_1 in modulesList:
+    if "QTR_1" in modulesList:
         QTR_check = True
 
-    if Index.Servo_1 in modulesList:
+    if "Servo_1" in modulesList:
         SERVO_check = True
 
-    if Index.Pot_1 in modulesList:
+    if "Pot_1" in modulesList:
         POT_check = True
 
-    if Index.RGB_1 in modulesList:
+    if "RGB_1" in modulesList:
         RGB_check = True
 
-    if Index.IMU_1 in modulesList:
+    if "IMU_1" in modulesList:
         IMU_check = True
 except:
     pass
@@ -101,60 +86,83 @@ os.system('cls')
 
 RGBcounter = 0
 
+button_cnt = 0
 
 while True:
 
     try:
-        button = m.get_button(0, Index.Button_1)
+        button = m.get_button(0, modulesID)
     except:
         button = False
     try:
-        light = m.get_light(0, Index.Light_1)
+        light = m.get_light(0, modulesID)
     except:
         light = False
     try:
-        distance = m.get_distance(0, Index.Distance_1)
+        distance = m.get_distance(0, modulesID)
     except:
         distance = False
     try:
-        joystick = m.get_joystick(0, Index.Joystick_1)
+        joystick = m.get_joystick(0, modulesID)
     except:
         joystick = False
     try:
-        qtr = m.get_qtr(0, Index.QTR_1)
+        qtr = m.get_qtr(0, modulesID)
     except:
         qtr = False
     try:
-        pot = m.get_potantiometer(0, Index.Pot_1)
+        pot = m.get_potantiometer(0, modulesID)
     except:
         pot = False
     try:
-        imu = m.get_imu(0, Index.IMU_1)
+        imu = m.get_imu(0, modulesID)
     except:
         imu = False
 
     if button == 1:
-        RGBcounter += 1
-    
-    if RGBcounter >= 45:
-        RGBcounter = 0
+        button_cnt += 1
 
+    if button_cnt == 5:
+        button_cnt = 0
 
-    #qtrToServo = qtr[0]*30 + qtr[1]*60 + qtr[2]*90
-    
     try:
-        buzzer = m.set_buzzer(0, Index.Buzzer_1, (distance < 20)) # set buzzer by distance
+        qtrToServo = qtr[0]*30 + qtr[1]*60 + qtr[2]*90
+    except:
+        pass
+
+    try:
+        if button == 1:
+            m.set_buzzer(0, modulesID, distance*10) # set buzzer by distance
+        else:
+            m.set_buzzer(0, modulesID, 0) # set buzzer by distance
+            buzzer = True
     except:
         buzzer = False
+
+    
+
     try:
-        rgb = m.set_rgb(0, Index.RGB_1, colorsForRGB[RGBcounter//3])  #set rgb by button
+        if button == 1:
+            m.set_rgb(0, modulesID, 255, 0, 0)  #set rgb by button
+        if button == 2:
+            m.set_rgb(0, modulesID, 0, 255, 0)  #set rgb by button
+        if button == 3:
+            m.set_rgb(0, modulesID, 0, 0, 255)
+        if button == 4:
+            m.set_rgb(0, modulesID, 255, 255, 255)
+        else:
+            m.set_rgb(0, modulesID, 0, 0, 0)
+        rgb = True
     except:
         rgb = False
 
-    try:
-        servo = m.set_servo(0, Index.Servo_1, qtrToServo) # set servo by gtr
+    
+    try:  
+        m.set_servo(0, modulesID, qtrToServo) # set servo by gtr
+        servo = True
     except:
         servo = False
+
 
     data = [
     ["Button", button],
@@ -169,6 +177,9 @@ while True:
     ["IMU", imu]
     ]
 
-    os.system('cls')
     table = tabulate(data, headers=["Component", "Value"], tablefmt="fancy_grid")
+    if operatingSystem == 'Windows':
+        os.system('cls')    
+    else:
+        os.system('clear')
     print(table)
