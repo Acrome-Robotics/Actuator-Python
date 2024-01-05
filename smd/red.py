@@ -1,5 +1,5 @@
 from smd._internals import (_Data, Index, Commands,
-                            OperationMode, BuzzerNotes)
+                            OperationMode)
 import struct
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
@@ -416,7 +416,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the baudrate, otherwise None.
         """
-        return self.get_variables(id, [Index.Baudrate])
+        return self.get_variables(id, [Index.Baudrate])[0]
 
     def update_master_baudrate(self, br: int):
         """ Update the master serial port baudrate.
@@ -820,7 +820,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the operation mode, otherwise None.
         """
-        return self.get_variables(id, [Index.OperationMode])
+        return self.get_variables(id, [Index.OperationMode])[0]
 
     def set_shaft_cpr(self, id: int, cpr: float):
         """ Set the count per revolution (CPR) of the motor output shaft.
@@ -841,7 +841,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the output shaft CPR, otherwise None.
         """
-        return self.get_variables(id, [Index.OutputShaftCPR])
+        return self.get_variables(id, [Index.OutputShaftCPR])[0]
 
     def set_shaft_rpm(self, id: int, rpm: float):
         """ Set the revolution per minute (RPM) value of the output shaft at 12V rating.
@@ -862,7 +862,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the output shaft RPM characteristics, otherwise None.
         """
-        return self.get_variables(id, [Index.OutputShaftRPM])
+        return self.get_variables(id, [Index.OutputShaftRPM])[0]
 
     def set_user_indicator(self, id: int):
         """ Set the user indicator color for 5 seconds. The user indicator color is cyan.
@@ -919,7 +919,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the torque limit, otherwise None.
         """
-        return self.get_variables(id, [Index.TorqueLimit])
+        return self.get_variables(id, [Index.TorqueLimit])[0]
 
     def set_velocity_limit(self, id: int, vl: int):
         """ Set the velocity limit for the motor output shaft in terms of RPM. The velocity limit
@@ -941,7 +941,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the velocity limit, otherwise None.
         """
-        return self.get_variables(id, [Index.VelocityLimit])
+        return self.get_variables(id, [Index.VelocityLimit])[0]
 
     def set_position(self, id: int, sp: int):
         """ Set the desired setpoint for the position control in terms of encoder ticks.
@@ -962,7 +962,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the current position, otherwise None.
         """
-        return self.get_variables(id, [Index.PresentPosition])
+        return self.get_variables(id, [Index.PresentPosition])[0]
 
     def set_velocity(self, id: int, sp: float):
         """ Set the desired setpoint for the velocity control in terms of RPM.
@@ -983,7 +983,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the current velocity, otherwise None.
         """
-        return self.get_variables(id, [Index.PresentVelocity])
+        return self.get_variables(id, [Index.PresentVelocity])[0]
 
     def set_torque(self, id: int, sp: float):
         """ Set the desired setpoint for the torque control in terms of milliamps (mA).
@@ -1004,7 +1004,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the current, otherwise None.
         """
-        return self.get_variables(id, [Index.MotorCurrent])
+        return self.get_variables(id, [Index.MotorCurrent])[0]
 
     def set_duty_cycle(self, id: int, pct: float):
         """ Set the duty cycle to the motor for PWM control mode in terms of percentage.
@@ -1027,7 +1027,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the ADC conversion of the port, otherwise None.
         """
-        return self.get_variables(id, [Index.AnalogPort])
+        return self.get_variables(id, [Index.AnalogPort])[0]
 
     def set_control_parameters_position(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None):
         """ Set the control block parameters for position control mode.
