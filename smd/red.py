@@ -1,5 +1,5 @@
 from smd._internals import (_Data, Index, Commands,
-                            OperationMode, Colors)
+                            OperationMode)
 import struct
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
@@ -78,21 +78,21 @@ class Red():
             _Data(Index.SetVelocity, 'f'),
             _Data(Index.SetTorque, 'f'),
             _Data(Index.SetDutyCycle, 'f'),
-            _Data(Index.Buzzer_1, 'B'),
-            _Data(Index.Buzzer_2, 'B'),
-            _Data(Index.Buzzer_3, 'B'),
-            _Data(Index.Buzzer_4, 'B'),
-            _Data(Index.Buzzer_5, 'B'),
+            _Data(Index.Buzzer_1, 'i'),
+            _Data(Index.Buzzer_2, 'i'),
+            _Data(Index.Buzzer_3, 'i'),
+            _Data(Index.Buzzer_4, 'i'),
+            _Data(Index.Buzzer_5, 'i'),
             _Data(Index.Servo_1, 'B'),
             _Data(Index.Servo_2, 'B'),
             _Data(Index.Servo_3, 'B'),
             _Data(Index.Servo_4, 'B'),
             _Data(Index.Servo_5, 'B'),
-            _Data(Index.RGB_1, 'B'),
-            _Data(Index.RGB_2, 'B'),
-            _Data(Index.RGB_3, 'B'),
-            _Data(Index.RGB_4, 'B'),
-            _Data(Index.RGB_5, 'B'),
+            _Data(Index.RGB_1, 'i'),
+            _Data(Index.RGB_2, 'i'),
+            _Data(Index.RGB_3, 'i'),
+            _Data(Index.RGB_4, 'i'),
+            _Data(Index.RGB_5, 'i'),
             _Data(Index.PresentPosition, 'f'),
             _Data(Index.PresentVelocity, 'f'),
             _Data(Index.MotorCurrent, 'f'),
@@ -107,11 +107,11 @@ class Red():
             _Data(Index.Light_3, 'H'),
             _Data(Index.Light_4, 'H'),
             _Data(Index.Light_5, 'H'),
-            _Data(Index.Joystick_1, 'ffB'),
-            _Data(Index.Joystick_2, 'ffB'),
-            _Data(Index.Joystick_3, 'ffB'),
-            _Data(Index.Joystick_4, 'ffB'),
-            _Data(Index.Joystick_5, 'ffB'),
+            _Data(Index.Joystick_1, 'iiB'),
+            _Data(Index.Joystick_2, 'iiB'), 
+            _Data(Index.Joystick_3, 'iiB'),
+            _Data(Index.Joystick_4, 'iiB'),
+            _Data(Index.Joystick_5, 'iiB'),
             _Data(Index.Distance_1, 'H'),
             _Data(Index.Distance_2, 'H'),
             _Data(Index.Distance_3, 'H'),
@@ -273,7 +273,7 @@ class Master():
             raise ValueError('Baudrate must be between 3.053 KBits/s and 12.5 MBits/s.')
         else:
             self.__baudrate = baudrate
-            self.__post_sleep = (10 / self.__baudrate) * 3
+            self.__post_sleep = (10 / self.__baudrate) * 12
             self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.1)
 
     def __del__(self):
@@ -320,7 +320,7 @@ class Master():
             Bool: True if the firmware is updated
         """
 
-        fw_file = tempfile.NamedTemporaryFile("wb+")
+        fw_file = tempfile.NamedTemporaryFile("wb+",delete=False)
         if version == '':
             version = 'latest'
         else:
@@ -416,7 +416,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the baudrate, otherwise None.
         """
-        return self.get_variables(id, [Index.Baudrate])
+        return self.get_variables(id, [Index.Baudrate])[0]
 
     def update_master_baudrate(self, br: int):
         """ Update the master serial port baudrate.
@@ -441,7 +441,7 @@ class Master():
             self.__ph.apply_settings(settings)
             self.__ph.open()
 
-            self.__post_sleep = (10 / br) * 3
+            self.__post_sleep = (10 / br) * 12
 
         except Exception as e:
             raise e
@@ -720,7 +720,7 @@ class Master():
                 addrs = [i for i in range(64) if (data & (1 << i)) == (1 << i)]
                 result = []
                 for addr in addrs:
-                    result.append(Index(addr - _ID_OFFSETS[int((addr - 1) / 5)][0] + _ID_OFFSETS[int((addr - 1) / 5)][1]))
+                    result.append((Index(addr - _ID_OFFSETS[int((addr - 1) / 5)][0] + _ID_OFFSETS[int((addr - 1) / 5)][1])).name)
                 return result
         else:
             return None
@@ -820,7 +820,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the operation mode, otherwise None.
         """
-        return self.get_variables(id, [Index.OperationMode])
+        return self.get_variables(id, [Index.OperationMode])[0]
 
     def set_shaft_cpr(self, id: int, cpr: float):
         """ Set the count per revolution (CPR) of the motor output shaft.
@@ -841,7 +841,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the output shaft CPR, otherwise None.
         """
-        return self.get_variables(id, [Index.OutputShaftCPR])
+        return self.get_variables(id, [Index.OutputShaftCPR])[0]
 
     def set_shaft_rpm(self, id: int, rpm: float):
         """ Set the revolution per minute (RPM) value of the output shaft at 12V rating.
@@ -862,7 +862,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the output shaft RPM characteristics, otherwise None.
         """
-        return self.get_variables(id, [Index.OutputShaftRPM])
+        return self.get_variables(id, [Index.OutputShaftRPM])[0]
 
     def set_user_indicator(self, id: int):
         """ Set the user indicator color for 5 seconds. The user indicator color is cyan.
@@ -919,7 +919,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the torque limit, otherwise None.
         """
-        return self.get_variables(id, [Index.TorqueLimit])
+        return self.get_variables(id, [Index.TorqueLimit])[0]
 
     def set_velocity_limit(self, id: int, vl: int):
         """ Set the velocity limit for the motor output shaft in terms of RPM. The velocity limit
@@ -941,7 +941,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the velocity limit, otherwise None.
         """
-        return self.get_variables(id, [Index.VelocityLimit])
+        return self.get_variables(id, [Index.VelocityLimit])[0]
 
     def set_position(self, id: int, sp: int):
         """ Set the desired setpoint for the position control in terms of encoder ticks.
@@ -962,7 +962,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the current position, otherwise None.
         """
-        return self.get_variables(id, [Index.PresentPosition])
+        return self.get_variables(id, [Index.PresentPosition])[0]
 
     def set_velocity(self, id: int, sp: float):
         """ Set the desired setpoint for the velocity control in terms of RPM.
@@ -983,7 +983,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the current velocity, otherwise None.
         """
-        return self.get_variables(id, [Index.PresentVelocity])
+        return self.get_variables(id, [Index.PresentVelocity])[0]
 
     def set_torque(self, id: int, sp: float):
         """ Set the desired setpoint for the torque control in terms of milliamps (mA).
@@ -1004,7 +1004,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the current, otherwise None.
         """
-        return self.get_variables(id, [Index.MotorCurrent])
+        return self.get_variables(id, [Index.MotorCurrent])[0]
 
     def set_duty_cycle(self, id: int, pct: float):
         """ Set the duty cycle to the motor for PWM control mode in terms of percentage.
@@ -1027,7 +1027,7 @@ class Master():
         Returns:
             list | None: Returns the list containing the ADC conversion of the port, otherwise None.
         """
-        return self.get_variables(id, [Index.AnalogPort])
+        return self.get_variables(id, [Index.AnalogPort])[0]
 
     def set_control_parameters_position(self, id: int, p=None, i=None, d=None, db=None, ff=None, ol=None):
         """ Set the control block parameters for position control mode.
@@ -1123,7 +1123,7 @@ class Master():
         """
         return self.get_variables(id, [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueDeadband, Index.TorqueFF, Index.TorqueOutputLimit])
 
-    def get_button(self, id: int, index: Index):
+    def get_button(self, id: int, module_id: int):
         """ Get the button module data with given index.
 
         Args:
@@ -1136,6 +1136,7 @@ class Master():
         Returns:
             int: Returns the button state
         """
+        index =  module_id + Index.Button_1 - 1
         if (index < Index.Button_1) or (index > Index.Button_5):
             raise InvalidIndexError()
 
@@ -1144,7 +1145,7 @@ class Master():
             return ret
         return ret[0]
 
-    def get_light(self, id: int, index: Index):
+    def get_light(self, id: int, module_id: int):
         """ Get the ambient light module data with given index.
 
         Args:
@@ -1157,6 +1158,7 @@ class Master():
         Returns:
             float: Returns the ambient light measurement (in lux)
         """
+        index =  module_id + Index.Light_1 - 1
         if (index < Index.Light_1) or (index > Index.Light_5):
             raise InvalidIndexError()
 
@@ -1165,7 +1167,7 @@ class Master():
             return ret
         return ret[0]
 
-    def set_buzzer(self, id: int, index: Index, en: bool):
+    def set_buzzer(self, id: int, module_id: int, note_frequency: int):
         """ Enable/disable the buzzer module with given index.
 
         Args:
@@ -1176,11 +1178,17 @@ class Master():
         Raises:
             InvalidIndexError: Index is not a buzzer module index
         """
+        if note_frequency < 0 :
+            print("note frequency cannot be negative!")
+            raise InvalidIndexError()
+        
+        index =  module_id + Index.Buzzer_1 - 1
         if (index < Index.Buzzer_1) or (index > Index.Buzzer_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[index, en]])
+        self.set_variables(id, [[index, note_frequency]])
+        time.sleep(self.__post_sleep)
 
-    def get_joystick(self, id: int, index: Index):
+    def get_joystick(self, id: int, module_id: int):
         """ Get the joystick module data with given index.
 
         Args:
@@ -1193,6 +1201,7 @@ class Master():
         Returns:
             list: Returns the joystick module analogs and button data
         """
+        index =  module_id + Index.Joystick_1 - 1
         if (index < Index.Joystick_1) or (index > Index.Joystick_5):
             raise InvalidIndexError()
 
@@ -1201,7 +1210,7 @@ class Master():
             return ret
         return ret[0]
 
-    def get_distance(self, id: int, index: Index):
+    def get_distance(self, id: int, module_id: int):
         """ Get the ultrasonic distance module data with given index.
 
         Args:
@@ -1214,6 +1223,7 @@ class Master():
         Returns:
             int: Returns the distance from the ultrasonic distance module (in cm)
         """
+        index =  module_id + Index.Distance_1 - 1
         if (index < Index.Distance_1) or (index > Index.Distance_5):
             raise InvalidIndexError()
 
@@ -1222,7 +1232,7 @@ class Master():
             return ret
         return ret[0]
 
-    def get_qtr(self, id: int, index: Index):
+    def get_qtr(self, id: int, module_id: int):
         """ Get the qtr module data with given index.
 
         Args:
@@ -1235,6 +1245,7 @@ class Master():
         Returns:
             list: Returns qtr module data: [Left(bool), Middle(bool), Right(bool)]
         """
+        index =  module_id + Index.QTR_1 - 1
         if (index < Index.QTR_1) or (index > Index.QTR_5):
             raise InvalidIndexError()
 
@@ -1244,7 +1255,7 @@ class Master():
         else:
             return None
 
-    def set_servo(self, id: int, index: Index, val: int):
+    def set_servo(self, id: int, module_id: int, val: int):
         """ Move servo module to a position.
 
         Args:
@@ -1258,11 +1269,13 @@ class Master():
         """
         if val < 0 or val > 255:
             raise ValueError()
+        index =  module_id + Index.Servo_1 - 1
         if (index < Index.Servo_1) or (index > Index.Servo_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[index, val]])
+        self.set_variables(id, [[index, val]])
+        time.sleep(self.__post_sleep)
 
-    def get_potantiometer(self, id: int, index: Index):
+    def get_potantiometer(self, id: int, module_id: int):
         """ Get the potantiometer module data with given index.
 
         Args:
@@ -1275,6 +1288,7 @@ class Master():
         Returns:
             int: Returns the ADC conversion from the potantiometer module
         """
+        index =  module_id + Index.Pot_1 - 1
         if (index < Index.Pot_1) or (index > Index.Pot_5):
             raise InvalidIndexError()
 
@@ -1283,25 +1297,35 @@ class Master():
             return ret
         return ret[0]
 
-    def set_rgb(self, id: int, index: Index, color: Colors):
+    def set_rgb(self, id: int, module_id: int, red: int, green: int, blue: int):
         """ Set the colour emitted from the RGB module.
 
         Args:
             id (int): The device ID of the driver.
             index (Index): The index of the RGB module.
             color (Colors): Color for RGB from Colors class
-
         Raises:
             ValueError: Color is invalid
             InvalidIndexError: Index is not a RGB module index
         """
-        if color < Colors.NO_COLOR or color > Colors.INDIGO:
-            raise ValueError()
+
+
+        if red < 0 or red > 255:
+            raise ValueError("RGB color values must be in range 0 - 255")
+        if green < 0 or green > 255:
+            raise ValueError("RGB color values must be in range 0 - 255")
+        if blue < 0 or blue > 255:
+            raise ValueError("RGB color values must be in range 0 - 255")
+        
+        color_RGB = red + green*(2**8) + blue*(2**16)
+
+        index =  module_id + Index.RGB_1 - 1
         if (index < Index.RGB_1) or (index > Index.RGB_5):
             raise InvalidIndexError()
-        return self.set_variables(id, [[index, color]])
+        self.set_variables(id, [[index, color_RGB]])
+        time.sleep(self.__post_sleep)
 
-    def get_imu(self, id: int, index: Index):
+    def get_imu(self, id: int, module_id: int):
         """ Get IMU module data (roll, pitch)
 
         Args:
@@ -1314,6 +1338,8 @@ class Master():
         Returns:
             list: Returns roll, pitch angles
         """
+        index =  module_id + Index.IMU_1 - 1
+
         if (index < Index.IMU_1) or (index > Index.IMU_5):
             raise InvalidIndexError()
 
