@@ -1124,11 +1124,11 @@ class Master():
         return self.get_variables(id, [Index.TorquePGain, Index.TorqueIGain, Index.TorqueDGain, Index.TorqueDeadband, Index.TorqueFF, Index.TorqueOutputLimit])
 
     def get_button(self, id: int, module_id: int):
-        """ Get the button module data with given index.
+        """ Get the button module data with given module ID.
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the button module.
+            module_id (int): The module ID of the button.
 
         Raises:
             InvalidIndexError: Index is not a button module index
@@ -1146,11 +1146,11 @@ class Master():
         return ret[0]
 
     def get_light(self, id: int, module_id: int):
-        """ Get the ambient light module data with given index.
+        """ Get the ambient light module data with given module ID.
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the ambient light module.
+            module_id (int): The module ID of the ambient light.
 
         Raises:
             InvalidIndexError: Index is not a light module index
@@ -1168,12 +1168,12 @@ class Master():
         return ret[0]
 
     def set_buzzer(self, id: int, module_id: int, note_frequency: int):
-        """ Enable/disable the buzzer module with given index.
+        """ Set the note frequency of the buzzer module with given module ID.
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the buzzer module.
-            en (bool): Enable = 1, Disable = 0
+            module_id (int): The module ID of the buzzer.
+            note_frequency (int): The frequency of the tone in Hertz.
 
         Raises:
             InvalidIndexError: Index is not a buzzer module index
@@ -1189,11 +1189,11 @@ class Master():
         time.sleep(self.__post_sleep)
 
     def get_joystick(self, id: int, module_id: int):
-        """ Get the joystick module data with given index.
+        """ Get the joystick module data with given module ID.
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the joystick module.
+            module_id (int): The module ID of the joystick.
 
         Raises:
             InvalidIndexError: Index is not a joystick module index
@@ -1211,11 +1211,11 @@ class Master():
         return ret[0]
 
     def get_distance(self, id: int, module_id: int):
-        """ Get the ultrasonic distance module data with given index.
+        """ Get the ultrasonic distance module data with given module ID.
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the ultrasonic distance module.
+            module_id (int): The module ID of the ultrasonic distance module.
 
         Raises:
             InvalidIndexError: Index is not a ultrasonic distance module index
@@ -1233,17 +1233,17 @@ class Master():
         return ret[0]
 
     def get_qtr(self, id: int, module_id: int):
-        """ Get the qtr module data with given index.
+        """ Get the QTR module data with given module ID.
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the qtr module.
+            module_id (int): The module ID of the QTR.
 
         Raises:
-            InvalidIndexError: Index is not a qtr module index
+            InvalidIndexError: Index is not a QTR module index
 
         Returns:
-            list: Returns qtr module data: [Left(bool), Middle(bool), Right(bool)]
+            list: Returns QTR module data: [Left(bool), Middle(bool), Right(bool)]
         """
         index =  module_id + Index.QTR_1 - 1
         if (index < Index.QTR_1) or (index > Index.QTR_5):
@@ -1260,7 +1260,7 @@ class Master():
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the servo module.
+            module_id (int): The module ID of the servo.
             val (int): The value to write to the servo
 
         Raises:
@@ -1275,18 +1275,18 @@ class Master():
         self.set_variables(id, [[index, val]])
         time.sleep(self.__post_sleep)
 
-    def get_potantiometer(self, id: int, module_id: int):
-        """ Get the potantiometer module data with given index.
+    def get_potentiometer(self, id: int, module_id: int):
+        """ Get the potentiometer module data with given module ID.
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the potantiometer module.
+            module_id (int): The module ID of the potentiometer.
 
         Raises:
-            InvalidIndexError: Index is not a potantiometer module index
+            InvalidIndexError: Index is not a potentiometer module index
 
         Returns:
-            int: Returns the ADC conversion from the potantiometer module
+            int: Returns the ADC conversion from the potentiometer module
         """
         index =  module_id + Index.Pot_1 - 1
         if (index < Index.Pot_1) or (index > Index.Pot_5):
@@ -1302,8 +1302,10 @@ class Master():
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the RGB module.
-            color (Colors): Color for RGB from Colors class
+            module_id (int): The module ID of the RGB.
+            red (int): The color level of red. [0,255]
+            green (int): The color level of green. [0,255]
+            blue (int): The color level of blue. [0,255]
         Raises:
             ValueError: Color is invalid
             InvalidIndexError: Index is not a RGB module index
@@ -1330,7 +1332,7 @@ class Master():
 
         Args:
             id (int): The device ID of the driver.
-            index (Index): The index of the IMU module.
+            module_id (int): The module ID of the IMU.
 
         Raises:
             InvalidIndexError: Index is not a IMU module index

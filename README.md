@@ -35,7 +35,7 @@ Before you begin, make sure you have the following prerequisites:
   pip install acrome-smd
   ```
 
-3. Wait for the installation to complete. Pip willmnmnmnmn automatically download and install the library along with any required dependencies.
+3. Wait for the installation to complete. Pip will automatically download and install the library along with any required dependencies.
 
 #### Linux
 1. Open a terminal.
@@ -729,16 +729,16 @@ master.enable_torque(ID, True)      #enables the motor torque to start rotating
 # SMD Modules
 ### SMD Modules Basic
 To use SMD modules, you should initially utilize the following scanning function. This function returns which modules are connected to the SMD. Each module has a type and an ID, and through this scanning process, you can learn these properties of the connected modules. When the board is powered up for the first time, this scan is automatically performed once, but afterward, this command should be used manually.
-  - #### `scan_sensors(self, id: int)`
+  - #### `scan_modules(self, id: int):`
 
-    **`Return:`** *List of connected sensors*
+    **`Return:`** *List of connected modules*
     
-    This method scans and returns the sensor IDs which are currently connected to a driver.
+    This method scans and returns the module IDs which are currently connected to a driver.
 
     `id` argument is the device ID of the connected driver.
 
 #### Button Module
-  - ####  `get_button(self, id: int, index: Index)`
+  - ####  `get_button(self, id: int, module_id: int):`
 
     **`Return:`** *Returns the button state*
 
@@ -746,10 +746,10 @@ To use SMD modules, you should initially utilize the following scanning function
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the button module.
+      `module_id` argument is the module ID of the button. It takes values in the range of 1 - 5 (including 1 and 5).
 
 #### Light Module
-  - ####  `get_light(self, id: int, index: Index):`
+  - ####  `get_light(self, id: int, module_id: int):`
 
     **`Return:`** *Returns the ambient light measurement (in lux)*
 
@@ -757,10 +757,10 @@ To use SMD modules, you should initially utilize the following scanning function
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the ambient light module.
+      `module_id` argument is the module ID of the ambient light. It takes values in the range of 1 - 5 (including 1 and 5).
 
 #### Buzzer Module
-  - ####  `set_buzzer(self, id: int, index: Index, en: bool):`
+  - ####  `set_buzzer(self, id: int, module_id: int, note_frequency: int)`
 
     **`Return:`** *None*
 
@@ -768,12 +768,12 @@ To use SMD modules, you should initially utilize the following scanning function
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the buzzer module.
+      `module_id` argument is the module ID of the buzzer. It takes values in the range of 1 - 5 (including 1 and 5).
 
-      `en` argument enables or disables the buzzer. (Enable = 1, Disable = 0)
+      `note_frequency` argument specifies the frequency of the tone in Hertz. 0 Hertz will result in no tone.
 
 #### Joystick Module
-  - ####  `get_joystick(self, id: int, index: Index):`
+  - ####  `get_joystick(self, id: int, module_id: int):`
 
     **`Return:`** *Returns the joystick module analogs and button data*
 
@@ -781,7 +781,7 @@ To use SMD modules, you should initially utilize the following scanning function
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the joystick module.
+      `module_id` argument is the module ID of the joystick. It takes values in the range of 1 - 5 (including 1 and 5).
 
   #### Example of Joystick Module Usage
   ``` python
@@ -800,7 +800,7 @@ To use SMD modules, you should initially utilize the following scanning function
   ```
 
 #### Distance Module
-  - ####  `get_distance(self, id: int, index: Index):`
+  - ####  `get_distance(self, id: int, module_id: int):`
 
     **`Return:`** *Returns the distance from the ultrasonic distance module (in cm)*
 
@@ -808,21 +808,21 @@ To use SMD modules, you should initially utilize the following scanning function
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the ultrasonic distance module.
+      `module_id` argument is the module ID of the ultrasonic distance module. It takes values in the range of 1 - 5 (including 1 and 5).
 
 #### QTR Module
-  - ####  `get_qtr(self, id: int, index: Index):`
+  - ####  `get_qtr(self, id: int, module_id: int):`
 
-    **`Return:`** *Returns qtr module data: [Left(bool), Middle(bool), Right(bool)]*
+    **`Return:`** *Returns QTR module data: [Left(bool), Middle(bool), Right(bool)]*
 
-      This method gets the qtr module data with given index.
+      This method gets the QTR module data with given index.
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the qtr module.
+      `module_id` argument is the module ID of the QTR. It takes values in the range of 1 - 5 (including 1 and 5).
 
 #### Servo Module
-  - ####  `set_servo(self, id: int, index: Index, val: int):`
+  - ####  `set_servo(self, id: int, module_id: int, val: int):`
 
     **`Return:`** *None*
 
@@ -830,25 +830,25 @@ To use SMD modules, you should initially utilize the following scanning function
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the servo module.
+      `module_id` argument is the module ID of the servo. It takes values in the range of 1 - 5 (including 1 and 5)
 
-      `val`argument is the value to write to the servo (0, 255).
+      `val` argument is the value to write to the servo. It takes values in the range of 0 - 255 (including 0 and 255).
 
-#### Potantiometer Module
-  - ####  `get_potantiometer(self, id: int, index: Index):`
+#### Potentiometer Module
+  - ####  `get_potentiometer(self, id: int, module_id: int):`
 
-    **`Return:`** *Returns the ADC conversion from the potantiometer module*
+    **`Return:`** *Returns the ADC conversion from the potentiometer module*
 
-      This method gets the potantiometer module data with given index.
+      This method gets the potentiometer module data with given index.
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the potantiometer module.
+      `module_id` argument is the module ID of the potentiometer. It takes values in the range of 1 - 5 (including 1 and 5).
 
 #### RGB Led Module
 The setRGB() method is used to control an RGB Led module by specifying the intensity or color values for each of the RGB components.
 
-  - ####  `set_rgb(self, id: int, index: Index, color: Colors):`
+  - ####  `set_rgb(self, id: int, module_id: int, red: int, green: int, blue: int):`
 
     **`Return:`** *None*
 
@@ -856,26 +856,13 @@ The setRGB() method is used to control an RGB Led module by specifying the inten
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the RGB module.
+      `module_id` argument is the module ID of the RGB. It takes values in the range of 1 - 5 (including 1 and 5).
 
-      `color` argument is the color for RGB from Colors class.
+      `red` argument is representing red color's level. It takes values in the range of 0 - 255 (including 0 and 255).
 
+      `green` argument is representing green color's level. It takes values in the range of 0 - 255 (including 0 and 255).
 
-  Colors available in RGB sensor module :
-  - NO_COLOR,
-  - RED,
-  - GREEN,
-  - BLUE,
-  - WHITE,
-  - YELLOW,
-  - CYAN,
-  - MAGENTA,
-  - ORANGE,
-  - PURPLE,
-  - PINK,
-  - AMBER,
-  - TEAL,
-  - INDIGO
+      `blue` argument is representing blue color's level. It takes values in the range of 0 - 255 (including 0 and 255).
 
   The method and colors can be used as in the example below for the RGB module.
   #### Example of RGB Module Usage
@@ -886,17 +873,17 @@ The setRGB() method is used to control an RGB Led module by specifying the inten
   m.attach(Red(0))
   m.scan_modules(0)
 
-  m.set_rgb(0, Index.RGB_1, Colors.RED)
+  m.set_rgb(0, Index.RGB_1, 255, 0, 0) # Red color
   time.sleep(0.5)
-  m.set_rgb(0, Index.RGB_1, Colors.GREEN)
+  m.set_rgb(0, Index.RGB_1, 0, 255, 0) # Green color
   time.sleep(0.5)
-  m.set_rgb(0, Index.RGB_1, Colors.BLUE)
+  m.set_rgb(0, Index.RGB_1, 0, 0, 255) # Blue color
   time.sleep(0.5)
-  m.set_rgb(0, Index.RGB_1, Colors.PURPLE)
+  m.set_rgb(0, Index.RGB_1, 128, 0, 128) # Purple color
   time.sleep(0.5)
   ```
 #### IMU Module
-  - ####  `get_imu(self, id: int, index: Index):`
+  - ####  `get_imu(self, id: int, module_id: int):`
 
     **`Return:`** *Returns roll, pitch angles*
 
@@ -904,7 +891,7 @@ The setRGB() method is used to control an RGB Led module by specifying the inten
 
       `id` argument is the device ID of the driver.
 
-      `index` argument is the protocol index of the IMU module.
+      `module_id` argument is the module ID of the IMU. It takes values in the range of 1 - 5 (including 1 and 5).
 
   #### Example of IMU Module Usage
   ``` python
