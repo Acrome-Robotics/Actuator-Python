@@ -392,7 +392,7 @@ class Master():
 
         Args:
             id (int): The device ID of the driver
-            br (int): New baudrate value
+            br (int): New baudrate value in the range of [3053, 12500000]
 
         Raises:
             ValueError: Baudrate is not valid
@@ -422,7 +422,7 @@ class Master():
         """ Update the master serial port baudrate.
 
         Args:
-            br (int): Baudrate in range [3053, 12500000]
+            br (int): New baudrate value in the range of [3053, 12500000]
 
         Raises:
             ValueError: Invalid baudrate
@@ -510,11 +510,11 @@ class Master():
         return None
 
     def get_variables(self, id: int, index_list: list):
-        """ Get variables from the driver with respect to given list
+        """ Get variables from the driver with respect to given list.
 
         Args:
             id (int): The device ID of the driver
-            index_list (list): A list containing the Indexes to read
+            index_list (list): A list containing the indexes to read
 
         Raises:
             ValueError: Device ID is not valid
@@ -700,13 +700,13 @@ class Master():
         time.sleep(self.__post_sleep)
 
     def scan_modules(self, id: int) -> list:
-        """ Get the list of sensor IDs which are connected to the driver.
+        """ Get the list of module IDs which are connected to the driver.
 
         Args:
             id (int): The device ID of the driver.
 
         Returns:
-            list: List of the protocol IDs of the connected sensors otherwise None.
+            list: List of the protocol IDs of the connected modules otherwise None.
         """
 
         _ID_OFFSETS = [[1, Index.Button_1], [6, Index.Light_1], [11, Index.Buzzer_1], [16, Index.Joystick_1], [21, Index.Distance_1], [26, Index.QTR_1], [31, Index.Servo_1], [36, Index.Pot_1], [41, Index.RGB_1], [46, Index.IMU_1]]
@@ -827,7 +827,7 @@ class Master():
 
         Args:
             id (int): The device ID of the driver.
-            cpr (float): The CPR value of the output shaft/
+            cpr (float): The CPR value of the output shaft.
         """
         self.set_variables(id, [[Index.OutputShaftCPR, cpr]])
         time.sleep(self.__post_sleep)
@@ -848,7 +848,7 @@ class Master():
 
         Args:
             id (int): The device ID of the driver.
-            rpm (float): The RPM value of the output shaft at 12V
+            rpm (float): The RPM value of the output shaft at 12V.
         """
         self.set_variables(id, [[Index.OutputShaftRPM, rpm]])
         time.sleep(self.__post_sleep)

@@ -572,7 +572,7 @@ master.enable_torque(ID, True)      #enables the motor torque to start rotating
 
     `portname` argument is the serial/COM port of the host computer which is connected to the Acrome Smart Motor Drivers via Mastercard.
 
-    `baudrate` argument specifies the baudrate of the serial port. User may change this value to something between 3.053 KBits/s and 12.5 MBits/s. However, it is up to the user to select a value which is supported by the user's host computer.
+    `baudrate` argument specifies the baudrate of the serial port. User may change this value to something between 3.053 KBits/s and 12.5 MBits/s (in the range of [3053, 12500000]). However, it is up to the user to select a value which is supported by the user's host computer.
 
   - #### `update_driver_baudrate(self, id: int, br: int):`
 
@@ -582,7 +582,7 @@ master.enable_torque(ID, True)      #enables the motor torque to start rotating
 
     `id` argument is the device ID of the connected driver.
 
-    `br` argument is the user entered baudrate value. This value must be between 3.053 KBits/s and 12.5 MBits/s.
+    `br` argument is the user entered baudrate value. This value must be between 3.053 KBits/s and 12.5 MBits/s (in the range of [3053, 12500000]).
 
   - #### `get_driver_baudrate(self, id: int):`
 
@@ -613,7 +613,7 @@ master.enable_torque(ID, True)      #enables the motor torque to start rotating
 
     **`Return:`** *None*
 
-    This method removes the driver with the given devic ID from thee master. Any future action to the removed device ID will fail unless it is re-attached.
+    This method removes the driver with the given device ID from thee master. Any future action to the removed device ID will fail unless it is re-attached.
 
   - #### `set_variables(self, id: int, idx_val_pairs=[], ack=False)`
 
