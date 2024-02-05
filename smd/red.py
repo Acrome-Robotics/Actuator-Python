@@ -276,6 +276,8 @@ class Master():
             self.__post_sleep = (10 / self.__baudrate) * 12
             self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.1)
 
+        self.__joystickMidpoints = [[0,0], [0,0], [0,0], [0,0], [0,0]]
+
     def __del__(self):
         try:
             self.__ph.reset_input_buffer()
@@ -392,7 +394,7 @@ class Master():
 
         Args:
             id (int): The device ID of the driver
-            br (int): New baudrate value
+            br (int): New baudrate value in the range of [3053, 12500000]
 
         Raises:
             ValueError: Baudrate is not valid
@@ -422,7 +424,7 @@ class Master():
         """ Update the master serial port baudrate.
 
         Args:
-            br (int): Baudrate in range [3053, 12500000]
+            br (int): New baudrate value in the range of [3053, 12500000]
 
         Raises:
             ValueError: Invalid baudrate
@@ -510,11 +512,11 @@ class Master():
         return None
 
     def get_variables(self, id: int, index_list: list):
-        """ Get variables from the driver with respect to given list
+        """ Get variables from the driver with respect to given list.
 
         Args:
             id (int): The device ID of the driver
-            index_list (list): A list containing the Indexes to read
+            index_list (list): A list containing the indexes to read
 
         Raises:
             ValueError: Device ID is not valid
@@ -700,13 +702,13 @@ class Master():
         time.sleep(self.__post_sleep)
 
     def scan_modules(self, id: int) -> list:
-        """ Get the list of sensor IDs which are connected to the driver.
+        """ Get the list of module IDs which are connected to the driver.
 
         Args:
             id (int): The device ID of the driver.
 
         Returns:
-            list: List of the protocol IDs of the connected sensors otherwise None.
+            list: List of the protocol IDs of the connected modules otherwise None.
         """
 
         _ID_OFFSETS = [[1, Index.Button_1], [6, Index.Light_1], [11, Index.Buzzer_1], [16, Index.Joystick_1], [21, Index.Distance_1], [26, Index.QTR_1], [31, Index.Servo_1], [36, Index.Pot_1], [41, Index.RGB_1], [46, Index.IMU_1]]
@@ -721,7 +723,9 @@ class Master():
                 result = []
                 for addr in addrs:
                     result.append((Index(addr - _ID_OFFSETS[int((addr - 1) / 5)][0] + _ID_OFFSETS[int((addr - 1) / 5)][1])).name)
+                time.sleep(0.1)  # Temporary edit
                 return result
+                
         else:
             return None
 
@@ -827,7 +831,7 @@ class Master():
 
         Args:
             id (int): The device ID of the driver.
-            cpr (float): The CPR value of the output shaft/
+            cpr (float): The CPR value of the output shaft.
         """
         self.set_variables(id, [[Index.OutputShaftCPR, cpr]])
         time.sleep(self.__post_sleep)
@@ -848,7 +852,7 @@ class Master():
 
         Args:
             id (int): The device ID of the driver.
-            rpm (float): The RPM value of the output shaft at 12V
+            rpm (float): The RPM value of the output shaft at 12V.
         """
         self.set_variables(id, [[Index.OutputShaftRPM, rpm]])
         time.sleep(self.__post_sleep)
@@ -1206,9 +1210,51 @@ class Master():
             raise InvalidIndexError()
 
         ret = self.get_variables(id, [index])
+
         if ret is None:
             return ret
+
+        new_value = 0
+        for i in range(0,2):
+            if self.__joystickMidpoints[module_id-1][i] == 0:
+                pass
+
+            elif ret[0][i] >= self.__joystickMidpoints[module_id-1][i]:
+                old_range = (100 - self.__joystickMidpoints[module_id-1][i])
+                new_range = (100 - 0)
+                new_value = (((ret[0][i] - self.__joystickMidpoints[module_id-1][i]) * new_range) / old_range) + 0
+                ret[0][i] = int(new_value)
+
+            elif ret[0][i] < self.__joystickMidpoints[module_id-1][i]:
+                old_range = (self.__joystickMidpoints[module_id-1][i] - (-100))
+                new_range = (0 - (-100))
+                new_value = (((ret[0][i] - (-100)) * new_range) / old_range) + (-100)
+                ret[0][i] = int(new_value)
+
+        
         return ret[0]
+        
+    
+    def tune_joystick(self, id, module_id):
+        """ Tune the joystick module with given module ID if it is not centered.
+
+        Args:
+            id (int): The device ID of the driver.
+            module_id (int): The module ID of the joystick.
+
+        Returns:
+            list: Returns midpoints of joystick after tune process.
+        """
+        i = 0
+        uncalibrated_x = self.get_joystick(id, module_id)[0]
+        uncalibrated_y = self.get_joystick(id, module_id)[1]
+
+        midpoint_xy = [uncalibrated_x, uncalibrated_y]
+        self.__joystickMidpoints[module_id-1] = midpoint_xy
+
+        print("Your joystick has tuned according to its axes current midpoints!")
+        return midpoint_xy
+
 
     def get_distance(self, id: int, module_id: int):
         """ Get the ultrasonic distance module data with given module ID.
