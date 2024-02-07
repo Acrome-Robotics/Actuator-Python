@@ -1214,22 +1214,25 @@ class Master():
         if ret is None:
             return ret
 
-        new_value = 0
-        for i in range(0,2):
-            if self.__joystickMidpoints[module_id-1][i] == 0:
-                pass
+        try:
+            new_value = 0
+            for i in range(0,2):
+                if self.__joystickMidpoints[module_id-1][i] == 0:
+                    pass
 
-            elif ret[0][i] >= self.__joystickMidpoints[module_id-1][i]:
-                old_range = (100 - self.__joystickMidpoints[module_id-1][i])
-                new_range = (100 - 0)
-                new_value = (((ret[0][i] - self.__joystickMidpoints[module_id-1][i]) * new_range) / old_range) + 0
-                ret[0][i] = int(new_value)
+                elif ret[0][i] >= self.__joystickMidpoints[module_id-1][i]:
+                    old_range = (100 - self.__joystickMidpoints[module_id-1][i])
+                    new_range = (100 - 0)
+                    new_value = (((ret[0][i] - self.__joystickMidpoints[module_id-1][i]) * new_range) / old_range) + 0
+                    ret[0][i] = int(new_value)
 
-            elif ret[0][i] < self.__joystickMidpoints[module_id-1][i]:
-                old_range = (self.__joystickMidpoints[module_id-1][i] - (-100))
-                new_range = (0 - (-100))
-                new_value = (((ret[0][i] - (-100)) * new_range) / old_range) + (-100)
-                ret[0][i] = int(new_value)
+                elif ret[0][i] < self.__joystickMidpoints[module_id-1][i]:
+                    old_range = (self.__joystickMidpoints[module_id-1][i] - (-100))
+                    new_range = (0 - (-100))
+                    new_value = (((ret[0][i] - (-100)) * new_range) / old_range) + (-100)
+                    ret[0][i] = int(new_value)
+        except:
+            print("Joystick couldn't be tuned. Do not touch to the joystick and try again.")
 
         
         return ret[0]
@@ -1245,7 +1248,7 @@ class Master():
         Returns:
             list: Returns midpoints of joystick after tune process.
         """
-        i = 0
+
         uncalibrated_x = self.get_joystick(id, module_id)[0]
         uncalibrated_y = self.get_joystick(id, module_id)[1]
 
