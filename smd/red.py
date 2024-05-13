@@ -75,9 +75,25 @@ class Red():
             _Data(Index.TorqueIGain, 'f'),
             _Data(Index.TorqueDGain, 'f'),
             _Data(Index.SetPosition, 'f'),
+            _Data(Index.PositionControlMode, 'f'),      # S Curve Position Control
+            _Data(Index.SCurveSetpoint, 'f'),
+            _Data(Index.ScurveAccel, 'f'),
+            _Data(Index.SCurveMaxVelocity, 'f'),
+            _Data(Index.SCurveTime, 'f'),
             _Data(Index.SetVelocity, 'f'),
             _Data(Index.SetTorque, 'f'),
             _Data(Index.SetDutyCycle, 'f'),
+            _Data(Index.SetScanModuleMode, 'B'),        # Modules
+            _Data(Index.SetManualBuzzer, 'B'),
+            _Data(Index.SetManualServo, 'B'),
+            _Data(Index.SetManualRGB, 'B'),
+            _Data(Index.SetManualButton, 'B'),
+            _Data(Index.SetManualLight, 'B'),
+            _Data(Index.SetManualJoystick, 'B'),
+            _Data(Index.SetManualDistance, 'B'),
+            _Data(Index.SetManualQTR, 'B'),
+            _Data(Index.SetManualPot, 'B'),
+            _Data(Index.SetManualIMU, 'B'),
             _Data(Index.Buzzer_1, 'i'),
             _Data(Index.Buzzer_2, 'i'),
             _Data(Index.Buzzer_3, 'i'),
@@ -154,12 +170,14 @@ class Red():
         self.__ack_size = struct.calcsize(fmt_str)
 
         struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:6]], *[val for pair in zip(index_list, [self.vars[int(index)].value() for index in index_list]) for val in pair]]))
+        print(struct_out)
 
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[int(Index.CRCValue)].size()
 
         self.vars[Index.CRCValue].value(CRC32.calc(struct_out))
 
         return bytes(struct_out) + struct.pack('<' + self.vars[Index.CRCValue].type(), self.vars[Index.CRCValue].value())
+    
 
     def get_variables(self, index_list=[]):
         self.vars[Index.Command].value(Commands.READ)
@@ -724,6 +742,97 @@ class Master():
                 return result
         else:
             return None
+        
+    def set_connected_modules(self, id: int, modules: list):
+        """ Set the list of sensor IDs which are connected to the driver.
+
+        Args:
+            id (int): The device ID of the driver.
+            modules (list): List of the protocol IDs of the connected sensors.
+        """
+        ManualBuzzer_Byte = 0
+        ManualServo_Byte = 0
+        ManualRGB_Byte = 0
+        ManualButton_Byte = 0
+        ManualLight_Byte = 0
+        ManualJoystick_Byte = 0
+        ManualDistance_Byte = 0
+        ManualQTR_Byte = 0
+        ManualPot_Byte = 0
+        ManualIMU_Byte = 0
+
+        for module in modules:
+            if "Buzzer" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Buzzer_2' ".format(module))
+                ManualBuzzer_Byte += 2**(module_id - 1)
+            elif "Servo" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Servo_2' ".format(module))
+                ManualServo_Byte += 2**(module_id - 1)
+            elif "RGB" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'RGB_2' ".format(module))
+                ManualRGB_Byte += 2**(module_id - 1)
+            elif "Button" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Button_2' ".format(module))
+                ManualButton_Byte += 2**(module_id - 1)
+            elif "Light" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Light_2' ".format(module))
+                ManualLight_Byte += 2**(module_id - 1)
+            elif "Joystick" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Joystick_2' ".format(module))
+                ManualJoystick_Byte += 2**(module_id - 1)
+            elif "Distance" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Distance_2' ".format(module))
+                ManualDistance_Byte += 2**(module_id - 1)
+            elif "QTR" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'QTR_2' ".format(module))
+                ManualQTR_Byte += 2**(module_id - 1)
+            elif "Pot" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Pot_2' ".format(module))
+                ManualPot_Byte += 2**(module_id - 1)
+            elif "IMU" in module:
+                module_id = int(module[-1])
+                if module_id <= 0 or module_id > 5:
+                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'IMU_2' ".format(module))
+                ManualIMU_Byte += 2**(module_id - 1)           
+            else:
+                raise ValueError("{} is not a Module with ID! for ex: 'Button_2' ".format(module))
+        
+        self.set_variables(id, [[Index.SetScanModuleMode, 1]])
+
+        self.set_variables(id, [[Index.SetManualBuzzer, ManualBuzzer_Byte]])
+        self.set_variables(id, [[Index.SetManualServo, ManualServo_Byte]])
+        self.set_variables(id, [[Index.SetManualRGB, ManualRGB_Byte]])
+        self.set_variables(id, [[Index.SetManualButton, ManualButton_Byte]])
+        self.set_variables(id, [[Index.SetManualLight, ManualLight_Byte]])
+        self.set_variables(id, [[Index.SetManualJoystick, ManualJoystick_Byte]])
+        self.set_variables(id, [[Index.SetManualDistance, ManualDistance_Byte]])
+        self.set_variables(id, [[Index.SetManualQTR, ManualQTR_Byte]])
+        self.set_variables(id, [[Index.SetManualPot, ManualPot_Byte]])
+        self.set_variables(id, [[Index.SetManualIMU, ManualIMU_Byte]])
+    
+        self.__write_bus(self.__driver_list[id].scan_modules())
+        time.sleep(self.__post_sleep)
+
+
+
 
     def enter_bootloader(self, id: int):
         """ Put the driver into bootloader mode.
