@@ -75,7 +75,7 @@ class Red():
             _Data(Index.TorqueIGain, 'f'),
             _Data(Index.TorqueDGain, 'f'),
             _Data(Index.SetPosition, 'f'),
-            _Data(Index.PositionControlMode, 'B'),      # S Curve Position Control
+            _Data(Index.PositionControlMode, 'B'),      # S Curve Position Control / 1 is SCurve(goTo function) 0 is direct control.
             _Data(Index.SCurveSetpoint, 'f'),
             _Data(Index.ScurveAccel, 'f'),
             _Data(Index.SCurveMaxVelocity, 'f'),
@@ -1067,7 +1067,7 @@ class Master():
             id (int): The device ID of the driver.
             sp (int | float): Position control setpoint.
         """
-        self.set_variables(id, [[Index.SetPosition, sp]])
+        self.set_variables(id, [[Index.PositionControlMode, 0],[Index.SetPosition, sp]])
         time.sleep(self.__post_sleep)
 
     def get_position(self, id: int):
@@ -1083,7 +1083,7 @@ class Master():
     
     def goTo(self, id: int, target_position, time = 0, maxSpeed = 0, accel = 0):
         """
-            # en kisa surede gidecek. zaman verdiyse.
+            # goTo: 
 
             Sets the target position in S Curve mode. Since this function controls motor in position, 
             device should be in Position Mode to use this func.
@@ -1109,10 +1109,8 @@ class Master():
         """
 
         self.set_variables(id, [[Index.PositionControlMode, 1]])
+        self.set_variables(id, [[Index.SCurveTime, time],[Index.SCurveMaxVelocity, maxSpeed],[Index.ScurveAccel, accel]])
         self.set_variables(id, [[Index.SCurveSetpoint, target_position]])
-        self.set_variables(id, [[Index.SCurveTime, time]])
-        self.set_variables(id, [[Index.SCurveMaxVelocity, maxSpeed]])
-        self.set_variables(id, [[Index.ScurveAccel, accel]])
 
 
 
