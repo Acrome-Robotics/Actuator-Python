@@ -76,6 +76,7 @@ Index = enum.IntEnum('Index', [
 	'SCurveMaxVelocity',
 	'SCurveTime',
     'SetVelocity',
+    'SetVelocityAcceleration',
     'SetTorque',
     'SetDutyCycle',
     'SetScanModuleMode',

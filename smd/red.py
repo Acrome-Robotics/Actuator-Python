@@ -75,12 +75,13 @@ class Red():
             _Data(Index.TorqueIGain, 'f'),
             _Data(Index.TorqueDGain, 'f'),
             _Data(Index.SetPosition, 'f'),
-            _Data(Index.PositionControlMode, 'f'),      # S Curve Position Control
+            _Data(Index.PositionControlMode, 'B'),      # S Curve Position Control
             _Data(Index.SCurveSetpoint, 'f'),
             _Data(Index.ScurveAccel, 'f'),
             _Data(Index.SCurveMaxVelocity, 'f'),
             _Data(Index.SCurveTime, 'f'),
             _Data(Index.SetVelocity, 'f'),
+            _Data(Index.SetVelocityAcceleration, 'f'),
             _Data(Index.SetTorque, 'f'),
             _Data(Index.SetDutyCycle, 'f'),
             _Data(Index.SetScanModuleMode, 'B'),        # Modules
@@ -170,7 +171,6 @@ class Red():
         self.__ack_size = struct.calcsize(fmt_str)
 
         struct_out = list(struct.pack(fmt_str, *[*[var.value() for var in self.vars[:6]], *[val for pair in zip(index_list, [self.vars[int(index)].value() for index in index_list]) for val in pair]]))
-        print(struct_out)
 
         struct_out[int(Index.PackageSize)] = len(struct_out) + self.vars[int(Index.CRCValue)].size()
 
@@ -750,6 +750,12 @@ class Master():
             id (int): The device ID of the driver.
             modules (list): List of the protocol IDs of the connected sensors.
         """
+
+
+        #remove elements that has multiple ones in modules list
+        filtered_modules = list(set(modules))
+        print(filtered_modules)
+
         ManualBuzzer_Byte = 0
         ManualServo_Byte = 0
         ManualRGB_Byte = 0
@@ -760,60 +766,62 @@ class Master():
         ManualQTR_Byte = 0
         ManualPot_Byte = 0
         ManualIMU_Byte = 0
-
-        for module in modules:
-            if "Buzzer" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Buzzer_2' ".format(module))
-                ManualBuzzer_Byte += 2**(module_id - 1)
-            elif "Servo" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Servo_2' ".format(module))
-                ManualServo_Byte += 2**(module_id - 1)
-            elif "RGB" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'RGB_2' ".format(module))
-                ManualRGB_Byte += 2**(module_id - 1)
-            elif "Button" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Button_2' ".format(module))
-                ManualButton_Byte += 2**(module_id - 1)
-            elif "Light" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Light_2' ".format(module))
-                ManualLight_Byte += 2**(module_id - 1)
-            elif "Joystick" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Joystick_2' ".format(module))
-                ManualJoystick_Byte += 2**(module_id - 1)
-            elif "Distance" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Distance_2' ".format(module))
-                ManualDistance_Byte += 2**(module_id - 1)
-            elif "QTR" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'QTR_2' ".format(module))
-                ManualQTR_Byte += 2**(module_id - 1)
-            elif "Pot" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Pot_2' ".format(module))
-                ManualPot_Byte += 2**(module_id - 1)
-            elif "IMU" in module:
-                module_id = int(module[-1])
-                if module_id <= 0 or module_id > 5:
-                    raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'IMU_2' ".format(module))
-                ManualIMU_Byte += 2**(module_id - 1)           
-            else:
-                raise ValueError("{} is not a Module with ID! for ex: 'Button_2' ".format(module))
+        try:
+            for module in filtered_modules:
+                if "Buzzer" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Buzzer_2' ".format(module))
+                    ManualBuzzer_Byte += 2**(module_id - 1)
+                elif "Servo" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Servo_2' ".format(module))
+                    ManualServo_Byte += 2**(module_id - 1)
+                elif "RGB" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'RGB_2' ".format(module))
+                    ManualRGB_Byte += 2**(module_id - 1)
+                elif "Button" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Button_2' ".format(module))
+                    ManualButton_Byte += 2**(module_id - 1)
+                elif "Light" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Light_2' ".format(module))
+                    ManualLight_Byte += 2**(module_id - 1)
+                elif "Joystick" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Joystick_2' ".format(module))
+                    ManualJoystick_Byte += 2**(module_id - 1)
+                elif "Distance" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Distance_2' ".format(module))
+                    ManualDistance_Byte += 2**(module_id - 1)
+                elif "QTR" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'QTR_2' ".format(module))
+                    ManualQTR_Byte += 2**(module_id - 1)
+                elif "Pot" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'Pot_2' ".format(module))
+                    ManualPot_Byte += 2**(module_id - 1)
+                elif "IMU" in module:
+                    module_id = int(module[-1])
+                    if module_id <= 0 or module_id > 5:
+                        raise ValueError("{} invalid module ID! it should be between 1 and 5. for ex: 'IMU_2' ".format(module))
+                    ManualIMU_Byte += 2**(module_id - 1)           
+                else:
+                    raise ValueError("{} is not a Module with ID! for ex: 'Button_2' ".format(module))
+        except Exception as e:
+            raise e
         
         self.set_variables(id, [[Index.SetScanModuleMode, 1]])
 
@@ -1072,16 +1080,82 @@ class Master():
             list | None: Returns the list containing the current position, otherwise None.
         """
         return self.get_variables(id, [Index.PresentPosition])[0]
+    
+    def goTo(self, id: int, target_position, time = 0, maxSpeed = 0, accel = 0):
+        """
+            # en kisa surede gidecek. zaman verdiyse.
 
-    def set_velocity(self, id: int, sp: float):
+            Sets the target position in S Curve mode. Since this function controls motor in position, 
+            device should be in Position Mode to use this func.
+
+            If you just want to drive the motor to target point smoothly, you can use just the target_position parameter only.
+            If other parameters are not given or they are 0 (time, maxSpeed, accel), it will use default speed and acceleration values based on the motor's RPM.
+            
+            If the setpoint, time, maxSpeed, and accel parameters are specified in a way that makes it impossible to reach the target in the given time, 
+            the time variable will be ignored.
+
+            If only the time is not provided, the movement will be executed according to the other given parameters.
+
+            It is not necessary for the speed to reach the maxSpeed value during the movement. 
+            The maxSpeed parameter is only a limitation. Due to the other given parameters, it might be impossible to reach the maxSpeed value during the movement. 
+            Note: The motor's RPM value is defined as maxSpeed within the SMD.
+
+            Args:
+                id (int): The device ID of the driver.
+                target_position (int | float): Position control setpoint.
+                time (int | float): Time in seconds.
+                maxSpeed (int | float): Maximum speed in RPM.
+                accel (int | float): Acceleration in RPM/s.
+        """
+
+        self.set_variables(id, [[Index.PositionControlMode, 1]])
+        self.set_variables(id, [[Index.SCurveSetpoint, target_position]])
+        self.set_variables(id, [[Index.SCurveTime, time]])
+        self.set_variables(id, [[Index.SCurveMaxVelocity, maxSpeed]])
+        self.set_variables(id, [[Index.ScurveAccel, accel]])
+
+
+
+    def goToBlocked(self, id: int, target_position, time = 0, maxSpeed = 0, accel = 0, encoder_tick_close_counter = 10):
+        """
+            This func is basicly same with goTo but it waits until motor go to setpoint.
+            If you use this function. Cannot do another thing until motor go to target point.
+
+             Args:
+                id (int): The device ID of the driver.
+                target_position (int | float): Position control setpoint.
+                time (int | float): Time in seconds.
+                maxSpeed (int | float): Maximum speed in RPM.
+                accel (int | float): Acceleration in RPM/s.
+        """
+        self.goTo(id, target_position, time, maxSpeed, accel)
+
+        while(True):
+            if (abs(target_position - self.get_position(id)) <= encoder_tick_close_counter):
+                break
+
+
+
+
+    def set_velocity(self, id: int, sp: float, accel = 0):
         """ Set the desired setpoint for the velocity control in terms of RPM.
 
         Args:
             id (int): The device ID of the driver.
             sp (int | float): Velocity control setpoint.
+            accel(float): sets the acceleration value for the velocity control in terms of (RPM/seconds). if accel is not given, it will be ignored. 
+            So previously set accel value will be used.
+            In initial SMD-RED Velocity Control Mode, accel will be set to MAX_ACCEL.
         """
-        self.set_variables(id, [[Index.SetVelocity, sp]])
+        if accel == 0:
+            self.set_variables(id, [[Index.SetVelocity, sp]])
+        else:
+            self.set_variables(id, [[Index.SetVelocityAcceleration, accel]])
+            self.set_variables(id, [[Index.SetVelocity, sp]])
+        
         time.sleep(self.__post_sleep)
+
+
 
     def get_velocity(self, id: int):
         """ Get the current velocity of the motor output shaft from the driver in terms of RPM.
