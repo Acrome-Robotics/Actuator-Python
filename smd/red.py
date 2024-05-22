@@ -1,5 +1,5 @@
 from smd._internals import (_Data, Index, Commands,
-                            OperationMode)
+                            OperationMode, MotorConstants)
 import struct
 from crccheck.crc import Crc32Mpeg2 as CRC32
 import serial
@@ -1081,7 +1081,8 @@ class Master():
         """
         return self.get_variables(id, [Index.PresentPosition])[0]
     
-    def goTo(self, id: int, target_position, time = 0, maxSpeed = 0, accel = 0):
+    def goTo(self, id: int, target_position, time_ = 0, maxSpeed = 0, accel = 0, 
+             blocking: bool = False, encoder_tick_close_counter = 10):
         """
             # goTo: 
 
@@ -1100,40 +1101,56 @@ class Master():
             The maxSpeed parameter is only a limitation. Due to the other given parameters, it might be impossible to reach the maxSpeed value during the movement. 
             Note: The motor's RPM value is defined as maxSpeed within the SMD.
 
+            If blocking is True, the function will wait until the motor reaches the target position.
+            If blocking is False, the function will return immediately.
+
             Args:
                 id (int): The device ID of the driver.
                 target_position (int | float): Position control setpoint.
                 time (int | float): Time in seconds.
                 maxSpeed (int | float): Maximum speed in RPM.
                 accel (int | float): Acceleration in RPM/s.
+                blocking (bool): If True, the function will wait until the motor reaches the target position.
+                encoder_tick_close_counter (int): The number of encoder ticks that the motor should close enough to the target position to be considered reached.
         """
 
         self.set_variables(id, [[Index.PositionControlMode, 1]])
-        self.set_variables(id, [[Index.SCurveTime, time],[Index.SCurveMaxVelocity, maxSpeed],[Index.ScurveAccel, accel]])
+        self.set_variables(id, [[Index.SCurveTime, time_],[Index.SCurveMaxVelocity, maxSpeed],[Index.ScurveAccel, accel]])
         self.set_variables(id, [[Index.SCurveSetpoint, target_position]])
 
+        time.sleep(self.__post_sleep)
 
-
-    def goToBlocked(self, id: int, target_position, time = 0, maxSpeed = 0, accel = 0, encoder_tick_close_counter = 10):
-        """
-            This func is basicly same with goTo but it waits until motor go to setpoint.
-            If you use this function. Cannot do another thing until motor go to target point.
-
-             Args:
-                id (int): The device ID of the driver.
-                target_position (int | float): Position control setpoint.
-                time (int | float): Time in seconds.
-                maxSpeed (int | float): Maximum speed in RPM.
-                accel (int | float): Acceleration in RPM/s.
-        """
-        self.goTo(id, target_position, time, maxSpeed, accel)
-
-        while(True):
+        while(blocking):
             if (abs(target_position - self.get_position(id)) <= encoder_tick_close_counter):
                 break
+        
+    def goTo_ConstantSpeed(self, id: int, target_position, speed,
+                           blocking: bool = False, encoder_tick_close_counter = 10):
+        """
+            # goTo_ConstantSpeed: 
 
+            Sets the target position and sets the accel to max accel in S Curve mode. So velocity reaches given speed immediately.
 
+            If blocking is True, the function will wait until the motor reaches the target position.
+            If blocking is False, the function will return immediately.
 
+            Args:
+                id (int): The device ID of the driver.
+                target_position (int | float): Position control setpoint.
+                speed (int | float): Maximum speed in RPM.
+                blocking (bool): If True, the function will wait until the motor reaches the target position.
+                encoder_tick_close_counter (int): The number of encoder ticks that the motor should close enough to the target position to be considered reached.
+        """
+        
+        self.set_variables(id, [[Index.VelocityControlMode, 1]])
+        self.set_variables(id, [[Index.SCurveMaxVelocity, speed],[Index.ScurveAccel, MotorConstants.MAX_ACCEL]])
+        self.set_variables(id, [[Index.SCurveSetpoint, target_position]])
+
+        time.sleep(self.__post_sleep)
+
+        while(blocking):
+            if (abs(target_position - self.get_position(id)) <= encoder_tick_close_counter):
+                break
 
     def set_velocity(self, id: int, sp: float, accel = 0):
         """ Set the desired setpoint for the velocity control in terms of RPM.
@@ -1144,16 +1161,22 @@ class Master():
             accel(float): sets the acceleration value for the velocity control in terms of (RPM/seconds). if accel is not given, it will be ignored. 
             So previously set accel value will be used.
             In initial SMD-RED Velocity Control Mode, accel will be set to MAX_ACCEL.
+
+        Hint: 
+            It can be used to set the acceleration value by "MotorConstants.MAX_ACCEL" to reach the target velocity immediately.
         """
-        if accel == 0:
+        if accel == MotorConstants.MAX_ACCEL:
+            accel = 0
+            self.set_variables(id, [[Index.SetVelocityAcceleration, accel]])
+            self.set_variables(id, [[Index.SetVelocity, sp]])
+
+        elif accel == 0:
             self.set_variables(id, [[Index.SetVelocity, sp]])
         else:
             self.set_variables(id, [[Index.SetVelocityAcceleration, accel]])
             self.set_variables(id, [[Index.SetVelocity, sp]])
         
         time.sleep(self.__post_sleep)
-
-
 
     def get_velocity(self, id: int):
         """ Get the current velocity of the motor output shaft from the driver in terms of RPM.

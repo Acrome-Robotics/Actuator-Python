@@ -1,7 +1,6 @@
 import struct
 import enum
 
-
 class Commands(enum.IntEnum):
     PING = 0x00
     WRITE = 0x01
@@ -27,6 +26,10 @@ class OperationMode():
     Position = 1
     Velocity = 2
     Torque = 3
+
+
+class MotorConstants():
+    MAX_ACCEL = 999999.9999
 
 
 Index = enum.IntEnum('Index', [
