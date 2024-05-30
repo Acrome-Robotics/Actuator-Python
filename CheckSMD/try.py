@@ -14,10 +14,10 @@ m.attach(Red(0))
 
 print(m.get_driver_info(0))
 
-m.set_shaft_cpr(0, 6533)
-m.set_shaft_rpm(0, 100)
-m.pid_tuner(0)
 
+print(m.scan_modules(0))
+
+#print(m.get_variables(0, [Index.connected_bitfield]))
 
 '''
 m.set_operation_mode(0, OperationMode.Position)

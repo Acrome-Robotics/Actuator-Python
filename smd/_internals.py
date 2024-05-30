@@ -147,6 +147,7 @@ Index = enum.IntEnum('Index', [
     'IMU_3',
     'IMU_4',
     'IMU_5',
+    'connected_bitfield',
     'CRCValue',
     ], start=0)
 

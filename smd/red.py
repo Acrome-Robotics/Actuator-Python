@@ -149,6 +149,7 @@ class Red():
             _Data(Index.IMU_3, 'ff'),
             _Data(Index.IMU_4, 'ff'),
             _Data(Index.IMU_5, 'ff'),
+            _Data(Index.connected_bitfield, 'II'),
             _Data(Index.CRCValue, 'I')
         ]
 
@@ -729,20 +730,31 @@ class Master():
 
         _ID_OFFSETS = [[1, Index.Button_1], [6, Index.Light_1], [11, Index.Buzzer_1], [16, Index.Joystick_1], [21, Index.Distance_1], [26, Index.QTR_1], [31, Index.Servo_1], [36, Index.Pot_1], [41, Index.RGB_1], [46, Index.IMU_1]]
         self.__write_bus(self.__driver_list[id].scan_modules())
-        time.sleep(2)
-        self.__write_bus(self.__driver_list[id].scan_modules())
-        ret = self.__read_bus(18)
-        if len(ret) == 18:
-            if CRC32.calc(ret[:-4]) == struct.unpack('<I', ret[-4:])[0]:
-                data = struct.unpack('<Q', ret[6:-4])[0]
-                addrs = [i for i in range(64) if (data & (1 << i)) == (1 << i)]
-                result = []
-                for addr in addrs:
-                    result.append((Index(addr - _ID_OFFSETS[int((addr - 1) / 5)][0] + _ID_OFFSETS[int((addr - 1) / 5)][1])).name)
-                return result
-        else:
+        time.sleep(5.5)
+        connected = None
+        for i in range(0,10):
+            try:
+                connected = self.get_variables(id, [Index.connected_bitfield])[0]
+                if connected == None:
+                    pass
+                else:
+                    break
+            except:
+                pass
+        if connected == None:
             return None
-        
+        else:
+            value1 = 0x12345678  # Örnek değer 1
+            value2 = 0x9ABCDEF0  # Örnek değer 2
+
+            # 64-bitlik tek bir değere dönüştürme
+            connected = (connected[1] << 32) | connected[0]
+            result = []
+            addrs = [i for i in range(64) if (connected & (1 << i)) == (1 << i)]
+            for addr in addrs:
+                result.append((Index(addr - _ID_OFFSETS[int((addr - 1) / 5)][0] + _ID_OFFSETS[int((addr - 1) / 5)][1])).name)
+            return result
+
     def set_connected_modules(self, id: int, modules: list):
         """ Set the list of sensor IDs which are connected to the driver.
 
