@@ -4,39 +4,47 @@ import os
 import sys
 from serial.tools.list_ports import comports
 from platform import system
-from colorama import Fore, Style, init
+from colorama import Fore, Style
 from tabulate import tabulate
 from random import randint
 
 
 id = 0
-module_id = 1
+module_id = int(input("Please enter the module ID (1-5): "))
 
 #  Serial Port Define
-if system() == "Windows":
-    ports = list(comports())
-    if ports:
-        for port, desc, hwid in sorted(ports):
-            if 'USB Serial Port' in desc:
-                SMD_port = port
-    else:
-        SMD_port = None
+def USB_Port():
+    if system() == "Windows":
+        ports = list(comports())
+        if ports:
+            for port, desc, hwid in sorted(ports):
+                if 'USB Serial Port' in desc:
+                    SMD_Port = port
+                    return SMD_Port
+        else:
+            SMD_Port = None
+            return SMD_Port
 
-elif system() == "Linux":
-    ports = list(serial.tools.list_ports.comports())
-    if ports:
-        for port, desc, hwid in sorted(ports):
-            if '/dev/ttyUSB' in port:
-                SMD_port = port
-    else:
-        SMD_port = None
+    elif system() == "Linux":
+        ports = list(serial.tools.list_ports.comports())
+        if ports:
+            for port, desc, hwid in sorted(ports):
+                if '/dev/ttyUSB' in port:
+                    SMD_Port = port
+                    return SMD_Port
+        else:
+            SMD_port = None
+            return SMD_Port
 
-m = Master(SMD_port)
+port = USB_Port()
+m = Master(port)
 
 
 m.attach(Red(id))
 
 connected_modules = m.scan_modules(id)
+
+print(connected_modules)
 
 def colorize_str(str, boolean):
     return f"{Fore.GREEN}{str} found!{Style.RESET_ALL}" if boolean else f"{Fore.RED}{str} not found.{Style.RESET_ALL}"
@@ -51,8 +59,9 @@ def button_test(check:bool):
 
 def buzzer_test(check:bool):
     if check:
-        m.set_buzzer(id, module_id, 1000)
-        return "Check if buzzer is emitting sound"
+        freq = randint(100,4000)
+        m.set_buzzer(id, module_id, freq)
+        return "Check if buzzer is emitting sound, Hz: {}".format(freq)
     else:
         return f"{Fore.RED}Not Connected{Style.RESET_ALL}"
         
@@ -95,7 +104,7 @@ def rgb_test(check:bool):
 
         m.set_rgb(id, module_id, R, G, B)
         time.sleep(0.02)
-        return f"{R}\n{G}\n{B}"
+        return f"{R}, {G}, {B}"
     else:
         return f"{Fore.RED}Not Connected{Style.RESET_ALL}"
 
@@ -180,6 +189,9 @@ module_check_table = tabulate(module_check_data, headers=['Modules', 'States'], 
 print(module_check_table)
 
 test_input = str(input("Press enter to start the test, write 'exit' to close the program: "))
+
+m.set_duty_cycle(id, 100)
+m.enable_torque(id, 1)
 
 if test_input == "exit":
     sys.exit()
