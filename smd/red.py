@@ -134,11 +134,11 @@ class Red():
             _Data(Index.Distance_3, 'H'),
             _Data(Index.Distance_4, 'H'),
             _Data(Index.Distance_5, 'H'),
-            _Data(Index.QTR_1, 'B'),
-            _Data(Index.QTR_2, 'B'),
-            _Data(Index.QTR_3, 'B'),
-            _Data(Index.QTR_4, 'B'),
-            _Data(Index.QTR_5, 'B'),
+            _Data(Index.QTR_1, 'BBB'),
+            _Data(Index.QTR_2, 'BBB'),
+            _Data(Index.QTR_3, 'BBB'),
+            _Data(Index.QTR_4, 'BBB'),
+            _Data(Index.QTR_5, 'BBB'),
             _Data(Index.Pot_1, 'B'),
             _Data(Index.Pot_2, 'B'),
             _Data(Index.Pot_3, 'B'),
@@ -1467,7 +1467,8 @@ class Master():
 
         data = self.get_variables(id, [index])
         if data is not None:
-            return [(data[0] & (1 << i)) >> i for i in range(3)]
+            #return [(data[0] & (1 << i)) >> i for i in range(3)]
+            return data
         else:
             return None
 
