@@ -1468,7 +1468,7 @@ class Master():
         data = self.get_variables(id, [index])
         if data is not None:
             #return [(data[0] & (1 << i)) >> i for i in range(3)]
-            return data
+            return data[0]
         else:
             return None
 
