@@ -426,9 +426,9 @@ class Master():
             raise ValueError("{br} is not in acceptable range!")
 
         self.set_variables(id, [[Index.Baudrate, br]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
         self.eeprom_write(id)
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.1)
         self.reboot(id)
 
     def get_driver_baudrate(self, id: int):
@@ -530,7 +530,7 @@ class Master():
         if ack:
             if self.__read_ack(id):
                 return [self.__driver_list[id].vars[index].value() for index in index_list]
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.001)
         return None
 
     def get_variables(self, id: int, index_list: list):
@@ -561,7 +561,7 @@ class Master():
             raise IndexError("Given index list is empty!")
 
         self.__write_bus(self.__driver_list[id].get_variables(index_list))
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
         if self.__read_ack(id):
             return [self.__driver_list[id].vars[index].value() for index in index_list]
         else:
@@ -629,7 +629,7 @@ class Master():
         dev.vars[Index.CRCValue].value(CRC32.calc(struct_out))
 
         self.__write_bus(bytes(struct_out) + struct.pack('<' + dev.vars[Index.CRCValue].type(), dev.vars[Index.CRCValue].value()))
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def __set_variables_bulk(self, id: int):
         raise NotImplementedError()
@@ -664,7 +664,7 @@ class Master():
             id (int): The device ID of the driver.
         """
         self.__write_bus(self.__driver_list[id].reboot())
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def factory_reset(self, id: int):
         """ Clear the EEPROM config of the driver.
@@ -673,7 +673,7 @@ class Master():
             id (int): The device ID of the driver.
         """
         self.__write_bus(self.__driver_list[id].factory_reset())
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def eeprom_write(self, id: int, ack=False):
         """ Save the config to the EEPROM.
@@ -688,7 +688,7 @@ class Master():
                          Return None if ack is not requested.
         """
         self.__write_bus(self.__driver_list[id].EEPROM_write(ack=ack))
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
         if ack:
             if self.__read_ack(id):
@@ -707,7 +707,7 @@ class Master():
             bool: Return True if device replies otherwise False.
         """
         self.__write_bus(self.__driver_list[id].ping())
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
         if self.__read_ack(id):
             return True
@@ -721,7 +721,7 @@ class Master():
             id (int): The device ID of the driver.
         """
         self.__write_bus(self.__driver_list[id].reset_encoder())
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def scan_modules(self, id: int) -> list:
         """ Get the list of sensor IDs which are connected to the driver.
@@ -854,7 +854,7 @@ class Master():
         self.set_variables(id, [[Index.SetManualIMU, ManualIMU_Byte]])
     
         self.__write_bus(self.__driver_list[id].scan_modules())
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
 
 
@@ -867,7 +867,7 @@ class Master():
         """
 
         self.__write_bus(self.__driver_list[id].enter_bootloader())
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_driver_info(self, id: int):
         """ Get hardware and software versions from the driver
@@ -908,9 +908,9 @@ class Master():
             raise ValueError("{} is not a valid ID argument!".format(id_new))
 
         self.__write_bus(self.__driver_list[id].update_driver_id(id_new))
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
         self.eeprom_write(id_new)
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
         self.reboot(id)
 
     def enable_torque(self, id: int, en: bool):
@@ -922,7 +922,7 @@ class Master():
         """
 
         self.set_variables(id, [[Index.TorqueEnable, en]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def pid_tuner(self, id: int):
         """ Start PID auto-tuning routine. This routine will estimate
@@ -932,7 +932,7 @@ class Master():
             id (int): The device ID of the driver.
         """
         self.__write_bus(self.__driver_list[id].tune())
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def set_operation_mode(self, id: int, mode: OperationMode):
         """ Set the operation mode of the driver.
@@ -943,7 +943,7 @@ class Master():
         """
 
         self.set_variables(id, [[Index.OperationMode, mode]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_operation_mode(self, id: int):
         """ Get the current operation mode from the driver.
@@ -964,7 +964,7 @@ class Master():
             cpr (float): The CPR value of the output shaft/
         """
         self.set_variables(id, [[Index.OutputShaftCPR, cpr]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_shaft_cpr(self, id: int):
         """ Get the count per revolution (CPR) of the motor output shaft.
@@ -985,7 +985,7 @@ class Master():
             rpm (float): The RPM value of the output shaft at 12V
         """
         self.set_variables(id, [[Index.OutputShaftRPM, rpm]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_shaft_rpm(self, id: int):
         """ Get the revolution per minute (RPM) value of the output shaft at 12V rating.
@@ -1005,7 +1005,7 @@ class Master():
             id (int): The device ID of the driver.
         """
         self.set_variables(id, [[Index.UserIndicator, 1]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def set_position_limits(self, id: int, plmin: int, plmax: int):
         """ Set the position limits of the motor in terms of encoder ticks.
@@ -1019,7 +1019,7 @@ class Master():
             plmax (int): The maximum position limit.
         """
         self.set_variables(id, [[Index.MinimumPositionLimit, plmin], [Index.MaximumPositionLimit, plmax]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_position_limits(self, id: int):
         """ Get the position limits of the motor in terms of encoder ticks.
@@ -1042,7 +1042,7 @@ class Master():
             tl (int): New torque limit (mA)
         """
         self.set_variables(id, [[Index.TorqueLimit, tl]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_torque_limit(self, id: int):
         """ Get the torque limit from the driver in terms of milliamps (mA).
@@ -1064,7 +1064,7 @@ class Master():
             vl (int): New velocity limit (RPM)
         """
         self.set_variables(id, [[Index.VelocityLimit, vl]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_velocity_limit(self, id: int):
         """ Get the velocity limit from the driver in terms of RPM.
@@ -1085,7 +1085,7 @@ class Master():
             sp (int | float): Position control setpoint.
         """
         self.set_variables(id, [[Index.PositionControlMode, 0],[Index.SetPosition, sp]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_position(self, id: int):
         """ Get the current position of the motor from the driver in terms of encoder ticks.
@@ -1135,7 +1135,7 @@ class Master():
         self.set_variables(id, [[Index.SCurveTime, time_],[Index.SCurveMaxVelocity, maxSpeed],[Index.ScurveAccel, accel]])
         self.set_variables(id, [[Index.SCurveSetpoint, target_position]])
 
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
         while(blocking):
             if (abs(target_position - self.get_position(id)) <= encoder_tick_close_counter):
@@ -1163,7 +1163,7 @@ class Master():
         self.set_variables(id, [[Index.SCurveMaxVelocity, speed],[Index.ScurveAccel, MotorConstants.MAX_ACCEL]])
         self.set_variables(id, [[Index.SCurveSetpoint, target_position]])
 
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
         while(blocking):
             if (abs(target_position - self.get_position(id)) <= encoder_tick_close_counter):
@@ -1193,7 +1193,7 @@ class Master():
             self.set_variables(id, [[Index.SetVelocityAcceleration, accel]])
             self.set_variables(id, [[Index.SetVelocity, sp]])
         
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_velocity(self, id: int):
         """ Get the current velocity of the motor output shaft from the driver in terms of RPM.
@@ -1214,7 +1214,7 @@ class Master():
             sp (int | float): Torque control setpoint.
         """
         self.set_variables(id, [[Index.SetTorque, sp]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_torque(self, id: int):
         """ Get the current drawn from the motor from the driver in terms of milliamps (mA).
@@ -1236,7 +1236,7 @@ class Master():
             pct (int | float): Duty cycle percentage.
         """
         self.set_variables(id, [[Index.SetDutyCycle, pct]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_analog_port(self, id: int):
         """ Get the ADC values from the analog port of the device with
@@ -1268,7 +1268,7 @@ class Master():
         val_list = [p, i, d, db, ff, ol]
 
         self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_control_parameters_position(self, id: int):
         """ Get the position control block parameters.
@@ -1300,7 +1300,7 @@ class Master():
         val_list = [p, i, d, db, ff, ol]
 
         self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_control_parameters_velocity(self, id: int):
         """ Get the velocity control block parameters.
@@ -1331,7 +1331,7 @@ class Master():
         val_list = [p, i, d, db, ff, ol]
 
         self.set_variables(id, [list(pair) for pair in zip(index_list, val_list) if pair[1] is not None])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_control_parameters_torque(self, id: int):
         """ Get the torque control block parameters.
@@ -1407,7 +1407,7 @@ class Master():
         if (index < Index.Buzzer_1) or (index > Index.Buzzer_5):
             raise InvalidIndexError()
         self.set_variables(id, [[index, note_frequency]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_joystick(self, id: int, module_id: int):
         """ Get the joystick module data with given module ID.
@@ -1495,7 +1495,7 @@ class Master():
         if (index < Index.Servo_1) or (index > Index.Servo_5):
             raise InvalidIndexError()
         self.set_variables(id, [[index, val]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_potentiometer(self, id: int, module_id: int):
         """ Get the potentiometer module data with given module ID.
@@ -1547,7 +1547,7 @@ class Master():
         if (index < Index.RGB_1) or (index > Index.RGB_5):
             raise InvalidIndexError()
         self.set_variables(id, [[index, color_RGB]])
-        time.sleep(self.__post_sleep)
+        self.busy_wait(0.002)
 
     def get_imu(self, id: int, module_id: int):
         """ Get IMU module data (roll, pitch)
