@@ -302,6 +302,11 @@ class Master():
             self.__ph.close()
         except Exception as e:
             raise e
+        
+    def busy_wait(self, wait_time):
+        start_time = time.time()
+        while (time.time() - start_time) < wait_time:
+            pass
 
     def __write_bus(self, data):
         self.__ph.write(data)
