@@ -293,6 +293,7 @@ class Master():
         else:
             self.__baudrate = baudrate
             self.__post_sleep = (10 / self.__baudrate) * 12
+            self.__device_init_sleep = 6 #seconds
             self.__ph = serial.Serial(port=portname, baudrate=self.__baudrate, timeout=0.1)
 
     def __del__(self):
@@ -425,6 +426,7 @@ class Master():
         self.eeprom_write(id)
         time.sleep(self.__post_sleep)
         self.reboot(id)
+        time.sleep(self.__device_init_sleep)
 
     def get_driver_baudrate(self, id: int):
         """ Get the current baudrate from the driver.
@@ -461,6 +463,7 @@ class Master():
             self.__ph.open()
 
             self.__post_sleep = (10 / br) * 12
+            
 
         except Exception as e:
             raise e
