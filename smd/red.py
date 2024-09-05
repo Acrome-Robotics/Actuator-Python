@@ -559,7 +559,7 @@ class Master():
             raise IndexError("Given index list is empty!")
 
         self.__write_bus(self.__driver_list[id].get_variables(index_list))
-        time.sleep(self.__post_sleep)
+
         if self.__read_ack(id):
             return [self.__driver_list[id].vars[index].value() for index in index_list]
         else:
