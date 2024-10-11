@@ -8,7 +8,7 @@ setuptools.setup(
     version="2.0.4",
     author="Furkan Kırlangıç",
     author_email="furkankirlangic@acrome.net",
-    description="Python library for interfacing with Acrome Smart Motor Drivers (SMD) products.",
+    description="Python library for interfacing with Acrome Smart Motion Devices (SMD) products.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Acrome-Smart-Motion-Devices/python-library",
