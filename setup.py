@@ -5,15 +5,15 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="acrome-smd",
-    version="2.0.3",
+    version="2.0.4",
     author="Furkan Kırlangıç",
     author_email="furkankirlangic@acrome.net",
     description="Python library for interfacing with Acrome Smart Motor Drivers (SMD) products.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Acrome-Smart-Motor-Driver/python-library",
+    url="https://github.com/Acrome-Smart-Motion-Devices/python-library",
     project_urls={
-        "Bug Tracker": "https://github.com/Acrome-Smart-Motor-Driver/python-library/issues",
+        "Bug Tracker": "https://github.com/Acrome-Smart-Motion-Devices/python-library/issues",
         },
     classifiers=[
         "Programming Language :: Python :: 3",

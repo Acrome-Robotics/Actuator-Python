@@ -283,7 +283,7 @@ class Red():
 
 class Master():
     _BROADCAST_ID = 0xFF
-    __RELEASE_URL = "https://api.github.com/repos/Acrome-Smart-Motor-Driver/SMD-Red-Firmware/releases/{version}"
+    __RELEASE_URL = "https://api.github.com/repos/Acrome-Smart-Motion-Devices/SMD-Red-Firmware/releases/{version}"
 
     def __init__(self, portname, baudrate=115200) -> None:
         self.__attached_drivers = []
