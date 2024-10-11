@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="acrome-smd",
-    version="2.0.4",
+    version="2.0.5",
     author="Furkan Kırlangıç",
     author_email="furkankirlangic@acrome.net",
     description="Python library for interfacing with Acrome Smart Motion Devices (SMD) products.",
